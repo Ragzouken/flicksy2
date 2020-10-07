@@ -1,0 +1,138 @@
+:root {
+    --trans-color-1: rgb(32, 32, 32);
+    --trans-color-2: rgb(48, 48, 48);
+    --trans-gradient: repeating-linear-gradient(
+        -45deg,
+        var(--trans-color-1),
+        var(--trans-color-1) .5em,
+        var(--trans-color-2) .5em,
+        var(--trans-color-2) 1em
+    );
+
+    --background-color-a: #792368;
+    --background-color-b: #367b6b;
+    --emphasis-color-a: #ffd800;
+    --emphasis-color-b: #cef0df;
+    --text-color: #ffffff;
+
+    font-family: sans-serif;
+}
+
+/* width */
+::-webkit-scrollbar {
+    color: black;
+}
+
+/* track */
+::-webkit-scrollbar-track {
+    background: #754d6d;
+    border-left: solid 1px black; 
+    border-right: solid 1px black; 
+}
+
+/* handle */
+::-webkit-scrollbar-thumb {
+    background:  rgb(180, 157, 27);
+    border-left: solid 1px black; 
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #FFD800; 
+}
+
+html, body {
+    width: 100vw; height: 100vh;
+    margin: 0; padding: 0;
+}
+
+body {
+    display: flex;
+    flex-direction: row;
+}
+
+#content {
+    flex: 1;
+
+    background: var(--trans-gradient);
+}
+
+#sidebar {
+    width: 320px;
+    overflow: hidden scroll;
+    
+    background: var(--background-color-a);
+
+    display: flex;
+    flex-direction: column;
+    padding: 1em; gap: 1em;
+}
+
+#sidebar button {
+    padding: .5em .75em;
+    border: 0; border-radius: .5em;
+    
+    font-size: .8em;
+    font-weight: bold;
+    background: var(--emphasis-color-a);
+}
+
+#sidebar button:active {
+    filter: invert();
+}
+
+#sidebar button.active {
+    pointer-events: none;
+    color: var(--emphasis-color-a);
+    background: var(--background-color-b);
+}
+
+input[type="text"] {
+    flex: 1; flex-basis: 100%; min-width: 0;
+    padding: .5em .75em;
+    border: 0; border-radius: .5em;
+    color: white;
+    background: black;
+}
+
+.button-bag {
+    display: flex; flex-wrap: wrap;
+    padding: 0; gap: .5em;
+}
+
+.button-row {
+    display: flex; flex-wrap: nowrap;
+    justify-items: stretch;
+    padding: 0; gap: .5em;
+}
+.button-row > button {
+    flex: 1;
+}
+
+.sidebar-panel { 
+    display: flex; flex-direction: column;
+    padding: 0; gap: 1em;
+}
+
+#sidebar .section {
+    padding: 1em;
+    border-radius: .5em;
+
+    color: white;
+    background: var(--background-color-b);
+}
+
+#sidebar .section h2 {
+    color: var(--emphasis-color-a);
+}
+
+#sidebar .section h3 {
+    color: var(--emphasis-color-b);
+}
+
+#sidebar ol {
+    padding-left: 1.2em;
+}
+
+#sidebar ol, ul, li {
+    margin: .5em 0;
+}

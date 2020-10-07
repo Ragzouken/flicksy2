@@ -32,3 +32,7 @@ canvas, image {
     image-rendering: pixelated;
     image-rendering: crisp-edges;
 }
+
+/* default to ignoring margins that aren't between siblings */
+*:first-child { margin-top: 0; }
+*:last-child { margin-bottom: 0; }

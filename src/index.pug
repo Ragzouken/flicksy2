@@ -1,12 +1,23 @@
 doctype html
 html
     head
-        title low tech template
+        title flicksy 2
         meta(charset="utf-8")
         // styles
         style#base-style
             include styles/base-style.css
+        style#editor-style
+            include styles/editor-style.css
         // scripts
         script
             include scripts/main.js
     body(onload="start()")
+        #sidebar
+            #menu-buttons.button-bag
+                button project
+                button.active drawings
+                button scene
+                button map
+            #menu-content
+                include sidebars/drawings.pug
+        #content

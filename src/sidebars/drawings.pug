@@ -1,0 +1,38 @@
+#drawings-sidebar.sidebar-panel
+    .section
+        h2 drawing board tab
+        h3 getting started
+        ol
+            li create a drawing using the <em>drawing board</em> section below
+            li click the <em>draw</em> button to enter the drawing mode
+            li pick a brush size and colour to draw in
+            li click and drag on a drawing to draw on it
+    .section
+        h2 drawing board
+        h3 add drawing
+        .button-bag
+            button add blank
+            button import file
+    .button-row
+        button.active select
+        button draw
+    .section
+        h2 selected drawing
+        h3 name
+        .button-row
+            input(type="text")
+            button delete
+        h3 layering
+        .button-row
+            button raise
+            button lower
+        h3 size
+        .button-row
+            input(type="text")
+            span ✖
+            input(type="text")
+            button resize
+        h3 other
+        .button-row
+            button duplicate
+            button export

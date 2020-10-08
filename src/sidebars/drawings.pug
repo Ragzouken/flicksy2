@@ -1,4 +1,4 @@
-#drawings-sidebar.sidebar-panel
+.sidebar-panel(data-tab-body="sidebar/drawings")
     .section
         h2 drawing board tab
         h3 getting started
@@ -14,10 +14,10 @@
             button add blank
             button import file
     .button-row
-        button palette
-        button.active select
-        button draw
-    .section
+        button(data-tab-toggle="drawings/mode/palette") palette
+        button(data-tab-toggle="drawings/mode/select") select
+        button(data-tab-toggle="drawings/mode/draw") draw
+    .section(data-tab-body="drawings/mode/select")
         h2 selected drawing
         h3 name
         .button-row
@@ -36,12 +36,12 @@
         .button-row
             button duplicate
             button export
-    .section
+    .section(data-tab-body="drawings/mode/draw")
         h2 drawing tools
         h3 brush
         input(type="range")
         h3 color
-    .section
+    .section(data-tab-body="drawings/mode/palette")
         h2 edit palette
         h3 colors
         h3 remap

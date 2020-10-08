@@ -14,10 +14,17 @@ html
     body(onload="start()")
         #sidebar
             #menu-buttons.button-bag
-                button project
-                button.active drawings
-                button scene
-                button map
+                button(data-tab-toggle="sidebar/project") project
+                button(data-tab-toggle="sidebar/drawings") drawings
+                button(data-tab-toggle="sidebar/scene") scene
+                button(data-tab-toggle="sidebar/map") map
+                button(data-tab-toggle="sidebar/publish") publish
+                button play
+                button save
             #menu-content
+                include sidebars/project.pug
                 include sidebars/drawings.pug
+                include sidebars/scene.pug
+                include sidebars/map.pug
+                include sidebars/publish.pug
         #content

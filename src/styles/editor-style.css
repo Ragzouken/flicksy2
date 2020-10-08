@@ -13,6 +13,7 @@
     --background-color-b: #367b6b;
     --emphasis-color-a: #ffd800;
     --emphasis-color-b: #cef0df;
+    --delete-color: #ff7300;
     --text-color: #ffffff;
 
     font-family: sans-serif;
@@ -67,6 +68,16 @@ body {
     padding: 1em; gap: 1em;
 }
 
+#sidebar select {
+    flex: 1; flex-basis: 100%;
+    padding: .5em .75em;
+    border: 0; border-radius: .5em;
+
+    font-size: .8em;
+    font-weight: bold;
+    background: var(--emphasis-color-a);
+}
+
 #sidebar button {
     padding: .5em .75em;
     border: 0; border-radius: .5em;
@@ -86,12 +97,20 @@ body {
     background: var(--background-color-b);
 }
 
-input[type="text"] {
+#sidebar button.delete {
+    background: var(--delete-color);
+}
+
+input[type="text"], textarea {
     flex: 1; flex-basis: 100%; min-width: 0;
     padding: .5em .75em;
     border: 0; border-radius: .5em;
     color: white;
     background: black;
+}
+
+textarea {
+    resize: vertical;
 }
 
 .button-bag {
@@ -124,6 +143,15 @@ input[type="text"] {
 h2, h3 {
     margin-top: .7em;
     margin-bottom: .4em;
+}
+
+em {
+    font-weight: bold;
+    color: var(--emphasis-color-a);
+}
+
+a {
+    color: var(--emphasis-color-a);
 }
 
 #sidebar .section h2 {

@@ -14,6 +14,7 @@
             button add blank
             button import file
     .button-row
+        button palette
         button.active select
         button draw
     .section
@@ -29,10 +30,18 @@
         h3 size
         .button-row
             input(type="text")
-            span ✖
             input(type="text")
             button resize
         h3 other
         .button-row
             button duplicate
             button export
+    .section
+        h2 drawing tools
+        h3 brush
+        input(type="range")
+        h3 color
+    .section
+        h2 edit palette
+        h3 colors
+        h3 remap

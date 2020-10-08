@@ -121,6 +121,11 @@ input[type="text"] {
     background: var(--background-color-b);
 }
 
+h2, h3 {
+    margin-top: .7em;
+    margin-bottom: .4em;
+}
+
 #sidebar .section h2 {
     color: var(--emphasis-color-a);
 }

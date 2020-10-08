@@ -52,9 +52,21 @@ body {
 }
 
 #content {
+    position: relative; overflow: hidden; /* clip things */
     flex: 1;
 
+    cursor: grab;
     background: var(--trans-gradient);
+}
+
+#scene {
+    position: absolute; transform-origin: 0 0;
+    width: 128px; height: 128px;
+    outline: 1px dashed white;
+}
+
+#scene .object {
+    position: absolute; transform-origin: 0 0;
 }
 
 #sidebar {
@@ -169,3 +181,5 @@ a {
 #sidebar ol, ul, li {
     margin: .5em 0;
 }
+
+

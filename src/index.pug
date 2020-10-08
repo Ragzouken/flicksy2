@@ -10,8 +10,12 @@ html
             include styles/editor-style.css
         // scripts
         script
+            include scripts/blitsy.js
+        script
+            include scripts/utility.js
+        script
             include scripts/main.js
-    body(onload="start()")
+    body(onload="editor.start()")
         #sidebar
             #menu-buttons.button-bag
                 button(data-tab-toggle="sidebar/project") project
@@ -28,3 +32,4 @@ html
                 include sidebars/map.pug
                 include sidebars/publish.pug
         #content
+            #scene

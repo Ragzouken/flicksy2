@@ -37,6 +37,73 @@ function initui() {
     });
 }
 
+class DragObjectTest {
+    /**
+     * @param {DrawingBoardScene} scene
+     * @param {HTMLElement} element 
+     */
+    constructor(scene, element) {
+        this.scene = scene;
+        this.element = element;
+        this.transform = new DOMMatrix();
+
+        let grab = undefined;
+
+        function mouseEventToSceneTransform(event) {
+            const mouse = scene.mouseEventToViewportTransform(event);
+            mouse.preMultiplySelf(scene.transform.inverse());
+            return mouse;
+        }
+
+        this.element.addEventListener("pointerdown", (event) => {
+            killEvent(event);
+    
+            // determine and save the relationship between mouse and element
+            // G = M1^ . E (element relative to mouse)
+            const mouse = mouseEventToSceneTransform(event);
+            grab = mouse.invertSelf().multiplySelf(this.transform);
+            document.body.style.setProperty("cursor", "grabbing");
+            this.element.style.setProperty("cursor", "grabbing");
+        });
+        
+        document.addEventListener("pointermove", (event) => {
+            if (!grab) return;
+            killEvent(event);
+    
+            // preserve the relationship between mouse and element
+            // D2 = M2 . G (drawing relative to scene)
+            const mouse = mouseEventToSceneTransform(event);
+            this.transform = mouse.multiply(grab);
+            this.refresh();
+        });
+        
+        document.addEventListener("pointerup", (event) => {
+            killEvent(event);
+
+            grab = undefined;
+            document.body.style.removeProperty("cursor");
+            this.element.style.setProperty("cursor", "grab");
+        });
+        
+        this.element.addEventListener('wheel', (event) => {
+            killEvent(event);
+
+            const mouse = mouseEventToSceneTransform(event);
+            const origin = (this.transform.inverse().multiply(mouse)).transformPoint();
+            const deltaScale = Math.pow(2, event.deltaY * -0.01);
+            this.transform.scaleSelf(
+                deltaScale, deltaScale, deltaScale,
+                origin.x, origin.y, origin.z,
+            );
+            this.refresh();
+        });
+    }
+
+    refresh() {
+        this.element.style.setProperty("transform", this.transform.toString());
+    }
+}
+
 class DrawingBoardScene {
     constructor() {
         this.viewport = document.getElementById("content");
@@ -83,6 +150,18 @@ class DrawingBoardScene {
             );
             this.refresh();
         });
+
+        const test = () => {
+            const test = createRendering2D(64, 64);
+            fillRendering2D(test, "magenta");
+            test.canvas.classList.toggle("object", true);
+            this.container.appendChild(test.canvas);
+            const test2 = new DragObjectTest(this, test.canvas);
+        }
+
+        test();
+        test();
+        test();
     }
 
     refresh() {

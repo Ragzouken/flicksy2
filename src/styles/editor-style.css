@@ -67,6 +67,7 @@ body {
 
 #scene .object {
     position: absolute; transform-origin: 0 0;
+    outline: 1px dashed rgb(128 128 128 / 50%);
 }
 
 #sidebar {
@@ -182,4 +183,41 @@ a {
     margin: .5em 0;
 }
 
+.palette-grid {
+    display: grid;
+    width: 100%;
 
+    gap: .5em;
+    grid-template-columns: repeat(4, 3.5em);
+    grid-template-rows: repeat(4, 3.5em);
+
+    align-content: center;
+    justify-content: center;
+}
+
+#sidebar .palette-grid > button {
+    width: 100%; height: 100%;
+    border-radius: 1em;
+    padding: 4px;
+    background: none;
+
+    display: flex;
+}
+
+*:focus {
+    outline: none;
+}
+
+#sidebar .palette-grid > button.active {
+    background: var(--emphasis-color-a);
+}
+
+#sidebar .palette-grid > button > div {
+    width: 100%; height: 100%;
+    border-radius: .8em;
+    background: magenta;
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

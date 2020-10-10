@@ -44,4 +44,12 @@
     .section(data-tab-body="drawings/mode/palette")
         h2 edit palette
         h3 colors
+        .palette-grid
+            button(data-tab-toggle="drawings/palette/0")
+                div ❌
+            button(data-tab-toggle="drawings/palette/1")
+                div
+            each val in [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+                button(data-tab-toggle!="drawings/palette/" + val)
+                    div
         h3 remap

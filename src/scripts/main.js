@@ -1,3 +1,10 @@
+const brushes = [
+    textToRendering2D("X"),
+    textToRendering2D("XX\nXX"),
+    textToRendering2D("_X_\nXXX\n_X_"),
+    textToRendering2D("_XX_\nXXXX\nXXXX\n_XX_"),
+];
+
 /**
  * @param {string} path 
  * @returns {[string, string]}
@@ -49,6 +56,14 @@ class DragObjectTest {
 
         let grab = undefined;
 
+        /**
+         * @param {DOMMatrix} transform 
+         */
+        function snap(transform) {
+            transform.e = Math.round(transform.e);
+            transform.f = Math.round(transform.f);
+        }
+
         function mouseEventToSceneTransform(event) {
             const mouse = scene.mouseEventToViewportTransform(event);
             mouse.preMultiplySelf(scene.transform.inverse());
@@ -57,13 +72,18 @@ class DragObjectTest {
 
         this.element.addEventListener("pointerdown", (event) => {
             killEvent(event);
-    
+
             // determine and save the relationship between mouse and element
             // G = M1^ . E (element relative to mouse)
             const mouse = mouseEventToSceneTransform(event);
             grab = mouse.invertSelf().multiplySelf(this.transform);
             document.body.style.setProperty("cursor", "grabbing");
             this.element.style.setProperty("cursor", "grabbing");
+            
+            // test
+            const c = this.element.getContext("2d");
+            const p = mouseEventToSceneTransform(event).preMultiplySelf(this.transform.inverse()).transformPoint();
+            c.drawImage(brushes[3].canvas, p.x|0, p.y|0);
         });
         
         document.addEventListener("pointermove", (event) => {
@@ -74,6 +94,7 @@ class DragObjectTest {
             // D2 = M2 . G (drawing relative to scene)
             const mouse = mouseEventToSceneTransform(event);
             this.transform = mouse.multiply(grab);
+            snap(this.transform);
             this.refresh();
         });
         
@@ -85,6 +106,7 @@ class DragObjectTest {
             this.element.style.setProperty("cursor", "grab");
         });
         
+        /*
         this.element.addEventListener('wheel', (event) => {
             killEvent(event);
 
@@ -97,6 +119,7 @@ class DragObjectTest {
             );
             this.refresh();
         });
+        */
     }
 
     refresh() {
@@ -153,7 +176,7 @@ class DrawingBoardScene {
 
         const test = () => {
             const test = createRendering2D(64, 64);
-            fillRendering2D(test, "magenta");
+            fillRendering2D(test, `rgb(${Math.random() * 255},${Math.random() * 255},${Math.random() * 255})`);
             test.canvas.classList.toggle("object", true);
             this.container.appendChild(test.canvas);
             const test2 = new DragObjectTest(this, test.canvas);

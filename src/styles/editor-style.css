@@ -221,3 +221,23 @@ a {
     align-items: center;
     justify-content: center;
 }
+
+#sidebar .tool-row {
+    display: flex; flex-direction: row; 
+    gap: .5em;
+}
+
+#sidebar .tool-row > button {
+    display: flex;
+    padding: 4px;
+}
+
+#sidebar .tool-row > button.active {
+    filter: invert();
+    background: var(--emphasis-color-a);
+}
+
+#sidebar .tool-row > button > img {
+    filter: brightness(0);
+    width: 32px; height: 32px;
+}

@@ -22,11 +22,14 @@ function pathToRootLeaf(path) {
     return [root, leaf];
 }
 
+const toggleStates = new Map();
+
 function initui() {
     const toggles = Array.from(document.querySelectorAll("[data-tab-toggle]"));
     const bodies = Array.from(document.querySelectorAll("[data-tab-body]"));
 
     function setGroupActiveTab(group, tab) {
+        toggleStates.set(group, tab);
         toggles.forEach((element) => {
             const [group_, tab_] = pathToRootLeaf(element.getAttribute("data-tab-toggle"));
             if (group_ === group) element.classList.toggle("active", tab_ === tab);
@@ -50,6 +53,96 @@ function initui() {
     });
 }
 
+/**
+ * @param {DOMMatrix} transform 
+ */
+function snap(transform) {
+    transform.e = Math.round(transform.e);
+    transform.f = Math.round(transform.f);
+}
+
+/**
+ * @param {DragObjectTest} object 
+ */
+function makeObjectDraggable(object) {
+    let grab = undefined;
+    let draw = undefined;
+
+    function mouseEventToSceneTransform(event) {
+        const mouse = object.scene.mouseEventToViewportTransform(event);
+        mouse.preMultiplySelf(object.scene.transform.inverse());
+        return mouse;
+    }
+
+    function pointerdownDraw(event) {
+        killEvent(event);
+        const mouse = mouseEventToSceneTransform(event);
+        const pixel = object.transform.inverse().multiply(mouse);
+        const [x, y] = [pixel.e, pixel.f];
+
+        const c = object.element.getContext("2d");
+        c.drawImage(brushes[3].canvas, x|0, y|0);
+        draw = [x, y];
+    }
+
+    function pointermoveDraw(event) {
+        killEvent(event);
+        const mouse = mouseEventToSceneTransform(event);
+        const pixel = object.transform.inverse().multiply(mouse);
+        const [x0, y0] = draw;
+        const [x1, y1] = [pixel.e, pixel.f];
+
+        const c = object.element.getContext("2d");
+        lineplot(x0, y0, x1, y1, (x, y) => c.drawImage(brushes[3].canvas, x, y))
+        draw = [x1, y1];
+    }
+
+    function pointerdownDrag(event) {
+        killEvent(event);
+        // determine and save the relationship between mouse and element
+        // G = M1^ . E (element relative to mouse)
+        const mouse = mouseEventToSceneTransform(event);
+        grab = mouse.invertSelf().multiplySelf(object.transform);
+        document.body.style.setProperty("cursor", "grabbing");
+        object.element.style.setProperty("cursor", "grabbing");
+    }
+
+    function pointermoveDrag(event) {
+        if (!grab) return;
+        killEvent(event);
+
+        // preserve the relationship between mouse and element
+        // D2 = M2 . G (drawing relative to scene)
+        const mouse = mouseEventToSceneTransform(event);
+        object.transform = mouse.multiply(grab);
+        snap(object.transform);
+        object.refresh();
+    }
+
+    object.element.addEventListener("pointerdown", (event) => {
+        const drag = toggleStates.get("drawings/mode") === "select"
+                  || (toggleStates.get("drawings/mode") === "draw" && toggleStates.get("drawings/tool") === "move");
+        const free = toggleStates.get("drawings/mode") === "draw" && toggleStates.get("drawings/tool") === "free";
+
+        if (drag) pointerdownDrag(event);
+        if (free) pointerdownDraw(event);
+    });
+
+    document.addEventListener("pointermove", (event) => {
+        if (grab) pointermoveDrag(event);
+        if (draw) pointermoveDraw(event);
+    });
+    
+    document.addEventListener("pointerup", (event) => {
+        killEvent(event);
+
+        draw = undefined;
+        grab = undefined;
+        document.body.style.removeProperty("cursor");
+        object.element.style.setProperty("cursor", "grab");
+    });
+}
+
 class DragObjectTest {
     /**
      * @param {DrawingBoardScene} scene
@@ -59,73 +152,6 @@ class DragObjectTest {
         this.scene = scene;
         this.element = element;
         this.transform = new DOMMatrix();
-
-        let grab = undefined;
-
-        /**
-         * @param {DOMMatrix} transform 
-         */
-        function snap(transform) {
-            transform.e = Math.round(transform.e);
-            transform.f = Math.round(transform.f);
-        }
-
-        function mouseEventToSceneTransform(event) {
-            const mouse = scene.mouseEventToViewportTransform(event);
-            mouse.preMultiplySelf(scene.transform.inverse());
-            return mouse;
-        }
-
-        this.element.addEventListener("pointerdown", (event) => {
-            killEvent(event);
-
-            // determine and save the relationship between mouse and element
-            // G = M1^ . E (element relative to mouse)
-            const mouse = mouseEventToSceneTransform(event);
-            grab = mouse.invertSelf().multiplySelf(this.transform);
-            document.body.style.setProperty("cursor", "grabbing");
-            this.element.style.setProperty("cursor", "grabbing");
-            
-            // test
-            const c = this.element.getContext("2d");
-            const p = mouseEventToSceneTransform(event).preMultiplySelf(this.transform.inverse()).transformPoint();
-            c.drawImage(brushes[3].canvas, p.x|0, p.y|0);
-        });
-        
-        document.addEventListener("pointermove", (event) => {
-            if (!grab) return;
-            killEvent(event);
-    
-            // preserve the relationship between mouse and element
-            // D2 = M2 . G (drawing relative to scene)
-            const mouse = mouseEventToSceneTransform(event);
-            this.transform = mouse.multiply(grab);
-            snap(this.transform);
-            this.refresh();
-        });
-        
-        document.addEventListener("pointerup", (event) => {
-            killEvent(event);
-
-            grab = undefined;
-            document.body.style.removeProperty("cursor");
-            this.element.style.setProperty("cursor", "grab");
-        });
-        
-        /*
-        this.element.addEventListener('wheel', (event) => {
-            killEvent(event);
-
-            const mouse = mouseEventToSceneTransform(event);
-            const origin = (this.transform.inverse().multiply(mouse)).transformPoint();
-            const deltaScale = Math.pow(2, event.deltaY * -0.01);
-            this.transform.scaleSelf(
-                deltaScale, deltaScale, deltaScale,
-                origin.x, origin.y, origin.z,
-            );
-            this.refresh();
-        });
-        */
     }
 
     refresh() {
@@ -186,6 +212,7 @@ class DrawingBoardScene {
             test.canvas.classList.toggle("object", true);
             this.container.appendChild(test.canvas);
             const test2 = new DragObjectTest(this, test.canvas);
+            makeObjectDraggable(test2);
         }
 
         test();

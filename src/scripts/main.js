@@ -74,14 +74,20 @@ function makeObjectDraggable(object) {
         return mouse;
     }
 
+    const c = object.element.getContext("2d");
+
+    function getBrush() {
+        const index = parseInt(toggleStates.get("drawings/brush"), 10);
+        return brushes[index-1].canvas;
+    }
+
     function pointerdownDraw(event) {
         killEvent(event);
         const mouse = mouseEventToSceneTransform(event);
         const pixel = object.transform.inverse().multiply(mouse);
         const [x, y] = [pixel.e, pixel.f];
 
-        const c = object.element.getContext("2d");
-        c.drawImage(brushes[3].canvas, x|0, y|0);
+        c.drawImage(getBrush(), x|0, y|0);
         draw = [x, y];
     }
 
@@ -92,8 +98,7 @@ function makeObjectDraggable(object) {
         const [x0, y0] = draw;
         const [x1, y1] = [pixel.e, pixel.f];
 
-        const c = object.element.getContext("2d");
-        lineplot(x0, y0, x1, y1, (x, y) => c.drawImage(brushes[3].canvas, x, y))
+        lineplot(x0, y0, x1, y1, (x, y) => c.drawImage(getBrush(), x, y))
         draw = [x1, y1];
     }
 
@@ -208,7 +213,7 @@ class DrawingBoardScene {
 
         const test = () => {
             const test = createRendering2D(64, 64);
-            fillRendering2D(test, `rgb(${Math.random() * 255},${Math.random() * 255},${Math.random() * 255})`);
+            //fillRendering2D(test, `rgb(${Math.random() * 255},${Math.random() * 255},${Math.random() * 255})`);
             test.canvas.classList.toggle("object", true);
             this.container.appendChild(test.canvas);
             const test2 = new DragObjectTest(this, test.canvas);

@@ -40,15 +40,23 @@
         h2 drawing tools
         .tool-row
             button(data-tab-toggle="drawings/tool/move")
-                img#draw-tool-move(src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAFZJREFUOI21kkEOACAIwxj//7NejNEE5tDYIxYQxewnbcAcsORNBEI3DGZdsyIpygiudGaOZwdqEVSTVwDAz5pI9GBKbN6g8kWye72JlUV6XmWKMsIzHel3W8445fUQAAAAAElFTkSuQmCC")
+                img(src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAFZJREFUOI21kkEOACAIwxj//7NejNEE5tDYIxYQxewnbcAcsORNBEI3DGZdsyIpygiudGaOZwdqEVSTVwDAz5pI9GBKbN6g8kWye72JlUV6XmWKMsIzHel3W8445fUQAAAAAElFTkSuQmCC")
             button(data-tab-toggle="drawings/tool/free")
-                img#draw-tool-freehand(src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAYUlEQVQ4jb2RUQ7AIAhDi/e/c/fDjHMI1Szrn4b3agT4MyQ539kJbGadkwRhs0tKQQSPklRQwekLFHgpUOFQsAO/BLvwQ3ACA0C74WVDsamWDVdwDz3jWQLhfzADcvMXuQC15zwLU3quDgAAAABJRU5ErkJggg==")
+                img(src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAYUlEQVQ4jb2RUQ7AIAhDi/e/c/fDjHMI1Szrn4b3agT4MyQ539kJbGadkwRhs0tKQQSPklRQwekLFHgpUOFQsAO/BLvwQ3ACA0C74WVDsamWDVdwDz3jWQLhfzADcvMXuQC15zwLU3quDgAAAABJRU5ErkJggg==")
             button(data-tab-toggle="drawings/tool/line")
-                img#draw-tool-line(src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAQElEQVQ4jWNgoBAwkqrh/////+GaGRkZmciylZERbjFZBiC7gj4aRzUPds2M6JqQUxkxAJ4SSdWIYQBF/qYEAAB/ei/rTsuX6AAAAABJRU5ErkJggg==")
+                img(src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAQElEQVQ4jWNgoBAwkqrh/////+GaGRkZmciylZERbjFZBiC7gj4aRzUPds2M6JqQUxkxAJ4SSdWIYQBF/qYEAAB/ei/rTsuX6AAAAABJRU5ErkJggg==")
             button(data-tab-toggle="drawings/tool/fill")
-                img#draw-tool-fill(src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAXUlEQVQ4jcWOQRKAUAhC4d//zrZyxqiUappY4gMBvlRExOvwoxIN3Sq5gq2SCWrv7kzlmCZJOiXJkSQALOerhusSu0A/p1Z3nMIH1Xmp6ivXlnRw9U4n7YBp9u/aAKUMc8GnWuIfAAAAAElFTkSuQmCC")
+                img(src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAXUlEQVQ4jcWOQRKAUAhC4d//zrZyxqiUappY4gMBvlRExOvwoxIN3Sq5gq2SCWrv7kzlmCZJOiXJkSQALOerhusSu0A/p1Z3nMIH1Xmp6ivXlnRw9U4n7YBp9u/aAKUMc8GnWuIfAAAAAElFTkSuQmCC")
         h3 brush
-        input(type="range")
+        .tool-row#brushes-container
+            button(data-tab-toggle="drawings/brush/1")
+                img(src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAABlJREFUOI1jYBgFwx38/////0C7YRQMDQAApd4D/cefQokAAAAASUVORK5CYII=")
+            button(data-tab-toggle="drawings/brush/2")
+                img(src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAABpJREFUOI1jYBgFwx38hwJ8apjo5ZhRMKgBADvbB/vPRl6wAAAAAElFTkSuQmCC")
+            button(data-tab-toggle="drawings/brush/3")
+                img(src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAACNJREFUOI1jYBgFgxz8////PyE1jMRoZmRkxKmOYheMgmEBAARbC/qDr1pMAAAAAElFTkSuQmCC")
+            button(data-tab-toggle="drawings/brush/4")
+                img(src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAChJREFUOI1jYBgFgxz8hwJ8ahjxaUZRyMiIVS0TeW4jEhDjhVEwGAAAJhAT9IYiYRoAAAAASUVORK5CYII=")
         h3 color
     .section(data-tab-body="drawings/mode/palette")
         h2 edit palette

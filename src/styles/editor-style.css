@@ -222,6 +222,10 @@ a {
     justify-content: center;
 }
 
+#sidebar .palette-grid > button.erase-color > div {
+    background: var(--trans-gradient);
+}
+
 #sidebar .tool-row {
     display: flex; flex-direction: row; 
     gap: .5em;

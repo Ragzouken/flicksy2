@@ -75,10 +75,13 @@ function makeObjectDraggable(object) {
     }
 
     const c = object.element.getContext("2d");
-
-    function getBrush() {
+    let plot = undefined;
+    function makePlot() {
+        c.globalCompositeOperation = toggleStates.get("drawings/palette") === "0" ? "destination-out" : "source-over";
         const index = parseInt(toggleStates.get("drawings/brush"), 10);
-        return brushes[index-1].canvas;
+        const brush = brushes[index-1].canvas;
+        const [ox, oy] = [brush.width / 2, brush.height / 2];
+        return (x, y) => c.drawImage(brush, x-ox, y-oy);
     }
 
     function pointerdownDraw(event) {
@@ -87,7 +90,8 @@ function makeObjectDraggable(object) {
         const pixel = object.transform.inverse().multiply(mouse);
         const [x, y] = [pixel.e, pixel.f];
 
-        c.drawImage(getBrush(), x|0, y|0);
+        plot = makePlot();
+        plot(x|0, y|0);
         draw = [x, y];
     }
 
@@ -98,7 +102,7 @@ function makeObjectDraggable(object) {
         const [x0, y0] = draw;
         const [x1, y1] = [pixel.e, pixel.f];
 
-        lineplot(x0, y0, x1, y1, (x, y) => c.drawImage(getBrush(), x, y))
+        lineplot(x0, y0, x1, y1, makePlot());
         draw = [x1, y1];
     }
 

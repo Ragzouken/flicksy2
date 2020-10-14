@@ -32,6 +32,7 @@
  * @typedef {Object} FlicksyDataProjectDetails
  * @property {string} id
  * @property {string} name
+ * @property {string[]} palette
  */
 
 /**
@@ -45,7 +46,25 @@
 const TEST_PROJECT_DATA = {
     details: {
         id: "QQWoA9EmJUNE8Kv0pSBvC",
-        name: "test project"
+        name: "test project",
+        palette: [
+            "#00000000",
+            "#FFFF00",
+            "#FF6600",
+            "#DD0000",
+            "#FF0099",
+            "#330099",
+            "#0000CC",
+            "#0099FF",
+            "#00AA00",
+            "#006600",
+            "#663300",
+            "#996633",
+            "#BBBBBB",
+            "#888888",
+            "#444444",
+            "#000000"
+        ]
     },
     drawings: [
         {

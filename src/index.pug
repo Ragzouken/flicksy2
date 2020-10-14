@@ -10,13 +10,13 @@ html
             include styles/editor-style.css
         // scripts
         script
+            include scripts/flicksy.js
+        script
             include scripts/blitsy.js
         script
             include scripts/utility.js
         script
             include scripts/main.js
-        script
-            include scripts/flicksy.js
     body(onload="editor.start()")
         #sidebar
             #menu-buttons.button-bag

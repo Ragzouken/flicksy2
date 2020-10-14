@@ -11,25 +11,6 @@ const icons = {
     fill: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAXUlEQVQ4jcWOQRKAUAhC4d//zrZyxqiUappY4gMBvlRExOvwoxIN3Sq5gq2SCWrv7kzlmCZJOiXJkSQALOerhusSu0A/p1Z3nMIH1Xmp6ivXlnRw9U4n7YBp9u/aAKUMc8GnWuIfAAAAAElFTkSuQmCC",
 }
 
-const colors = [
-    "#00000000",
-    "#e7c5dd",
-    "#d7efbe",
-    "#6e6435",
-    "#92805d",
-    "#675122",
-    "#2b4550",
-    "#742f5e",
-    "#283158",
-    "#303d4f",
-    "#1c2531",
-    "#ca68bd",
-    "#6dd0c7",
-    "#c3b583",
-    "#997a5c",
-    "#a6d283",
-];
-
 /**
  * @param {string} path 
  * @returns {[string, string]}
@@ -42,10 +23,29 @@ function pathToRootLeaf(path) {
 }
 
 const toggleStates = new Map();
+const actionSubs = new Map();
+
+function subAction(action, callback) {
+    const subs = actionSubs.get(action) || [];
+    actionSubs.set(action, subs);
+    subs.push(callback);
+}
 
 function initui() {
     const toggles = ALL("[data-tab-toggle]");
     const bodies = ALL("[data-tab-body]");
+    const buttons = ALL("[data-action]");
+
+    buttons.forEach((element) => {
+        const action = element.getAttribute("data-action");
+
+        element.addEventListener("click", (event) => {
+            killEvent(event);
+            
+            const subs = actionSubs.get(action) || [];
+            subs.forEach((callback) => callback());
+        });
+    })
 
     function setGroupActiveTab(group, tab) {
         toggleStates.set(group, tab);
@@ -81,9 +81,20 @@ function snap(transform) {
 }
 
 /**
- * @param {DragObjectTest} object 
+ * @param {FlicksyDataDrawing} drawing
  */
-function makeObjectDraggable(object) {
+async function initDrawingInEditor(drawing) {
+    const image = await loadImage(drawing.data);
+    const rendering = imageToRendering2D(image);
+    
+    rendering.canvas.classList.toggle("object", true);
+    editor.scene.container.appendChild(rendering.canvas);
+    const object = new DragObjectTest(editor.scene, rendering.canvas);
+
+    object.transform.e = drawing.position.x;
+    object.transform.f = drawing.position.y;
+    object.refresh();
+
     let grab = undefined;
     let draw = undefined;
     let line = undefined;
@@ -94,23 +105,22 @@ function makeObjectDraggable(object) {
         return mouse;
     }
 
-    const isErasing = () => toggleStates.get("drawings/palette") === "0";
-    const getColor = () => colors[parseInt(toggleStates.get("drawings/palette"), 10)];
-
-    const c = object.element.getContext("2d");
-    let plot = undefined;
-    function makePlot() {
-        c.globalCompositeOperation = isErasing() ? "destination-out" : "source-over";
-        const index = parseInt(toggleStates.get("drawings/brush"), 10);
-        const brush = recolorMask(brushes[index-1], isErasing() ? "white" : getColor()).canvas;
-        const [ox, oy] = [brush.width / 2, brush.height / 2];
-        return (x, y) => c.drawImage(brush, x-ox, y-oy);
-    }
-
     function mouseEventToPixel(event) {
         const mouse = mouseEventToSceneTransform(event);
         const pixel = object.transform.inverse().multiply(mouse);
         return [pixel.e, pixel.f];
+    }
+
+    const isErasing = () => toggleStates.get("drawings/palette") === "0";
+    const getColor = () => editor.projectData.details.palette[parseInt(toggleStates.get("drawings/palette"), 10)];
+
+    let plot = undefined;
+    function makePlot() {
+        rendering.globalCompositeOperation = isErasing() ? "destination-out" : "source-over";
+        const index = parseInt(toggleStates.get("drawings/brush"), 10);
+        const brush = recolorMask(brushes[index-1], isErasing() ? "white" : getColor()).canvas;
+        const [ox, oy] = [brush.width / 2, brush.height / 2];
+        return (x, y) => rendering.drawImage(brush, x-ox, y-oy);
     }
 
     function pointerdownDraw(event) {
@@ -134,7 +144,7 @@ function makeObjectDraggable(object) {
     function pointerdownFill(event) {
         killEvent(event);
         const [x, y] = mouseEventToPixel(event);
-        floodfill(c, x|0, y|0, isErasing() ? 0 : hexToNumber(getColor()));
+        floodfill(rendering, x|0, y|0, isErasing() ? 0 : hexToNumber(getColor()));
     }
 
     function pointerdownLine(event) {
@@ -168,6 +178,9 @@ function makeObjectDraggable(object) {
         object.transform = mouse.multiply(grab);
         snap(object.transform);
         object.refresh();
+
+        drawing.position.x = object.transform.e;
+        drawing.position.y = object.transform.f;
     }
 
     object.element.addEventListener("pointerdown", (event) => {
@@ -263,19 +276,6 @@ class DrawingBoardScene {
             );
             this.refresh();
         });
-
-        const test = () => {
-            const test = createRendering2D(64, 64);
-            //fillRendering2D(test, `rgb(${Math.random() * 255},${Math.random() * 255},${Math.random() * 255})`);
-            test.canvas.classList.toggle("object", true);
-            this.container.appendChild(test.canvas);
-            const test2 = new DragObjectTest(this, test.canvas);
-            makeObjectDraggable(test2);
-        }
-
-        test();
-        test();
-        test();
     }
 
     refresh() {
@@ -290,19 +290,47 @@ class DrawingBoardScene {
     }
 }
 
+function setPaletteColors(colors) {
+    ALL("#draw-color-palette div").forEach((element, i) => {
+        if (i === 0) return;
+        element.style.setProperty("background", colors[i])
+    });
+}
+
 class FlicksyEditor {
+    constructor() {
+        this.projectData = TEST_PROJECT_DATA;
+    }
+
     async start() {
         initui();
 
-        ALL("#draw-color-palette div").forEach((element, i) => {
-            if (i === 0) return;
-            element.style.setProperty("background", colors[i])
+        this.scene = new DrawingBoardScene();
+        this.scene.transform.translateSelf(100, 50);
+        this.scene.transform.scaleSelf(4, 4);
+        this.scene.refresh();
+
+        this.refresh();
+
+        subAction("drawings/add/blank", () => {
+            const drawing = {
+                id: nanoid(),
+                name: "unnamed drawing",
+                position: { x: 0, y: 0 },
+                data: createRendering2D(64, 64).canvas.toDataURL(),
+            };
+            this.projectData.drawings.push(drawing);
+            initDrawingInEditor(drawing);
         });
 
-        const scene = new DrawingBoardScene();
-        scene.transform.translateSelf(100, 50);
-        scene.transform.scaleSelf(4, 4);
-        scene.refresh();
+        await initDrawingInEditor(this.projectData.drawings[0]);
+    }
+
+    refresh() {
+        ALL("#draw-color-palette div").forEach((element, i) => {
+            if (i === 0) return;
+            element.style.setProperty("background", this.projectData.details.palette[i]);
+        });
     }
 }
 

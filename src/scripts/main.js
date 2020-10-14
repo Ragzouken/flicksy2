@@ -44,8 +44,8 @@ function pathToRootLeaf(path) {
 const toggleStates = new Map();
 
 function initui() {
-    const toggles = Array.from(document.querySelectorAll("[data-tab-toggle]"));
-    const bodies = Array.from(document.querySelectorAll("[data-tab-body]"));
+    const toggles = ALL("[data-tab-toggle]");
+    const bodies = ALL("[data-tab-body]");
 
     function setGroupActiveTab(group, tab) {
         toggleStates.set(group, tab);
@@ -293,6 +293,11 @@ class DrawingBoardScene {
 class FlicksyEditor {
     async start() {
         initui();
+
+        ALL("#draw-color-palette div").forEach((element, i) => {
+            if (i === 0) return;
+            element.style.setProperty("background", colors[i])
+        });
 
         const scene = new DrawingBoardScene();
         scene.transform.translateSelf(100, 50);

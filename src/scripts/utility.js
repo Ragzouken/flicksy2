@@ -1,3 +1,18 @@
+'use strict'
+
+/**
+ * @param {string} query 
+ * @param {HTMLElement | Document} element 
+ * @returns {HTMLElement}
+ */
+const ONE = (query, element = undefined) => (element || document).querySelector(query);
+/**
+ * @param {string} query 
+ * @param {HTMLElement | Document} element 
+ * @returns {HTMLElement[]}
+ */
+const ALL = (query, element = undefined) => Array.from((element || document).querySelectorAll(query));
+
 /**
  * @param {HTMLElement} element 
  */

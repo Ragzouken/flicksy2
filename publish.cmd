@@ -1,2 +1,2 @@
 call build
-neocities upload -d rem target-folder .\dist\index.html
+neocities upload -d flicksy2 .\dist\index.html

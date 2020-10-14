@@ -323,6 +323,22 @@ class FlicksyEditor {
             initDrawingInEditor(drawing);
         });
 
+        subAction("drawings/add/import", () => {
+            const fileInput = html("input", { type: "file", accept: "image/*", multiple: "true" });
+            fileInput.addEventListener("change", async (event) => {
+                const datas = await Promise.all(Array.from(fileInput.files).map(dataURLFromFile));
+                const drawings = datas.map((data) => ({
+                    id: nanoid(),
+                    name: "unnamed drawing",
+                    position: { x: 0, y: 0 },
+                    data,
+                }));
+                this.projectData.drawings.push(...drawings);
+                await Promise.all(drawings.map(initDrawingInEditor));
+            });
+            fileInput.click();
+        });
+
         await initDrawingInEditor(this.projectData.drawings[0]);
     }
 

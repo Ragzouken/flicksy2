@@ -11,6 +11,25 @@ const icons = {
     fill: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAXUlEQVQ4jcWOQRKAUAhC4d//zrZyxqiUappY4gMBvlRExOvwoxIN3Sq5gq2SCWrv7kzlmCZJOiXJkSQALOerhusSu0A/p1Z3nMIH1Xmp6ivXlnRw9U4n7YBp9u/aAKUMc8GnWuIfAAAAAElFTkSuQmCC",
 }
 
+const colors = [
+    "#00000000",
+    "#e7c5dd",
+    "#d7efbe",
+    "#6e6435",
+    "#92805d",
+    "#675122",
+    "#2b4550",
+    "#742f5e",
+    "#283158",
+    "#303d4f",
+    "#1c2531",
+    "#ca68bd",
+    "#6dd0c7",
+    "#c3b583",
+    "#997a5c",
+    "#a6d283",
+];
+
 /**
  * @param {string} path 
  * @returns {[string, string]}
@@ -67,6 +86,7 @@ function snap(transform) {
 function makeObjectDraggable(object) {
     let grab = undefined;
     let draw = undefined;
+    let line = undefined;
 
     function mouseEventToSceneTransform(event) {
         const mouse = object.scene.mouseEventToViewportTransform(event);
@@ -74,21 +94,28 @@ function makeObjectDraggable(object) {
         return mouse;
     }
 
+    const isErasing = () => toggleStates.get("drawings/palette") === "0";
+    const getColor = () => colors[parseInt(toggleStates.get("drawings/palette"), 10)];
+
     const c = object.element.getContext("2d");
     let plot = undefined;
     function makePlot() {
-        c.globalCompositeOperation = toggleStates.get("drawings/palette") === "0" ? "destination-out" : "source-over";
+        c.globalCompositeOperation = isErasing() ? "destination-out" : "source-over";
         const index = parseInt(toggleStates.get("drawings/brush"), 10);
-        const brush = brushes[index-1].canvas;
+        const brush = recolorMask(brushes[index-1], isErasing() ? "white" : getColor()).canvas;
         const [ox, oy] = [brush.width / 2, brush.height / 2];
         return (x, y) => c.drawImage(brush, x-ox, y-oy);
     }
 
-    function pointerdownDraw(event) {
-        killEvent(event);
+    function mouseEventToPixel(event) {
         const mouse = mouseEventToSceneTransform(event);
         const pixel = object.transform.inverse().multiply(mouse);
-        const [x, y] = [pixel.e, pixel.f];
+        return [pixel.e, pixel.f];
+    }
+
+    function pointerdownDraw(event) {
+        killEvent(event);
+        const [x, y] = mouseEventToPixel(event);
 
         plot = makePlot();
         plot(x|0, y|0);
@@ -97,13 +124,28 @@ function makeObjectDraggable(object) {
 
     function pointermoveDraw(event) {
         killEvent(event);
-        const mouse = mouseEventToSceneTransform(event);
-        const pixel = object.transform.inverse().multiply(mouse);
+        const [x1, y1] = mouseEventToPixel(event);
         const [x0, y0] = draw;
-        const [x1, y1] = [pixel.e, pixel.f];
 
         lineplot(x0, y0, x1, y1, makePlot());
         draw = [x1, y1];
+    }
+
+    function pointerdownFill(event) {
+        killEvent(event);
+        const [x, y] = mouseEventToPixel(event);
+        floodfill(c, x|0, y|0, isErasing() ? 0 : hexToNumber(getColor()));
+    }
+
+    function pointerdownLine(event) {
+        killEvent(event);
+        line = mouseEventToPixel(event);
+    }
+
+    function pointerupLine(event) {
+        const [x0, y0] = line;
+        const [x1, y1] = mouseEventToPixel(event);
+        lineplot(x0, y0, x1, y1, makePlot());
     }
 
     function pointerdownDrag(event) {
@@ -132,9 +174,13 @@ function makeObjectDraggable(object) {
         const drag = toggleStates.get("drawings/mode") === "select"
                   || (toggleStates.get("drawings/mode") === "draw" && toggleStates.get("drawings/tool") === "move");
         const free = toggleStates.get("drawings/mode") === "draw" && toggleStates.get("drawings/tool") === "free";
+        const fill = toggleStates.get("drawings/mode") === "draw" && toggleStates.get("drawings/tool") === "fill";
+        const line = toggleStates.get("drawings/mode") === "draw" && toggleStates.get("drawings/tool") === "line";
 
         if (drag) pointerdownDrag(event);
         if (free) pointerdownDraw(event);
+        if (fill) pointerdownFill(event);
+        if (line) pointerdownLine(event);
     });
 
     document.addEventListener("pointermove", (event) => {
@@ -145,8 +191,11 @@ function makeObjectDraggable(object) {
     document.addEventListener("pointerup", (event) => {
         killEvent(event);
 
+        if (line) pointerupLine(event);
+
         draw = undefined;
         grab = undefined;
+        line = undefined;
         document.body.style.removeProperty("cursor");
         object.element.style.setProperty("cursor", "grab");
     });

@@ -7,16 +7,16 @@
             li click the <em>draw</em> button to enter the drawing mode
             li pick a brush size and colour to draw in
             li click and drag on a drawing to draw on it
-    .section
-        h2 drawing board
-        h3 add drawing
-        .button-bag
-            button(data-action="drawings/add/blank") add blank
-            button(data-action="drawings/add/import") import file
     .button-row
+        button(data-tab-toggle="drawings/mode/add") add
         button(data-tab-toggle="drawings/mode/palette") palette
         button(data-tab-toggle="drawings/mode/select") select
         button(data-tab-toggle="drawings/mode/draw") draw
+    .section(data-tab-body="drawings/mode/add")
+        h2 add drawing
+        .button-bag
+            button(data-action="drawings/add/blank") add blank
+            button(data-action="drawings/add/import") import file
     .section(data-tab-body="drawings/mode/select")
         h2 selected drawing
         h3 name

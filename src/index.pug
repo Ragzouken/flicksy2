@@ -26,7 +26,7 @@ html
                 button(data-tab-toggle="sidebar/map") map
                 button(data-tab-toggle="sidebar/publish") publish
                 button play
-                button save
+                button(data-action="sidebar/save") save
             #menu-content
                 include sidebars/project.pug
                 include sidebars/drawings.pug
@@ -35,3 +35,5 @@ html
                 include sidebars/publish.pug
         #content
             #scene
+        script#project-data(type="text/json")
+            include project.json

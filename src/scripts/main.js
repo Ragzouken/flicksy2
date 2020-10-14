@@ -80,12 +80,16 @@ function snap(transform) {
     transform.f = Math.round(transform.f);
 }
 
+/** @type {Map<FlicksyDataDrawing, CanvasRenderingContext2D>} */
+const drawingToContext = new Map();
+
 /**
  * @param {FlicksyDataDrawing} drawing
  */
 async function initDrawingInEditor(drawing) {
     const image = await loadImage(drawing.data);
     const rendering = imageToRendering2D(image);
+    drawingToContext.set(drawing, rendering);
     
     rendering.canvas.classList.toggle("object", true);
     editor.scene.container.appendChild(rendering.canvas);
@@ -297,13 +301,24 @@ function setPaletteColors(colors) {
     });
 }
 
+function drawingFromData(data) {
+    return {
+        id: nanoid(),
+        name: "unnamed",
+        position: { x: 0, y: 0 },
+        data
+    };
+}
+
 class FlicksyEditor {
     constructor() {
-        this.projectData = TEST_PROJECT_DATA;
+        this.projectData = EMPTY_PROJECT_DATA;
     }
 
     async start() {
         initui();
+
+        this.projectData = JSON.parse(ONE("#project-data").innerHTML);
 
         this.scene = new DrawingBoardScene();
         this.scene.transform.translateSelf(100, 50);
@@ -312,34 +327,30 @@ class FlicksyEditor {
 
         this.refresh();
 
+        subAction("sidebar/save", () => {
+            drawingToContext.forEach((rendering, drawing) => drawing.data = rendering.canvas.toDataURL());
+            console.log(JSON.stringify(this.projectData));
+        });
+
         subAction("drawings/add/blank", () => {
-            const drawing = {
-                id: nanoid(),
-                name: "unnamed drawing",
-                position: { x: 0, y: 0 },
-                data: createRendering2D(64, 64).canvas.toDataURL(),
-            };
+            const data = createRendering2D(64, 64).canvas.toDataURL();
+            const drawing = drawingFromData(data);
             this.projectData.drawings.push(drawing);
             initDrawingInEditor(drawing);
         });
 
         subAction("drawings/add/import", () => {
             const fileInput = html("input", { type: "file", accept: "image/*", multiple: "true" });
-            fileInput.addEventListener("change", async (event) => {
+            fileInput.addEventListener("change", async () => {
                 const datas = await Promise.all(Array.from(fileInput.files).map(dataURLFromFile));
-                const drawings = datas.map((data) => ({
-                    id: nanoid(),
-                    name: "unnamed drawing",
-                    position: { x: 0, y: 0 },
-                    data,
-                }));
+                const drawings = datas.map(drawingFromData);
                 this.projectData.drawings.push(...drawings);
                 await Promise.all(drawings.map(initDrawingInEditor));
             });
             fileInput.click();
         });
 
-        await initDrawingInEditor(this.projectData.drawings[0]);
+        await Promise.all(this.projectData.drawings.map(initDrawingInEditor));
     }
 
     refresh() {

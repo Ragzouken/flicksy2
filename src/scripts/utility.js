@@ -74,27 +74,6 @@ function html(tagName, attributes = {}, ...children) {
     return element;
 }
 
-/**
- * 
- * @param {HTMLElement} element 
- * @param {(x: number, y: number) => void} callback
- */
-function addPressListener(element, callback) {
-    let held = false;
-    element.addEventListener('pointerdown', (event) => {
-        killEvent(event);
-        const [x, y] = eventToElementPixel(event, element);
-        callback(x, y);
-        held = true;
-    });
-    document.addEventListener('pointermove', (event) => {
-        if (!held) return;
-        const [x, y] = eventToElementPixel(event, element);
-        callback(x, y);
-    });
-    document.addEventListener('pointerup', (event) => held = false);
-}
-
 // from https://github.com/ai/nanoid/blob/master/non-secure/index.js
 const urlAlphabet = 'ModuleSymbhasOwnPr-0123456789ABCDEFGHNRVfgctiUvz_KqYTJkLxpZXIjQW';
 function nanoid(size = 21) {

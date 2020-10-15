@@ -188,8 +188,7 @@ async function initDrawingInEditor(drawing) {
     }
 
     object.element.addEventListener("pointerdown", (event) => {
-        const drag = toggleStates.get("drawings/mode") === "select"
-                  || (toggleStates.get("drawings/mode") === "draw" && toggleStates.get("drawings/tool") === "move");
+        const drag = toggleStates.get("drawings/mode") !== "draw" || toggleStates.get("drawings/tool") === "move";
         const free = toggleStates.get("drawings/mode") === "draw" && toggleStates.get("drawings/tool") === "free";
         const fill = toggleStates.get("drawings/mode") === "draw" && toggleStates.get("drawings/tool") === "fill";
         const line = toggleStates.get("drawings/mode") === "draw" && toggleStates.get("drawings/tool") === "line";
@@ -318,7 +317,8 @@ class FlicksyEditor {
     async start() {
         initui();
 
-        this.projectData = JSON.parse(ONE("#project-data").innerHTML);
+        const json = localStorage.getItem("flicksy/test");
+        this.projectData = JSON.parse(json || ONE("#project-data").innerHTML);
 
         this.scene = new DrawingBoardScene();
         this.scene.transform.translateSelf(100, 50);
@@ -329,7 +329,8 @@ class FlicksyEditor {
 
         subAction("sidebar/save", () => {
             drawingToContext.forEach((rendering, drawing) => drawing.data = rendering.canvas.toDataURL());
-            console.log(JSON.stringify(this.projectData));
+            const json = JSON.stringify(this.projectData);
+            localStorage.setItem("flicksy/test", json);
         });
 
         subAction("drawings/add/blank", () => {

@@ -77,13 +77,9 @@ function html(tagName, attributes = {}, ...children) {
 // from https://github.com/ai/nanoid/blob/master/non-secure/index.js
 const urlAlphabet = 'ModuleSymbhasOwnPr-0123456789ABCDEFGHNRVfgctiUvz_KqYTJkLxpZXIjQW';
 function nanoid(size = 21) {
-    let id = ''
-    // A compact alternative for `for (var i = 0; i < step; i++)`.
-    let i = size
-    while (i--) {
-    // `| 0` is more compact and faster than `Math.floor()`.
-    id += urlAlphabet[(Math.random() * 64) | 0]
-    }
+    let id = '';
+    let i = size;
+    while (i--) id += urlAlphabet[(Math.random() * 64) | 0];
     return id
 }
 
@@ -120,4 +116,11 @@ async function htmlFromText(source) {
     const template = document.createElement('template');
     template.innerHTML = source;
     return template.content;
+}
+
+/**
+ * @param {string} text 
+ */
+function textToBlob(text) {
+    return new Blob([text], { type: "text/plain" });
 }

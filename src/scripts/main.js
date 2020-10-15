@@ -1,3 +1,6 @@
+// until i work out how to make vscode understand...
+//var saveAs = saveAs||function(blob, name, options) {}
+
 const brushes = [
     textToRendering2D("X"),
     textToRendering2D("XX\nXX"),
@@ -327,8 +330,12 @@ class FlicksyEditor {
 
         this.refresh();
 
-        subAction("sidebar/save", () => {
+        function preSave() {
             drawingToContext.forEach((rendering, drawing) => drawing.data = rendering.canvas.toDataURL());
+        }
+
+        subAction("sidebar/save", () => {
+            preSave();
             const json = JSON.stringify(this.projectData);
             localStorage.setItem("flicksy/test", json);
         });
@@ -349,6 +356,11 @@ class FlicksyEditor {
                 await Promise.all(drawings.map(initDrawingInEditor));
             });
             fileInput.click();
+        });
+
+        subAction("publish/export/data", () => {
+            preSave();
+            saveAs(textToBlob(JSON.stringify(this.projectData)), "project.flicksy.json");
         });
 
         await Promise.all(this.projectData.drawings.map(initDrawingInEditor));

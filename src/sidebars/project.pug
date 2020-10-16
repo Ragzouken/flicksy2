@@ -12,11 +12,11 @@
         h2 project details
         h3 name
         .button-row
-            input(type="text")
+            input(type="text" data-path="project/name")
     .section
         h2 switch projects
         h3 reset to blank project
-        button.delete new project
+        button.delete(data-action="project/new") new project
         h3 open another project
         .button-row
             select

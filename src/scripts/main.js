@@ -1,18 +1,9 @@
-// until i work out how to make vscode understand...
-//var saveAs = saveAs||function(blob, name, options) {}
-
 const brushes = [
     textToRendering2D("X"),
     textToRendering2D("XX\nXX"),
     textToRendering2D("_X_\nXXX\n_X_"),
     textToRendering2D("_XX_\nXXXX\nXXXX\n_XX_"),
 ];
-
-const icons = {
-    freehand: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAYUlEQVQ4jb2RUQ7AIAhDi/e/c/fDjHMI1Szrn4b3agT4MyQ539kJbGadkwRhs0tKQQSPklRQwekLFHgpUOFQsAO/BLvwQ3ACA0C74WVDsamWDVdwDz3jWQLhfzADcvMXuQC15zwLU3quDgAAAABJRU5ErkJggg==",
-    line: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAQElEQVQ4jWNgoBAwkqrh/////+GaGRkZmciylZERbjFZBiC7gj4aRzUPds2M6JqQUxkxAJ4SSdWIYQBF/qYEAAB/ei/rTsuX6AAAAABJRU5ErkJggg==",
-    fill: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAXUlEQVQ4jcWOQRKAUAhC4d//zrZyxqiUappY4gMBvlRExOvwoxIN3Sq5gq2SCWrv7kzlmCZJOiXJkSQALOerhusSu0A/p1Z3nMIH1Xmp6ivXlnRw9U4n7YBp9u/aAKUMc8GnWuIfAAAAAElFTkSuQmCC",
-}
 
 /**
  * @param {string} path 
@@ -27,6 +18,7 @@ function pathToRootLeaf(path) {
 
 const toggleStates = new Map();
 const actionSubs = new Map();
+const elementMap = {};
 
 function subAction(action, callback) {
     const subs = actionSubs.get(action) || [];
@@ -38,6 +30,22 @@ function initui() {
     const toggles = ALL("[data-tab-toggle]");
     const bodies = ALL("[data-tab-body]");
     const buttons = ALL("[data-action]");
+    
+    const paths = ALL("[data-path]");
+    paths.forEach((element) => {
+        const path = element.getAttribute("data-path");
+        const parts = path.split("/");
+
+        let root = elementMap;
+        while (parts.length > 1) {
+            const part = parts.shift();
+            const next = root[part] || {};
+            root[part] = next;
+            root = next;
+        }
+        root[parts.shift()] = element;
+    });
+    console.log(elementMap);
 
     buttons.forEach((element) => {
         const action = element.getAttribute("data-action");
@@ -312,23 +320,32 @@ function drawingFromData(data) {
     };
 }
 
+/** @param {FlicksyDataDrawing[]} drawings */
+async function setDrawingBoardDrawings(drawings) {
+    removeAllChildren(editor.scene.container);
+    await Promise.all(drawings.map(initDrawingInEditor));
+}
+
 class FlicksyEditor {
     constructor() {
         this.projectData = EMPTY_PROJECT_DATA;
     }
 
+    async setProjectData(data) {
+        this.projectData = data;
+        this.refresh();
+
+        // reset drawing board
+        await setDrawingBoardDrawings(this.projectData.drawings);
+    }
+
     async start() {
         initui();
-
-        const json = localStorage.getItem("flicksy/test");
-        this.projectData = JSON.parse(json || ONE("#project-data").innerHTML);
 
         this.scene = new DrawingBoardScene();
         this.scene.transform.translateSelf(100, 50);
         this.scene.transform.scaleSelf(4, 4);
         this.scene.refresh();
-
-        this.refresh();
 
         function preSave() {
             drawingToContext.forEach((rendering, drawing) => drawing.data = rendering.canvas.toDataURL());
@@ -363,10 +380,24 @@ class FlicksyEditor {
             saveAs(textToBlob(JSON.stringify(this.projectData)), "project.flicksy.json");
         });
 
-        await Promise.all(this.projectData.drawings.map(initDrawingInEditor));
+        subAction("project/new", () => {
+            const data = JSON.parse(JSON.stringify(EMPTY_PROJECT_DATA));
+            data.details.id = nanoid();
+
+            this.setProjectData(data);
+        });
+
+        const nameInput = /** @type {HTMLInputElement} */ (ONE('[data-path="project/name"]'));
+        nameInput.addEventListener("input", () => this.projectData.details.name = nameInput.value);
+
+        const json = localStorage.getItem("flicksy/test") || ONE("#project-data").innerHTML;
+        const data = JSON.parse(json);
+        await this.setProjectData(data);
     }
 
     refresh() {
+        /** @type {HTMLInputElement} */ (ONE('[data-path="project/name"]')).value = this.projectData.details.name;
+
         ALL("#draw-color-palette div").forEach((element, i) => {
             if (i === 0) return;
             element.style.setProperty("background", this.projectData.details.palette[i]);

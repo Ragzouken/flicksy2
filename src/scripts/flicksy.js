@@ -1,14 +1,15 @@
 /**
- * @typedef {Object} Vector2
+ * @typedef {Object} Vector3
  * @property {number} x
  * @property {number} y
+ * @property {number} z
  */
 
 /**
  * @typedef {Object} FlicksyDataDrawing
  * @property {string} id
  * @property {string} name
- * @property {Vector2} position
+ * @property {Vector3} position
  * @property {string} data
  */
 
@@ -16,7 +17,7 @@
  * @typedef {Object} FlicksyDataObjectData
  * @property {string} id
  * @property {string} name
- * @property {Vector2} position
+ * @property {Vector3} position
  * @property {string} drawing
  */
 
@@ -24,7 +25,7 @@
  * @typedef {Object} FlicksyDataScene
  * @property {string} id
  * @property {string} name
- * @property {Vector2} position
+ * @property {Vector3} position
  * @property {FlicksyDataObjectData[]} objects
  */
 

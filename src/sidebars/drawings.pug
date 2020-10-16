@@ -8,34 +8,34 @@
             li pick a brush size and colour to draw in
             li click and drag on a drawing to draw on it
     .button-row
-        button(data-tab-toggle="drawings/mode/add") add
         button(data-tab-toggle="drawings/mode/palette") palette
         button(data-tab-toggle="drawings/mode/select") select
         button(data-tab-toggle="drawings/mode/draw") draw
-    .section(data-tab-body="drawings/mode/add")
-        h2 add drawing
-        .button-bag
-            button(data-action="drawings/add/blank") add blank
-            button(data-action="drawings/add/import") import file
-    .section(data-tab-body="drawings/mode/select")
-        h2 selected drawing
-        h3 name
-        .button-row
-            input(type="text")
-            button.delete delete
-        h3 layering
-        .button-row
-            button raise
-            button lower
-        h3 size
-        .button-row
-            input(type="text")
-            input(type="text")
-            button resize
-        h3 other
-        .button-row
-            button duplicate
-            button export
+    .container(data-tab-body="drawings/mode/select")
+        .section(hidden data-path="drawings/mode/selected")
+            h2 selected drawing
+            h3 name
+            .button-row
+                input(type="text" data-path="drawings/select/name")
+            h3 layering
+            .button-row
+                button(data-action="drawings/select/raise") raise
+                button(data-action="drawings/select/lower") lower
+            h3 size
+            .button-row
+                input(type="text" data-path="drawings/select/width")
+                input(type="text" data-path="drawings/select/height")
+                button(data-path="drawings/select/resize" data-action="drawings/select/resize") resize
+            h3 other
+            .button-row
+                button(data-action="drawings/select/duplicate") duplicate
+                button(data-action="drawings/select/export") export
+                button.delete(data-action="drawings/select/delete") delete
+        .section
+            h2 add drawing
+            .button-bag
+                button(data-action="drawings/add/blank") add blank
+                button(data-action="drawings/add/import") import file
     .section(data-tab-body="drawings/mode/draw")
         h2 drawing tools
         .tool-row

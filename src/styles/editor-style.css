@@ -62,12 +62,16 @@ body {
 #scene {
     position: absolute; transform-origin: 0 0;
     width: 128px; height: 128px;
-    outline: 1px dashed white;
+    outline: 1px dotted white;
 }
 
 #scene .object {
     position: absolute; transform-origin: 0 0;
-    outline: 1px dashed rgb(128 128 128 / 50%);
+    outline: 1px dotted rgb(128 128 128 / 50%);
+}
+
+#scene .object.selected {
+    outline: 1px dotted red;
 }
 
 #sidebar {
@@ -141,6 +145,11 @@ textarea {
 }
 
 .sidebar-panel { 
+    display: flex; flex-direction: column;
+    padding: 0; gap: 1em;
+}
+
+.sidebar-panel > .container { 
     display: flex; flex-direction: column;
     padding: 0; gap: 1em;
 }

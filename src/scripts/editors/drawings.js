@@ -118,6 +118,13 @@ class DrawingsTabEditor {
             });
             fileInput.click();
         });
+
+        this.cursor = createRendering2D(16, 16);
+        this.cursor.canvas.style.setProperty("pointer-events", "none");
+        this.cursor.canvas.style.setProperty("position", "absolute");
+        this.cursor.canvas.style.setProperty("z-index", "99999999");
+        this.cursor.canvas.hidden = true;
+        fillRendering2D(this.cursor, "magenta");
     }
 
     /** @param {FlicksyDataDrawing} drawing */
@@ -173,6 +180,9 @@ async function initDrawingInEditor(drawing) {
     let grab = undefined;
     let draw = undefined;
     let line = undefined;
+    let hovered = undefined;
+    
+    const cursor = editor.drawingsTabEditor.cursor
 
     function mouseEventToSceneTransform(event) {
         const mouse = object.scene.mouseEventToViewportTransform(event);
@@ -196,6 +206,13 @@ async function initDrawingInEditor(drawing) {
         const brush = recolorMask(brushes[index-1], isErasing() ? "white" : getColor()).canvas;
         const [ox, oy] = [brush.width / 2, brush.height / 2];
         return (x, y) => rendering.drawImage(brush, x-ox, y-oy);
+    }
+
+    function makePlotCursor() {
+        const index = parseInt(toggleStates.get("drawings/brush"), 10);
+        const brush = recolorMask(brushes[index-1], isErasing() ? "white" : getColor()).canvas;
+        const [ox, oy] = [brush.width / 2, brush.height / 2];
+        return (x, y) => cursor.drawImage(brush, x-ox, y-oy);
     }
 
     function pointerdownDraw(event) {
@@ -272,9 +289,34 @@ async function initDrawingInEditor(drawing) {
         if (line) pointerdownLine(event);
     });
 
+    object.element.addEventListener("pointerenter", (event) => {
+        killEvent(event);
+
+        hovered = true;
+        cursor.canvas.hidden = false;
+        cursor.canvas.style.setProperty("transform", object.element.style.getPropertyValue("transform"));
+        cursor.canvas.width = rendering.canvas.width;
+        cursor.canvas.height = rendering.canvas.height;
+    });
+
+    object.element.addEventListener("pointerout", (event) => {
+        killEvent(event);
+
+        if (hovered) {
+            hovered = false;
+            cursor.canvas.hidden = true;
+        }
+    });
+
     document.addEventListener("pointermove", (event) => {
         if (grab) pointermoveDrag(event);
         if (draw) pointermoveDraw(event);
+
+        if (hovered) {
+            const [x, y] = mouseEventToPixel(event);
+            fillRendering2D(cursor);
+            makePlotCursor()(x|0, y|0);
+        }
     });
     
     document.addEventListener("pointerup", (event) => {
@@ -286,7 +328,9 @@ async function initDrawingInEditor(drawing) {
         grab = undefined;
         line = undefined;
         document.body.style.removeProperty("cursor");
-        object.element.style.setProperty("cursor", "grab");
+        
+        const cursor = toggleStates.get("drawings/mode") === "draw" ? "crosshair" : "grab";
+        object.element.style.setProperty("cursor", cursor);
     });
 }
 
@@ -385,6 +429,7 @@ function drawingFromData(data) {
 /** @param {FlicksyDataDrawing[]} drawings */
 async function setDrawingBoardDrawings(drawings) {
     removeAllChildren(editor.scene.container);
+    editor.scene.container.appendChild(editor.drawingsTabEditor.cursor.canvas);
     await Promise.all(drawings.map(initDrawingInEditor));
 }
 

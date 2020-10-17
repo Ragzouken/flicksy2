@@ -29,12 +29,12 @@ html
             .section
                 h2 non-functional wip
             #menu-buttons.button-bag
-                button(data-tab-toggle="sidebar/project") project
+                button(data-tab-toggle="sidebar/project" disabled) project
                 button(data-tab-toggle="sidebar/drawings" data-tab-default) drawings
-                button(data-tab-toggle="sidebar/scene") scene
-                button(data-tab-toggle="sidebar/map") map
-                button(data-tab-toggle="sidebar/publish") publish
-                button play
+                button(data-tab-toggle="sidebar/scene" disabled) scene
+                button(data-tab-toggle="sidebar/map" disabled) map
+                button(data-tab-toggle="sidebar/publish" disabled) publish
+                button(disabled) play
                 button(data-action="sidebar/save") save
             #menu-content
                 include sidebars/project.pug

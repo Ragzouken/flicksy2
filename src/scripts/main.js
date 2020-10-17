@@ -115,13 +115,13 @@ class FlicksyEditor {
     async start() {
         initui();
 
-        this.drawingsTabEditor = new DrawingsTabEditor(this);
-
         this.scene = new DrawingBoardScene();
         this.scene.transform.translateSelf(100, 50);
         this.scene.transform.scaleSelf(4, 4);
         this.scene.refresh();
 
+        this.drawingsTabEditor = new DrawingsTabEditor(this);
+        
         function preSave() {
             drawingToContext.forEach((rendering, drawing) => drawing.data = rendering.canvas.toDataURL());
         }

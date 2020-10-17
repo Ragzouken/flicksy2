@@ -17,7 +17,7 @@ function pathToRootLeaf(path) {
 }
 
 const toggleStates = new Map();
-const actionSubs = new Map();
+const actionHandlers = new Map();
 const elementMap = {};
 const pathToElement = new Map();
 
@@ -37,10 +37,8 @@ function elementByPath(path, tagName) {
     return element;
 }
 
-function subAction(action, callback) {
-    const subs = actionSubs.get(action) || [];
-    actionSubs.set(action, subs);
-    subs.push(callback);
+function setActionHandler(action, callback) {
+    actionHandlers.set(action, callback);
 }
 
 function initui() {
@@ -70,9 +68,8 @@ function initui() {
 
         element.addEventListener("click", (event) => {
             killEvent(event);
-            
-            const subs = actionSubs.get(action) || [];
-            subs.forEach((callback) => callback());
+            const handler = actionHandlers.get(action);
+            if (handler) handler();
         });
     })
 
@@ -128,36 +125,18 @@ class FlicksyEditor {
             drawingToContext.forEach((rendering, drawing) => drawing.data = rendering.canvas.toDataURL());
         }
 
-        subAction("sidebar/save", () => {
+        setActionHandler("sidebar/save", () => {
             preSave();
             const json = JSON.stringify(this.projectData);
             localStorage.setItem("flicksy/test", json);
         });
 
-        subAction("drawings/add/blank", () => {
-            const data = createRendering2D(64, 64).canvas.toDataURL();
-            const drawing = drawingFromData(data);
-            this.projectData.drawings.push(drawing);
-            initDrawingInEditor(drawing);
-        });
-
-        subAction("drawings/add/import", () => {
-            const fileInput = html("input", { type: "file", accept: "image/*", multiple: "true" });
-            fileInput.addEventListener("change", async () => {
-                const datas = await Promise.all(Array.from(fileInput.files).map(dataURLFromFile));
-                const drawings = datas.map(drawingFromData);
-                this.projectData.drawings.push(...drawings);
-                await Promise.all(drawings.map(initDrawingInEditor));
-            });
-            fileInput.click();
-        });
-
-        subAction("publish/export/data", () => {
+        setActionHandler("publish/export/data", () => {
             preSave();
             saveAs(textToBlob(JSON.stringify(this.projectData)), "project.flicksy.json");
         });
 
-        subAction("project/new", () => {
+        setActionHandler("project/new", () => {
             const data = JSON.parse(JSON.stringify(EMPTY_PROJECT_DATA));
             data.details.id = nanoid();
 

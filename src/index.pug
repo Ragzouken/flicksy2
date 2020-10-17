@@ -11,6 +11,8 @@ html
         // third party libraries
         script
             include library/FileSaver.min.js
+        script
+            include library/color-diff.min.js
         // scripts
         script
             include scripts/editors/drawings.js
@@ -24,6 +26,8 @@ html
             include scripts/main.js
     body(onload="editor.start()")
         #sidebar
+            .section
+                h2 non-functional wip
             #menu-buttons.button-bag
                 button(data-tab-toggle="sidebar/project") project
                 button(data-tab-toggle="sidebar/drawings") drawings

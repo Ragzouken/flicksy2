@@ -24,27 +24,27 @@ class DrawingsTabEditor {
         this.widthInput.addEventListener("input", refreshResize);
         this.heightInput.addEventListener("input", refreshResize);
 
-        subAction("drawings/select/resize", () => {
+        setActionHandler("drawings/select/resize", () => {
             const width = parseInt(this.widthInput.value, 10);
             const height = parseInt(this.heightInput.value, 10);
             resizeRendering2D(drawingToContext.get(this.selectedDrawing), width, height);
         });
 
-        subAction("drawings/select/raise", () => {
+        setActionHandler("drawings/select/raise", () => {
             if (!this.selectedDrawing) return;
             const canvas = drawingToContext.get(this.selectedDrawing).canvas;
             this.selectedDrawing.position.z += 1;
             canvas.style.setProperty("z-index", this.selectedDrawing.position.z.toString());
         });
 
-        subAction("drawings/select/lower", () => {
+        setActionHandler("drawings/select/lower", () => {
             if (!this.selectedDrawing) return;
             const canvas = drawingToContext.get(this.selectedDrawing).canvas;
             this.selectedDrawing.position.z -= 1;
             canvas.style.setProperty("z-index", this.selectedDrawing.position.z.toString());
         });
 
-        subAction("drawings/select/duplicate", async () => {
+        setActionHandler("drawings/select/duplicate", async () => {
             const original = this.selectedDrawing;
             const { x, y, z } = original.position;
             const copy = {
@@ -59,12 +59,12 @@ class DrawingsTabEditor {
             this.setSelectedDrawing(copy);
         });
 
-        subAction("drawings/select/export", () => {
+        setActionHandler("drawings/select/export", () => {
             const canvas = drawingToContext.get(this.selectedDrawing).canvas;
             canvas.toBlob((blob) => saveAs(blob, this.selectedDrawing.name + ".png"));
         });
 
-        subAction("drawings/select/delete", () => {
+        setActionHandler("drawings/select/delete", () => {
             const canvas = drawingToContext.get(this.selectedDrawing).canvas;
             canvas.remove();
 
@@ -72,6 +72,50 @@ class DrawingsTabEditor {
             this.flicksyEditor.projectData.drawings.splice(index);
 
             this.setSelectedDrawing(undefined);
+        });
+
+        setActionHandler("drawings/add/blank", async () => {
+            const data = createRendering2D(64, 64).canvas.toDataURL();
+            const drawing = drawingFromData(data);
+            this.flicksyEditor.projectData.drawings.push(drawing);
+            await initDrawingInEditor(drawing);
+
+            this.setSelectedDrawing(drawing);
+        });
+
+        setActionHandler("drawings/add/import", () => {
+            const fileInput = html("input", { type: "file", accept: "image/*", multiple: "true" });
+            fileInput.addEventListener("change", async () => {
+                const datas = await Promise.all(Array.from(fileInput.files).map(dataURLFromFile));
+                fileInput.value = "";
+                const drawings = datas.map(drawingFromData);
+                this.flicksyEditor.projectData.drawings.push(...drawings);
+                await Promise.all(drawings.map(initDrawingInEditor));
+
+                const palette = this.flicksyEditor.projectData.details.palette.slice(1).map(hexToRGB);
+                const mapping = new Map();
+
+                drawings.forEach((drawing) => {
+                    const rendering = drawingToContext.get(drawing);
+                    withPixels(rendering, (pixels) => {
+                        for (let i = 0; i < pixels.length; ++i) {
+                            const pixel = pixels[i];
+                            const alpha = (pixel >>> 24) < 16;
+
+                            if (alpha) {
+                                pixels[i] = 0;
+                            } else {
+                                const color = mapping.get(pixel) || colordiff.closest(uint32ToRGB(pixels[i]), palette).uint32;
+                                mapping.set(pixel, color);
+                                pixels[i] = color;
+                            }
+                        }
+                    });
+                });
+
+                this.setSelectedDrawing(drawings[0]);
+            });
+            fileInput.click();
         });
     }
 
@@ -332,7 +376,7 @@ function drawingFromData(data) {
     return {
         id: nanoid(),
         name: "unnamed",
-        position: { x: 0, y: 0 },
+        position: { x: 0, y: 0, z: 0 },
         data
     };
 }
@@ -341,4 +385,27 @@ function drawingFromData(data) {
 async function setDrawingBoardDrawings(drawings) {
     removeAllChildren(editor.scene.container);
     await Promise.all(drawings.map(initDrawingInEditor));
+}
+
+function uint32ToRGB(uint32) {
+    return {
+        r: uint32 >>>  0 & 0xFF,
+        g: uint32 >>>  8 & 0xFF,
+        b: uint32 >>> 16 & 0xFF,
+        uint32,
+    };
+}
+
+function hexToRGB(hex) {
+    if (hex.charAt(0) === '#') hex = hex.substring(1);
+    return {
+        b: parseInt(hex.substr(4, 2), 16),
+        g: parseInt(hex.substr(2, 2), 16),
+        r: parseInt(hex.substr(0, 2), 16),
+        uint32: hexToNumber(hex),
+    };
+}
+
+function RGBToNumber(rgb) {
+    return rgb.r | rgb.g << 8 | rgb.b << 16 | 0xFF << 24;
 }

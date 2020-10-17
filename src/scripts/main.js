@@ -45,7 +45,7 @@ function initui() {
     const toggles = ALL("[data-tab-toggle]");
     const bodies = ALL("[data-tab-body]");
     const buttons = ALL("[data-action]");
-    
+
     const paths = ALL("[data-path]");
     paths.forEach((element) => {
         const path = element.getAttribute("data-path");
@@ -61,7 +61,6 @@ function initui() {
         }
         root[parts.shift()] = element;
     });
-    console.log(pathToElement);
 
     buttons.forEach((element) => {
         const action = element.getAttribute("data-action");
@@ -96,6 +95,8 @@ function initui() {
     bodies.forEach((element) => {
         element.hidden = true;
     });
+
+    ALL("[data-tab-default]").forEach((element) => element.click());
 }
 
 class FlicksyEditor {

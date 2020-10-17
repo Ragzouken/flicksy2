@@ -101,12 +101,13 @@ class DrawingsTabEditor {
                         for (let i = 0; i < pixels.length; ++i) {
                             const pixel = pixels[i];
                             const alpha = (pixel >>> 24) < 16;
+                            const check = pixel & 0xFFF0F0F0;
 
                             if (alpha) {
                                 pixels[i] = 0;
                             } else {
-                                const color = mapping.get(pixel) || colordiff.closest(uint32ToRGB(pixels[i]), palette).uint32;
-                                mapping.set(pixel, color);
+                                const color = mapping.get(check) || colordiff.closest(uint32ToRGB(check), palette).uint32;
+                                mapping.set(check, color);
                                 pixels[i] = color;
                             }
                         }

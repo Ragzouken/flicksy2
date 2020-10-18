@@ -70,6 +70,10 @@ body {
     outline: 1px dotted rgb(128 128 128 / 50%);
 }
 
+#scene .object:hover {
+    outline: 1px dotted yellow;
+}
+
 #scene .object.selected {
     outline: 1px dotted red;
 }

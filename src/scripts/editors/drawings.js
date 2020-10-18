@@ -236,9 +236,11 @@ async function initDrawingInEditor(drawing) {
                 cursor.canvas.width = rendering.canvas.width;
                 cursor.canvas.height = rendering.canvas.height;
 
-                const [x, y] = mouseEventToPixel(event);
-                fillRendering2D(cursor);
-                makePlotCursor()(x|0, y|0);
+                if (tool === "free") {
+                    const [x, y] = mouseEventToPixel(event);
+                    fillRendering2D(cursor);
+                    makePlotCursor()(x|0, y|0);
+                }
             } else {
                 cursor.canvas.hidden = true;
             }

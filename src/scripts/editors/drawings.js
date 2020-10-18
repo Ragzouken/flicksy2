@@ -214,6 +214,36 @@ async function initDrawingInEditor(drawing) {
         const [ox, oy] = [brush.width / 2, brush.height / 2];
         return (x, y) => cursor.drawImage(brush, x-ox, y-oy);
     }
+    
+    function refreshCursors(event) {
+        const mode = toggleStates.get("drawings/mode");
+        const tool = toggleStates.get("drawings/tool");
+        
+        const drawable = mode === "draw" && tool !== "move";
+        const grabbing = grab !== undefined;
+        const drawing = draw || line;
+
+        if (grabbing) document.body.style.setProperty("cursor", "grabbed");
+        else if (drawing) document.body.style.setProperty("cursor", "crosshair")
+        else document.body.style.removeProperty("cursor");
+
+        rendering.canvas.style.setProperty("cursor", grabbing ? "grabbed" : drawable ? "crosshair" : "grab");
+
+        if (hovered) {
+            if (drawable) {
+                cursor.canvas.hidden = false;
+                cursor.canvas.style.setProperty("transform", object.element.style.getPropertyValue("transform"));
+                cursor.canvas.width = rendering.canvas.width;
+                cursor.canvas.height = rendering.canvas.height;
+
+                const [x, y] = mouseEventToPixel(event);
+                fillRendering2D(cursor);
+                makePlotCursor()(x|0, y|0);
+            } else {
+                cursor.canvas.hidden = true;
+            }
+        }
+    }
 
     function pointerdownDraw(event) {
         killEvent(event);
@@ -256,8 +286,6 @@ async function initDrawingInEditor(drawing) {
         // G = M1^ . E (element relative to mouse)
         const mouse = mouseEventToSceneTransform(event);
         grab = mouse.invertSelf().multiplySelf(object.transform);
-        document.body.style.setProperty("cursor", "grabbing");
-        object.element.style.setProperty("cursor", "grabbing");
     }
 
     function pointermoveDrag(event) {
@@ -287,36 +315,31 @@ async function initDrawingInEditor(drawing) {
         if (free) pointerdownDraw(event);
         if (fill) pointerdownFill(event);
         if (line) pointerdownLine(event);
+        
+        refreshCursors(event);
     });
 
     object.element.addEventListener("pointerenter", (event) => {
         killEvent(event);
-
         hovered = true;
-        cursor.canvas.hidden = false;
-        cursor.canvas.style.setProperty("transform", object.element.style.getPropertyValue("transform"));
-        cursor.canvas.width = rendering.canvas.width;
-        cursor.canvas.height = rendering.canvas.height;
+        refreshCursors(event);
     });
 
     object.element.addEventListener("pointerout", (event) => {
         killEvent(event);
-
+        // TODO: track single hovered thing
         if (hovered) {
             hovered = false;
             cursor.canvas.hidden = true;
         }
+        refreshCursors(event);
     });
 
     document.addEventListener("pointermove", (event) => {
         if (grab) pointermoveDrag(event);
         if (draw) pointermoveDraw(event);
 
-        if (hovered) {
-            const [x, y] = mouseEventToPixel(event);
-            fillRendering2D(cursor);
-            makePlotCursor()(x|0, y|0);
-        }
+        refreshCursors(event);
     });
     
     document.addEventListener("pointerup", (event) => {
@@ -327,10 +350,8 @@ async function initDrawingInEditor(drawing) {
         draw = undefined;
         grab = undefined;
         line = undefined;
-        document.body.style.removeProperty("cursor");
         
-        const cursor = toggleStates.get("drawings/mode") === "draw" ? "crosshair" : "grab";
-        object.element.style.setProperty("cursor", cursor);
+        refreshCursors(event);
     });
 }
 

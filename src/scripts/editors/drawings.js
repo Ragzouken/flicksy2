@@ -229,17 +229,21 @@ async function initDrawingInEditor(drawing) {
 
         rendering.canvas.style.setProperty("cursor", grabbing ? "grabbed" : drawable ? "crosshair" : "grab");
 
-        if (hovered) {
+        if (hovered || drawing) {
             if (drawable) {
                 cursor.canvas.hidden = false;
                 cursor.canvas.style.setProperty("transform", object.element.style.getPropertyValue("transform"));
                 cursor.canvas.width = rendering.canvas.width;
                 cursor.canvas.height = rendering.canvas.height;
 
+                fillRendering2D(cursor);
                 if (tool === "free") {
                     const [x, y] = mouseEventToPixel(event);
-                    fillRendering2D(cursor);
                     makePlotCursor()(x|0, y|0);
+                } else if (tool === "line") {
+                    const [x0, y0] = line;
+                    const [x1, y1] = mouseEventToPixel(event);
+                    lineplot(x0, y0, x1, y1, makePlotCursor());
                 }
             } else {
                 cursor.canvas.hidden = true;

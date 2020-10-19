@@ -41,7 +41,7 @@
         .tool-row
             button(data-tab-toggle="drawings/tool/move")
                 img(src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAFZJREFUOI21kkEOACAIwxj//7NejNEE5tDYIxYQxewnbcAcsORNBEI3DGZdsyIpygiudGaOZwdqEVSTVwDAz5pI9GBKbN6g8kWye72JlUV6XmWKMsIzHel3W8445fUQAAAAAElFTkSuQmCC")
-            button(data-tab-toggle="drawings/tool/free")
+            button(data-tab-toggle="drawings/tool/free" data-tab-default)
                 img(src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAYUlEQVQ4jb2RUQ7AIAhDi/e/c/fDjHMI1Szrn4b3agT4MyQ539kJbGadkwRhs0tKQQSPklRQwekLFHgpUOFQsAO/BLvwQ3ACA0C74WVDsamWDVdwDz3jWQLhfzADcvMXuQC15zwLU3quDgAAAABJRU5ErkJggg==")
             button(data-tab-toggle="drawings/tool/line")
                 img(src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAQElEQVQ4jWNgoBAwkqrh/////+GaGRkZmciylZERbjFZBiC7gj4aRzUPds2M6JqQUxkxAJ4SSdWIYQBF/qYEAAB/ei/rTsuX6AAAAABJRU5ErkJggg==")
@@ -55,13 +55,15 @@
                 img(src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAABpJREFUOI1jYBgFwx38hwJ8apjo5ZhRMKgBADvbB/vPRl6wAAAAAElFTkSuQmCC")
             button(data-tab-toggle="drawings/brush/3")
                 img(src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAACNJREFUOI1jYBgFgxz8////PyE1jMRoZmRkxKmOYheMgmEBAARbC/qDr1pMAAAAAElFTkSuQmCC")
-            button(data-tab-toggle="drawings/brush/4")
+            button(data-tab-toggle="drawings/brush/4" data-tab-default)
                 img(src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAChJREFUOI1jYBgFgxz8hwJ8ahjxaUZRyMiIVS0TeW4jEhDjhVEwGAAAJhAT9IYiYRoAAAAASUVORK5CYII=")
         h3 color
         #draw-color-palette.palette-grid
             button(data-tab-toggle="drawings/palette/0").erase-color
                 div
-            each val in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+            button(data-tab-toggle="drawings/palette/1" data-tab-default)
+                div
+            each val in [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
                 button(data-tab-toggle!="drawings/palette/" + val)
                     div
     .section(data-tab-body="drawings/mode/palette")

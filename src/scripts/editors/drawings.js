@@ -237,10 +237,10 @@ async function initDrawingInEditor(drawing) {
                 cursor.canvas.height = rendering.canvas.height;
 
                 fillRendering2D(cursor);
-                if (tool === "free") {
+                if (tool === "free" || (tool === "line" && line === undefined)) {
                     const [x, y] = mouseEventToPixel(event);
                     makePlotCursor()(x|0, y|0);
-                } else if (tool === "line") {
+                } else if (tool === "line" && line !== undefined) {
                     const [x0, y0] = line;
                     const [x1, y1] = mouseEventToPixel(event);
                     lineplot(x0, y0, x1, y1, makePlotCursor());

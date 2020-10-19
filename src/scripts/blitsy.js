@@ -97,6 +97,10 @@ function lineplot(x0, y0, x1, y1, plot) {
     let err = Math.floor(dx / 2);
     let y = y0;
 
+    if (dx === 0 && dy === 0) {
+        plot(x0, y0);
+    }
+
     for (let x = x0; x != (x1 + xstep); x += xstep) {
         plot(steep ? y : x, steep ? x : y);
         err -= dy;

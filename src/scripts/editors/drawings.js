@@ -227,14 +227,14 @@ async function initDrawingInEditor(drawing) {
         const index = parseInt(toggleStates.get("drawings/brush"), 10);
         const brush = recolorMask(brushes[index-1], isErasing() ? "white" : getColor()).canvas;
         const [ox, oy] = [brush.width / 2, brush.height / 2];
-        return (x, y) => rendering.drawImage(brush, x-ox, y-oy);
+        return (x, y) => rendering.drawImage(brush, Math.round(x-ox), Math.round(y-oy));
     }
 
     function makePlotCursor() {
         const index = parseInt(toggleStates.get("drawings/brush"), 10);
         const brush = recolorMask(brushes[index-1], isErasing() ? "white" : getColor()).canvas;
         const [ox, oy] = [brush.width / 2, brush.height / 2];
-        return (x, y) => cursor.drawImage(brush, x-ox, y-oy);
+        return (x, y) => cursor.drawImage(brush, Math.round(x-ox), Math.round(y-oy));
     }
     
     function refreshCursors(event) {

@@ -86,10 +86,20 @@ class DrawingsTabEditor {
         setActionHandler("drawings/add/import", () => {
             const fileInput = html("input", { type: "file", accept: "image/*", multiple: "true" });
             fileInput.addEventListener("change", async () => {
-                const datas = await Promise.all(Array.from(fileInput.files).map(dataURLFromFile));
+                async function drawingFromFile(file) {
+                    const uri = await dataURLFromFile(file);
+                    const drawing = drawingFromData(uri);
+                    drawing.name = file.name;
+                    return drawing;
+                }
+
+                const drawings = await Promise.all(Array.from(fileInput.files).map(drawingFromFile));
                 fileInput.value = "";
-                const drawings = datas.map(drawingFromData);
                 this.flicksyEditor.projectData.drawings.push(...drawings);
+                drawings.forEach((drawing, i) => {
+                    drawing.position.x = i * 8;
+                    drawing.position.y = i * 8;
+                });
                 await Promise.all(drawings.map(initDrawingInEditor));
 
                 const palette = this.flicksyEditor.projectData.details.palette.slice(1).map(hexToRGB);
@@ -101,7 +111,7 @@ class DrawingsTabEditor {
                         for (let i = 0; i < pixels.length; ++i) {
                             const pixel = pixels[i];
                             const alpha = (pixel >>> 24) < 16;
-                            const check = pixel & 0xFFF0F0F0;
+                            const check = pixel & 0xFFF8F8F8;
 
                             if (alpha) {
                                 pixels[i] = 0;

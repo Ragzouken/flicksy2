@@ -1,3 +1,11 @@
+const brushes = [
+    textToRendering2D("X"),
+    textToRendering2D("XX\nXX"),
+    textToRendering2D("_X_\nXXX\n_X_"),
+    textToRendering2D("_XX_\nXXXX\nXXXX\n_XX_"),
+    textToRendering2D("_XXX_\nXXXXX\nXXXXX\nXXXXX\n_XXX_"),
+];
+
 class DrawingsTabEditor {
     /** @param {FlicksyEditor} flicksyEditor */
     constructor(flicksyEditor) {

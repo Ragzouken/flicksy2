@@ -1,10 +1,3 @@
-const brushes = [
-    textToRendering2D("X"),
-    textToRendering2D("XX\nXX"),
-    textToRendering2D("_X_\nXXX\n_X_"),
-    textToRendering2D("_XX_\nXXXX\nXXXX\n_XX_"),
-];
-
 class FlicksyEditor {
     constructor() {
         this.projectData = EMPTY_PROJECT_DATA;

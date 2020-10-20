@@ -301,6 +301,7 @@ async function initDrawingInEditor(drawing) {
     }
 
     function pointerdownPick(event) {
+        killEvent(event);
         const [x, y] = mouseEventToPixel(event);
         const [r, g, b, a] = rendering.getImageData(x, y, 1, 1).data;
 
@@ -308,7 +309,7 @@ async function initDrawingInEditor(drawing) {
 
         if (a > 0) {
             const palette = editor.projectData.details.palette.map(hexToRGB);
-            index = palette.findIndex((rgb) => rgb.r === r && rgb.g === g && rgb.b === b);
+            index = Math.max(1, palette.findIndex((rgb) => rgb.r === r && rgb.g === g && rgb.b === b));
         }
 
         editor.drawingsTabEditor.setSelectedColorIndex(index);

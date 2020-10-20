@@ -156,6 +156,10 @@ class DrawingsTabEditor {
             this.resizeButton.disabled = true;
         }
     }
+
+    setSelectedColorIndex(index) {
+        elementByPath(`toggle:drawings/palette/${index}`, "button").click();
+    }
 }
 
 /**
@@ -296,6 +300,20 @@ async function initDrawingInEditor(drawing) {
         lineplot(x0, y0, x1, y1, makePlot());
     }
 
+    function pointerdownPick(event) {
+        const [x, y] = mouseEventToPixel(event);
+        const [r, g, b, a] = rendering.getImageData(x, y, 1, 1).data;
+
+        let index = 0;
+
+        if (a > 0) {
+            const palette = editor.projectData.details.palette.map(hexToRGB);
+            index = palette.findIndex((rgb) => rgb.r === r && rgb.g === g && rgb.b === b);
+        }
+
+        editor.drawingsTabEditor.setSelectedColorIndex(index);
+    }
+
     function pointerdownDrag(event) {
         killEvent(event);
         // determine and save the relationship between mouse and element
@@ -322,15 +340,18 @@ async function initDrawingInEditor(drawing) {
     object.element.addEventListener("pointerdown", (event) => {
         editor.drawingsTabEditor.setSelectedDrawing(drawing);
 
-        const drag = toggleStates.get("drawings/mode") !== "draw" || toggleStates.get("drawings/tool") === "move";
-        const free = toggleStates.get("drawings/mode") === "draw" && toggleStates.get("drawings/tool") === "free";
-        const fill = toggleStates.get("drawings/mode") === "draw" && toggleStates.get("drawings/tool") === "fill";
-        const line = toggleStates.get("drawings/mode") === "draw" && toggleStates.get("drawings/tool") === "line";
+        const mode = toggleStates.get("drawings/mode");
+        const tool = toggleStates.get("drawings/tool");
 
-        if (drag) pointerdownDrag(event);
-        if (free) pointerdownDraw(event);
-        if (fill) pointerdownFill(event);
-        if (line) pointerdownLine(event);
+        if (mode === "draw") {
+            if (tool === "move") pointerdownDrag(event);
+            if (tool === "free") pointerdownDraw(event);
+            if (tool === "fill") pointerdownFill(event);
+            if (tool === "line") pointerdownLine(event);
+            if (tool === "pick") pointerdownPick(event);
+        } else {
+            pointerdownDrag(event);
+        }
         
         refreshCursors(event);
     });

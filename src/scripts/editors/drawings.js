@@ -140,6 +140,7 @@ class DrawingsTabEditor {
         this.colorReplacer = undefined;
         setActionHandler("drawings/palette/edit", () => {
             const paletteIndex = parseInt(toggleStates.get("drawings/palette"), 10);
+            if (paletteIndex === 0) return;
             const hex = editor.projectData.details.palette[paletteIndex];
 
             const rgb = hexToRGB(hex);

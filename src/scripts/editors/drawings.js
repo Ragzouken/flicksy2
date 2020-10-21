@@ -331,6 +331,8 @@ async function initDrawingInEditor(drawing) {
     const isErasing = () => toggleStates.get("drawings/palette") === "0";
     const getColor = () => editor.projectData.details.palette[parseInt(toggleStates.get("drawings/palette"), 10)];
 
+    const getMode = () => toggleStates.get("sidebar") === "drawings" ? toggleStates.get("drawings/mode") : "move";
+
     let plot = undefined;
     function makePlot() {
         rendering.globalCompositeOperation = isErasing() ? "destination-out" : "source-over";
@@ -348,7 +350,7 @@ async function initDrawingInEditor(drawing) {
     }
     
     function refreshCursors(event) {
-        const mode = toggleStates.get("drawings/mode");
+        const mode = getMode();
         const tool = toggleStates.get("drawings/tool");
         
         const drawable = mode === "draw" && tool !== "move";
@@ -459,7 +461,7 @@ async function initDrawingInEditor(drawing) {
     object.element.addEventListener("pointerdown", (event) => {
         editor.drawingsTabEditor.setSelectedDrawing(drawing);
 
-        const mode = toggleStates.get("drawings/mode");
+        const mode = getMode();
         const tool = toggleStates.get("drawings/tool");
 
         if (mode === "draw") {

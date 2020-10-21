@@ -122,6 +122,10 @@ body {
     background: var(--delete-color);
 }
 
+input[type="range"] {
+    flex: 1;
+}
+
 input[type="text"], textarea {
     flex: 1; flex-basis: 100%; min-width: 0;
     padding: .5em .75em;

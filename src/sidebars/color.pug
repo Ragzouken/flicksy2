@@ -4,9 +4,11 @@
         h3 hue and saturation
         canvas#hswheel
         h3 value
-        input(type="range")
+        .button-row
+            input#vslider(type="range" min="0" max="1" step="0.01")
         h3 hex code
-        input(type="text" data-path="color/hex")
+        .button-row
+            input#hexinput(type="text" data-path="color/hex")
         p
         .button-row
             button(data-action="color/confirm") confirm

@@ -141,11 +141,16 @@ class DrawingsTabEditor {
         setActionHandler("drawings/palette/edit", () => {
             const paletteIndex = parseInt(toggleStates.get("drawings/palette"), 10);
             const hex = editor.projectData.details.palette[paletteIndex];
+
+            const rgb = hexToRGB(hex);
+            hsv = RGBToHSV(rgb);
+            updateColorWheel();
+
             const uint32 = hexToNumber(hex);
             const contexts = Array.from(drawingToContext.values());
             const replacers = contexts.map((rendering) => makeColorReplacer(rendering, uint32));
 
-            this.replacer = (hex) => {
+            this.colorReplacer = (hex) => {
                 this.flicksyEditor.projectData.details.palette[paletteIndex] = hex;
                 replacers.forEach((replacer) => replacer(hex));
                 this.refresh();
@@ -156,29 +161,84 @@ class DrawingsTabEditor {
         });
 
         setActionHandler("color/confirm", () => {
+            this.colorReplacer = undefined;
             this.flicksyEditor.exitExclusive();
             elementByPath("toggle:sidebar/drawings", "button").click();
-            this.colorReplacer = undefined;
         });
 
         const hswheelCanvas = /** @type {HTMLCanvasElement} */ (document.getElementById("hswheel"));
         hswheelCanvas.width = hswheel.canvas.width;
         hswheelCanvas.height = hswheel.canvas.height;
-        hswheelCanvas.getContext('2d').drawImage(hswheel.canvas, 0, 0);
+        const hswheelContext = hswheelCanvas.getContext('2d');
+        
+        const valueSlider = /** @type {HTMLInputElement} */ (document.getElementById("vslider"));
+        const hexInput = /** @type {HTMLInputElement} */ (document.getElementById("hexinput"));
+        let hsv = { h: 0, s: 1, v: 1 };
 
-        hswheelCanvas.addEventListener("click", (event) => {
-            if (this.replacer === undefined) return;
+        const updateColorWheel = (skipHex = false) => {
+            const { h, s, v } = hsv;
+            fillRendering2D(hswheelContext);
+            hswheelContext.drawImage(hswheel.canvas, 0, 0);
+            hswheelContext.globalCompositeOperation = "multiply";
+            const valueHex = rgbToHex({ r: v * 255, g: v * 255, b: v * 255 });
+            fillRendering2D(hswheelContext, valueHex);
+            hswheelContext.globalCompositeOperation = "destination-in";
+            hswheelContext.drawImage(hswheel.canvas, 0, 0);
+            hswheelContext.globalCompositeOperation = "source-over";
+
+            const w = hswheelCanvas.width;
+            const angle = h * Math.PI * 2;
+            const radius = s * w/2;
+            const [dx, dy] = [radius * Math.cos(angle), radius * Math.sin(angle)];
+            hswheelContext.beginPath();
+            hswheelContext.arc(w/2+dx, w/2+dy, 8, 0, 2 * Math.PI);
+            hswheelContext.strokeStyle = "black";
+            hswheelContext.fillStyle = rgbToHex(HSVToRGB(hsv));
+            hswheelContext.fill();
+            hswheelContext.stroke();
+
+            const hex = rgbToHex(HSVToRGB(hsv));
+            valueSlider.value = v.toString();
+            if (!skipHex) hexInput.value = hex;
+
+            if (this.colorReplacer) {
+                this.colorReplacer(hex);
+            }
+        }
+
+        updateColorWheel();
+
+        hswheelCanvas.addEventListener("pointerdown", (event) => {
+            if (this.colorReplacer === undefined) return;
+
+            mouseEventWheel(event);
+            document.addEventListener("pointermove", mouseEventWheel);
+            document.addEventListener("pointerup", () => {
+                document.removeEventListener("pointermove", mouseEventWheel);
+            }, { once: true });
+        });
+
+        const mouseEventWheel = (event) => {
+            killEvent(event);
 
             const rect = hswheelCanvas.getBoundingClientRect();
             const [x, y] = [event.clientX - rect.x, event.clientY - rect.y];
             const [w, h] = [rect.width, rect.height];
             const [dx, dy] = [x - w/2, y - h/2];
 
-            const hue = (2 + Math.atan2(dy, dx) / (Math.PI * 2)) % 1;
-            const sat = Math.min(1, Math.sqrt(dx*dx+dy*dy)*2/w);
-            const rgb = HSVToRGB(hue, sat, 1);
+            hsv.h = (2 + Math.atan2(dy, dx) / (Math.PI * 2)) % 1;
+            hsv.s = Math.min(1, Math.sqrt(dx*dx+dy*dy)*2/w);
+            updateColorWheel();
+        };
 
-            this.replacer(rgbToHex(rgb));
+        valueSlider.addEventListener("input", (event) => {
+            hsv.v = parseFloat(valueSlider.value);
+            updateColorWheel();
+        });
+
+        hexInput.addEventListener("input", () => {
+            hsv = RGBToHSV(hexToRGB(hexInput.value));
+            updateColorWheel(true);
         });
 
         this.cursor = createRendering2D(16, 16);
@@ -191,7 +251,6 @@ class DrawingsTabEditor {
 
     /** @param {FlicksyDataDrawing} drawing */
     setSelectedDrawing(drawing) {
-        
         if (this.selectedDrawing)
             drawingToContext.get(this.selectedDrawing).canvas.classList.toggle("selected", false);
 

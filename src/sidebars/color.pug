@@ -1,0 +1,12 @@
+.sidebar-panel(data-tab-body="sidebar/color")
+    .section
+        h2 change color
+        h3 hue and saturation
+        canvas#hswheel
+        h3 value
+        input(type="range")
+        h3 hex code
+        input(type="text" data-path="color/hex")
+        p
+        .button-row
+            button(data-action="color/confirm") confirm

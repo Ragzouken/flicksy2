@@ -19,6 +19,7 @@ class FlicksyEditor {
         this.scene.transform.scaleSelf(4, 4);
         this.scene.refresh();
 
+        this.sidebarTabs = document.getElementById("menu-buttons");
         this.drawingsTabEditor = new DrawingsTabEditor(this);
         
         function preSave() {
@@ -54,10 +55,15 @@ class FlicksyEditor {
     refresh() {
         /** @type {HTMLInputElement} */ (ONE('[data-path="project/name"]')).value = this.projectData.details.name;
 
-        ALL("#draw-color-palette div").forEach((element, i) => {
-            if (i === 0) return;
-            element.style.setProperty("background", this.projectData.details.palette[i]);
-        });
+        this.drawingsTabEditor.refresh();
+    }
+
+    enterExclusive() {
+        this.sidebarTabs.hidden = true;
+    }
+
+    exitExclusive() {
+        this.sidebarTabs.hidden = false;
     }
 }
 

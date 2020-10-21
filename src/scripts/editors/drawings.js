@@ -137,6 +137,50 @@ class DrawingsTabEditor {
             fileInput.click();
         });
 
+        this.colorReplacer = undefined;
+        setActionHandler("drawings/palette/edit", () => {
+            const paletteIndex = parseInt(toggleStates.get("drawings/palette"), 10);
+            const hex = editor.projectData.details.palette[paletteIndex];
+            const uint32 = hexToNumber(hex);
+            const contexts = Array.from(drawingToContext.values());
+            const replacers = contexts.map((rendering) => makeColorReplacer(rendering, uint32));
+
+            this.replacer = (hex) => {
+                this.flicksyEditor.projectData.details.palette[paletteIndex] = hex;
+                replacers.forEach((replacer) => replacer(hex));
+                this.refresh();
+            }
+
+            this.flicksyEditor.enterExclusive();
+            elementByPath("toggle:sidebar/color", "button").click();
+        });
+
+        setActionHandler("color/confirm", () => {
+            this.flicksyEditor.exitExclusive();
+            elementByPath("toggle:sidebar/drawings", "button").click();
+            this.colorReplacer = undefined;
+        });
+
+        const hswheelCanvas = /** @type {HTMLCanvasElement} */ (document.getElementById("hswheel"));
+        hswheelCanvas.width = hswheel.canvas.width;
+        hswheelCanvas.height = hswheel.canvas.height;
+        hswheelCanvas.getContext('2d').drawImage(hswheel.canvas, 0, 0);
+
+        hswheelCanvas.addEventListener("click", (event) => {
+            if (this.replacer === undefined) return;
+
+            const rect = hswheelCanvas.getBoundingClientRect();
+            const [x, y] = [event.clientX - rect.x, event.clientY - rect.y];
+            const [w, h] = [rect.width, rect.height];
+            const [dx, dy] = [x - w/2, y - h/2];
+
+            const hue = (2 + Math.atan2(dy, dx) / (Math.PI * 2)) % 1;
+            const sat = Math.min(1, Math.sqrt(dx*dx+dy*dy)*2/w);
+            const rgb = HSVToRGB(hue, sat, 1);
+
+            this.replacer(rgbToHex(rgb));
+        });
+
         this.cursor = createRendering2D(16, 16);
         this.cursor.canvas.style.setProperty("pointer-events", "none");
         this.cursor.canvas.style.setProperty("position", "absolute");
@@ -167,6 +211,13 @@ class DrawingsTabEditor {
 
     setSelectedColorIndex(index) {
         elementByPath(`toggle:drawings/palette/${index}`, "button").click();
+    }
+
+    refresh() {
+        ALL("#draw-color-palette div").forEach((element, i) => {
+            if (i === 0) return;
+            element.style.setProperty("background", editor.projectData.details.palette[i]);
+        });
     }
 }
 
@@ -522,3 +573,65 @@ function hexToRGB(hex) {
 function RGBToNumber(rgb) {
     return rgb.r | rgb.g << 8 | rgb.b << 16 | 0xFF << 24;
 }
+
+/** 
+ * @param {CanvasRenderingContext2D} context 
+ * @param {number} color
+ */
+function extractMask(context, color) {
+    const mask = copyRendering2D(context);
+    withPixels(mask, (pixels) => {
+        for (let i = 0; i < pixels.length; ++i)
+            pixels[i] = pixels[i] === color ? 0xFFFFFFFF : 0;
+    });
+    return mask;
+}
+
+/**
+ * @param {CanvasRenderingContext2D} context
+ * @param {number} color 
+ */
+function makeColorReplacer(context, color) {
+    const mask = extractMask(context, color);
+    return (style) => {
+        const changes = recolorMask(mask, style);
+        context.drawImage(changes.canvas, 0, 0);
+    };
+}
+
+function hsToUint32(h, s) {
+    let r, g, b;
+    const i = Math.floor(h * 6);
+    const f = h * 6 - i;
+    const p = (1 - s);
+    const q = (1 - f * s);
+    const t = (1 - (1 - f) * s);
+    switch (i % 6) {
+        case 0: r = 1, g = t, b = p; break;
+        case 1: r = q, g = 1, b = p; break;
+        case 2: r = p, g = 1, b = t; break;
+        case 3: r = p, g = q, b = 1; break;
+        case 4: r = t, g = p, b = 1; break;
+        case 5: r = 1, g = p, b = q; break;
+    }
+
+    return ((0xFF << 24) | (b*255 << 16) | (g*255 << 8) | (r*255 << 0)) >>> 0;
+}
+
+const hswheel = createRendering2D(239, 239);
+withPixels(hswheel, (pixels) => {
+    const [w, h] = [hswheel.canvas.width, hswheel.canvas.height];
+    for (let y = 0; y < h; ++y) {
+        for (let x = 0; x < w; ++x) {
+            const [dx, dy] = [x-w/2, y-h/2];
+            const sat = Math.sqrt(dx*dx + dy*dy)*2/w;
+            
+            if (sat <= 1) {
+                const hue = (10 + Math.atan2(dy, dx) / Math.PI / 2) % 1;
+                pixels[y * w + x] = hsToUint32(hue, sat);
+            } else {
+                pixels[y * w + x] = 0;
+            }
+        }
+    }
+});

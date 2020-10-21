@@ -31,6 +31,7 @@ html
             .section
                 h2 non-functional wip
             #menu-buttons.button-bag
+                button(data-tab-toggle="sidebar/color" hidden) COLOR
                 button(data-tab-toggle="sidebar/project" disabled) project
                 button(data-tab-toggle="sidebar/drawings" data-tab-default) drawings
                 button(data-tab-toggle="sidebar/scene" disabled) scene
@@ -44,6 +45,7 @@ html
                 include sidebars/scene.pug
                 include sidebars/map.pug
                 include sidebars/publish.pug
+                include sidebars/color.pug
         #content
             #scene
         script#project-data(type="text/json")

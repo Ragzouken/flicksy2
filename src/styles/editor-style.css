@@ -61,8 +61,8 @@ body {
 
 #scene {
     position: absolute; transform-origin: 0 0;
-    width: 128px; height: 128px;
-    outline: 1px dotted white;
+    width: 160px; height: 100px;
+    outline: 1px dotted rgb(255 255 255 / 5%);
 }
 
 #scene .object {

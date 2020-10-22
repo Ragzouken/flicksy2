@@ -3,6 +3,7 @@ html
     head
         title flicksy 2
         meta(charset="utf-8")
+        link(rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAJtJREFUOI1jYKAQMKLx/5Mqx4gsaVadDVdxqnUqijwWOQYGBgZGRnRJZABTiE+eCasMAwPDydipDP9vMDD8vwFh4wJYDcCmASaGLodhALIC7UY/Bu1GP7wG4/SC+eJsrGx0wIJPIz6bcRpAyDXoAKcXiAUUG4DiBaQUhpF4cMmhJGUG1PT/XysSEoXXlm/CkMOiHiv4z4CaiagPAB6eN6jIm0oIAAAAAElFTkSuQmCC")
         // styles
         style#base-style
             include styles/base-style.css
@@ -37,7 +38,7 @@ html
                 button(data-tab-toggle="sidebar/project") project
                 button(data-tab-toggle="sidebar/drawings" data-tab-default) drawings
                 button(data-tab-toggle="sidebar/scene" disabled) scene
-                button(data-tab-toggle="sidebar/map" disabled) map
+                button(data-tab-toggle="sidebar/map") map
                 button(data-tab-toggle="sidebar/publish" disabled) publish
                 button(disabled) play
                 button(data-action="sidebar/save") save

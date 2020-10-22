@@ -13,14 +13,18 @@
         h3 name
         .button-row
             input(type="text" data-path="project/name")
+        h3 export
+        .button-row
+            button(data-action="project/export/data") project data
+            button(data-action="project/export/html") html file
     .section
         h2 switch projects
         h3 reset to blank project
         button.delete(data-action="project/new") new project
-        h3 open another project
-        .button-row
-            select
-                option test
-                option test2
+        //h3 open another project
+        //.button-row
+        //    select
+        //        option test
+        //        option test2
         h3 load project from file
-        button choose file
+        button(data-action="project/open") choose file

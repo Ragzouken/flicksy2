@@ -3,6 +3,7 @@ class FlicksyEditor {
         this.projectData = EMPTY_PROJECT_DATA;
     }
 
+    /** @param {FlicksyDataProject} data */
     async setProjectData(data) {
         this.projectData = data;
         this.refresh();
@@ -20,32 +21,14 @@ class FlicksyEditor {
         this.scene.refresh();
 
         this.sidebarTabs = document.getElementById("menu-buttons");
+        this.projectTabEditor = new ProjectTabEditor(this);
         this.drawingsTabEditor = new DrawingsTabEditor(this);
-        
-        function preSave() {
-            drawingToContext.forEach((rendering, drawing) => drawing.data = rendering.canvas.toDataURL());
-        }
 
-        setActionHandler("sidebar/save", () => {
-            preSave();
+        setActionHandler("sidebar/save", async () => {
+            await this.prepareSave();
             const json = JSON.stringify(this.projectData);
             localStorage.setItem("flicksy/test", json);
         });
-
-        setActionHandler("publish/export/data", () => {
-            preSave();
-            saveAs(textToBlob(JSON.stringify(this.projectData)), "project.flicksy.json");
-        });
-
-        setActionHandler("project/new", () => {
-            const data = JSON.parse(JSON.stringify(EMPTY_PROJECT_DATA));
-            data.details.id = nanoid();
-
-            this.setProjectData(data);
-        });
-
-        const nameInput = /** @type {HTMLInputElement} */ (ONE('[data-path="project/name"]'));
-        nameInput.addEventListener("input", () => this.projectData.details.name = nameInput.value);
 
         const json = localStorage.getItem("flicksy/test") || ONE("#project-data").innerHTML;
         const data = JSON.parse(json);
@@ -53,8 +36,7 @@ class FlicksyEditor {
     }
 
     refresh() {
-        /** @type {HTMLInputElement} */ (ONE('[data-path="project/name"]')).value = this.projectData.details.name;
-
+        this.projectTabEditor.refresh();
         this.drawingsTabEditor.refresh();
     }
 
@@ -64,6 +46,10 @@ class FlicksyEditor {
 
     exitExclusive() {
         this.sidebarTabs.hidden = false;
+    }
+
+    async prepareSave() {
+        drawingToContext.forEach((rendering, drawing) => drawing.data = rendering.canvas.toDataURL());
     }
 }
 

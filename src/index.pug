@@ -21,6 +21,8 @@ html
         script
             include scripts/editors/drawings.js
         script
+            include scripts/editors/project.js
+        script
             include scripts/flicksy.js
         script
             include scripts/utility.js
@@ -32,7 +34,7 @@ html
                 h2 non-functional wip
             #menu-buttons.button-bag
                 button(data-tab-toggle="sidebar/color" hidden) COLOR
-                button(data-tab-toggle="sidebar/project" disabled) project
+                button(data-tab-toggle="sidebar/project") project
                 button(data-tab-toggle="sidebar/drawings" data-tab-default) drawings
                 button(data-tab-toggle="sidebar/scene" disabled) scene
                 button(data-tab-toggle="sidebar/map" disabled) map

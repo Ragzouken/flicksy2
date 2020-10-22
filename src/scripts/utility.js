@@ -2,7 +2,7 @@
 
 /**
  * @param {string} query 
- * @param {HTMLElement | Document} element 
+ * @param {ParentNode} element 
  * @returns {HTMLElement}
  */
 const ONE = (query, element = undefined) => (element || document).querySelector(query);
@@ -121,6 +121,19 @@ async function htmlFromText(source) {
 /**
  * @param {string} text 
  */
-function textToBlob(text) {
-    return new Blob([text], { type: "text/plain" });
+function textToBlob(text, type = "text/plain") {
+    return new Blob([text], { type });
+}
+
+/**
+ * @param {string} accept 
+ * @param {boolean} multiple 
+ * @returns {Promise<File[]>}
+ */
+async function pickFiles(accept = "*", multiple = false) {
+    return new Promise((resolve) => {
+        const fileInput = html("input", { type: "file", accept, multiple });
+        fileInput.addEventListener("change", () => resolve(Array.from(fileInput.files)));
+        fileInput.click();
+    });
 }

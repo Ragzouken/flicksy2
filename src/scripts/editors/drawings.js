@@ -91,50 +91,47 @@ class DrawingsTabEditor {
             this.setSelectedDrawing(drawing);
         });
 
-        setActionHandler("drawings/add/import", () => {
-            const fileInput = html("input", { type: "file", accept: "image/*", multiple: "true" });
-            fileInput.addEventListener("change", async () => {
-                async function drawingFromFile(file) {
-                    const uri = await dataURLFromFile(file);
-                    const drawing = drawingFromData(uri);
-                    drawing.name = file.name;
-                    return drawing;
-                }
+        setActionHandler("drawings/add/import", async () => {
+            const files = await pickFiles("image/*", true);
 
-                const drawings = await Promise.all(Array.from(fileInput.files).map(drawingFromFile));
-                fileInput.value = "";
-                this.flicksyEditor.projectData.drawings.push(...drawings);
-                drawings.forEach((drawing, i) => {
-                    drawing.position.x = i * 8;
-                    drawing.position.y = i * 8;
-                });
-                await Promise.all(drawings.map(initDrawingInEditor));
+            async function drawingFromFile(file) {
+                const uri = await dataURLFromFile(file);
+                const drawing = drawingFromData(uri);
+                drawing.name = file.name;
+                return drawing;
+            }
 
-                const palette = this.flicksyEditor.projectData.details.palette.slice(1).map(hexToRGB);
-                const mapping = new Map();
-
-                drawings.forEach((drawing) => {
-                    const rendering = drawingToContext.get(drawing);
-                    withPixels(rendering, (pixels) => {
-                        for (let i = 0; i < pixels.length; ++i) {
-                            const pixel = pixels[i];
-                            const alpha = (pixel >>> 24) < 16;
-                            const check = pixel & 0xFFF8F8F8;
-
-                            if (alpha) {
-                                pixels[i] = 0;
-                            } else {
-                                const color = mapping.get(check) || colordiff.closest(uint32ToRGB(check), palette).uint32;
-                                mapping.set(check, color);
-                                pixels[i] = color;
-                            }
-                        }
-                    });
-                });
-
-                this.setSelectedDrawing(drawings[0]);
+            const drawings = await Promise.all(files.map(drawingFromFile));
+            this.flicksyEditor.projectData.drawings.push(...drawings);
+            drawings.forEach((drawing, i) => {
+                drawing.position.x = i * 8;
+                drawing.position.y = i * 8;
             });
-            fileInput.click();
+            await Promise.all(drawings.map(initDrawingInEditor));
+
+            const palette = this.flicksyEditor.projectData.details.palette.slice(1).map(hexToRGB);
+            const mapping = new Map();
+
+            drawings.forEach((drawing) => {
+                const rendering = drawingToContext.get(drawing);
+                withPixels(rendering, (pixels) => {
+                    for (let i = 0; i < pixels.length; ++i) {
+                        const pixel = pixels[i];
+                        const alpha = (pixel >>> 24) < 16;
+                        const check = pixel & 0xFFF8F8F8;
+
+                        if (alpha) {
+                            pixels[i] = 0;
+                        } else {
+                            const color = mapping.get(check) || colordiff.closest(uint32ToRGB(check), palette).uint32;
+                            mapping.set(check, color);
+                            pixels[i] = color;
+                        }
+                    }
+                });
+            });
+
+            this.setSelectedDrawing(drawings[0]);
         });
 
         this.colorReplacer = undefined;

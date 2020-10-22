@@ -566,11 +566,18 @@ class DrawingBoardScene {
         this.viewport.addEventListener('wheel', (event) => {
             const mouse = this.mouseEventToViewportTransform(event);
             const origin = (this.transform.inverse().multiply(mouse)).transformPoint();
-            const deltaScale = Math.pow(2, event.deltaY * -0.01);
+
+            const [minScale, maxScale] = [.5, 16];
+            const prevScale = getMatrixScale(this.transform).x;
+            const [minDelta, maxDelta] = [minScale/prevScale, maxScale/prevScale];
+            const deltaScale = clamp(Math.pow(2, event.deltaY * -0.01), minDelta, maxDelta);
+
+            // prev * delta <= max -> delta <= max/prev
             this.transform.scaleSelf(
                 deltaScale, deltaScale, deltaScale,
                 origin.x, origin.y, origin.z,
             );
+
             this.refresh();
         });
     }

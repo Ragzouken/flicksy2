@@ -137,3 +137,25 @@ async function pickFiles(accept = "*", multiple = false) {
         fileInput.click();
     });
 }
+
+/** @param {DOMMatrix} matrix */
+function getMatrixTranslation(matrix) {
+    return { x: matrix.e, y: matrix.f };
+}
+
+/** @param {DOMMatrix} matrix */
+function getMatrixScale(matrix) {
+    return { 
+        x: Math.sqrt(matrix.a*matrix.a + matrix.c*matrix.c),
+        y: Math.sqrt(matrix.b*matrix.b + matrix.d*matrix.d),
+    };
+}
+
+/**
+ * @param {number} value 
+ * @param {number} min 
+ * @param {number} max 
+ */
+function clamp(value, min, max) {
+    return Math.max(min, Math.min(max, value));
+}

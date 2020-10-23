@@ -9,20 +9,22 @@
     .section
         h2 scenes
         h3 starting scene
-        button test1
+        button(data-action="map/pick-starting-scene") test1
+        h3 add scene
+        button(data-action="map/add/blank") add blank
         h3 previews
-        button regenerate
-    .section
+        button(data-action="map/regenerate-previews") regenerate
+    .section(data-path="map/selected" hidden)
         h2 selected scene
         h3 name
         .button-row
-            input(type="text")
+            input(type="text" data-path="map/selected/name")
         h3 edit
         .button-row
-            button open
-            button duplicate
-            button.delete delete
+            button(data-action="map/selected/edit") edit
+            button(data-action="map/selected/duplicate") duplicate
+            button.delete(data-action="map/selected/delete") delete
         h3 layering
         .button-row
-            button raise
-            button lower
+            button(data-action="map/selected/raise") raise
+            button(data-action="map/selected/lower") lower

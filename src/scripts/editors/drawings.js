@@ -529,6 +529,8 @@ async function initDrawingInEditor(drawing) {
     });
     
     document.addEventListener("pointerup", (event) => {
+        if (editor.drawingsTabEditor.scene.hidden) return;
+
         killEvent(event);
 
         if (line) pointerupLine(event);

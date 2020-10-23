@@ -272,7 +272,12 @@ class DrawingsTabEditor {
             const { width, height } = rendering.canvas;
             return new DOMRect(x, y, width, height);
         });
+        const padding = 8;
         const bounds = boundRects(rects);
+        bounds.x -= padding;
+        bounds.y -= padding;
+        bounds.width += padding*2;
+        bounds.height += padding*2;
         this.scene.frameRect(bounds);
     }
 

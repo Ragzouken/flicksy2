@@ -165,13 +165,20 @@ class PanningScene {
 
     frameRect(rect) {
         const bounds = this.viewport.getBoundingClientRect();
+
+        // find scale that contains all width, all height, and is within limits
         const sx = bounds.width / rect.width;
         const sy = bounds.height / rect.height;
         const scale = clamp(Math.min(sx, sy), .5, 16);
 
+        // find translation that centers the rect in the viewport
+        const ex = (1/scale - 1/sx) * bounds.width * .5;
+        const ey = (1/scale - 1/sy) * bounds.height * .5;
+        const [ox, oy] = [-rect.x + ex, -rect.y + ey];
+
         this.transform = new DOMMatrix();
         this.transform.scaleSelf(scale, scale);
-        this.transform.translateSelf(-rect.x, -rect.y);
+        this.transform.translateSelf(ox, oy);
         this.refresh();
     }
 

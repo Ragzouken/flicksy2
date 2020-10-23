@@ -33,6 +33,11 @@ function setActionHandler(action, callback) {
     actionHandlers.set(action, callback);
 }
 
+function invokeAction(action) {
+    const handler = actionHandlers.get(action);
+    if (handler) handler();
+}
+
 function initui() {
     const toggles = ALL("[data-tab-toggle]");
     const bodies = ALL("[data-tab-body]");
@@ -49,8 +54,7 @@ function initui() {
 
         element.addEventListener("click", (event) => {
             killEvent(event);
-            const handler = actionHandlers.get(action);
-            if (handler) handler();
+            invokeAction(action);
         });
     })
 
@@ -64,6 +68,9 @@ function initui() {
             const [group_, tab_] = pathToRootLeaf(element.getAttribute("data-tab-body"));
             if (group_ === group) element.hidden = (tab_ !== tab);
         });
+
+        invokeAction(`hide:${group}`);
+        invokeAction(`show:${group}/${tab}`);
     }
 
     toggles.forEach((element) => {

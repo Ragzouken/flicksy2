@@ -159,3 +159,23 @@ function getMatrixScale(matrix) {
 function clamp(value, min, max) {
     return Math.max(min, Math.min(max, value));
 }
+
+/**
+ * @param {{ x: number, y: number, width: number, height: number }[]} rects 
+ */
+function boundRects(rects) {
+    const bounds = new DOMRect();
+    rects.forEach((rect) => {
+        const { x, y, width, height } = rect;
+        let [top, left, bottom, right] = [y, x, y + height, x + width];
+        left = Math.min(bounds.left, left);
+        top = Math.min(bounds.top, top);
+        right = Math.max(bounds.right, right);
+        bottom = Math.max(bounds.bottom, bottom);
+        bounds.x = left;
+        bounds.y = top;
+        bounds.width = right - left;
+        bounds.height = bottom - top;
+    });
+    return bounds;
+}

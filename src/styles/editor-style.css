@@ -59,22 +59,22 @@ body {
     background: var(--trans-gradient);
 }
 
-#scene {
+.scene {
     position: absolute; transform-origin: 0 0;
     width: 160px; height: 100px;
     outline: 1px dotted rgb(255 255 255 / 5%);
 }
 
-#scene .object {
+.scene .object {
     position: absolute; transform-origin: 0 0;
     outline: 1px dotted rgb(128 128 128 / 50%);
 }
 
-#scene .object:hover {
+.scene .object:hover {
     outline: 1px dotted yellow;
 }
 
-#scene .object.selected {
+.scene .object.selected {
     outline: 1px dotted red;
 }
 

@@ -164,7 +164,7 @@ function clamp(value, min, max) {
  * @param {{ x: number, y: number, width: number, height: number }[]} rects 
  */
 function boundRects(rects) {
-    const bounds = new DOMRect();
+    const bounds = DOMRect.fromRect(rects[0]);
     rects.forEach((rect) => {
         const { x, y, width, height } = rect;
         let [top, left, bottom, right] = [y, x, y + height, x + width];

@@ -86,6 +86,14 @@ class DrawingsManager {
         this.drawingToRendering.set(drawing, rendering);
     }
 
+    /**
+     * @param {FlicksyDataDrawing} drawing
+     */
+    removeDrawing(drawing) {
+        this.drawingToRendering.get(drawing).canvas.remove();
+        this.drawingToRendering.delete(drawing);
+    }
+
     clear() {
         this.drawingToRendering.clear();
     }

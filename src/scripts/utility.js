@@ -1,6 +1,14 @@
 'use strict'
 
 /**
+ * @typedef {Object} Rect
+ * @property {number} x
+ * @property {number} y
+ * @property {number} width
+ * @property {number} height
+ */
+
+/**
  * @param {string} query 
  * @param {ParentNode} element 
  * @returns {HTMLElement}
@@ -161,10 +169,23 @@ function clamp(value, min, max) {
 }
 
 /**
- * @param {{ x: number, y: number, width: number, height: number }[]} rects 
+ * @param {Rect} rect 
+ * @param {*} padding 
  */
-function boundRects(rects) {
-    const bounds = DOMRect.fromRect(rects[0]);
+function padRect(rect, padding) {
+    rect.x -= padding;
+    rect.y -= padding;
+    rect.width += padding * 2;
+    rect.height += padding * 2;
+}
+
+/**
+ * @param {Rect[]} rects
+ * @param {Rect} fallback
+ * @returns {Rect}
+ */
+function boundRects(rects, fallback = { x: 0, y: 0, width: 0, height: 0 }) {
+    const bounds = DOMRect.fromRect(rects[0] || fallback);
     rects.forEach((rect) => {
         const { x, y, width, height } = rect;
         let [top, left, bottom, right] = [y, x, y + height, x + width];
@@ -178,4 +199,13 @@ function boundRects(rects) {
         bounds.height = bottom - top;
     });
     return bounds;
+}
+
+/**
+ * @param {any} item 
+ * @param {any[]} array 
+ */
+function removeItemFromArray(item, array) {
+    const index = array.indexOf(item);
+    array.splice(index, 1);
 }

@@ -82,13 +82,10 @@ class DrawingsTabEditor {
         });
 
         setActionHandler("drawings/select/delete", () => {
-            const canvas = this.drawingsManager.getRendering(this.selectedDrawing).canvas;
-            canvas.remove();
-
-            const index = this.flicksyEditor.projectData.drawings.indexOf(this.selectedDrawing);
-            this.flicksyEditor.projectData.drawings.splice(index);
-
+            const drawing = this.selectedDrawing;
             this.setSelectedDrawing(undefined);
+            removeItemFromArray(drawing, this.flicksyEditor.projectData.drawings);
+            this.drawingsManager.removeDrawing(drawing);
         });
 
         setActionHandler("drawings/add/blank", async () => {
@@ -272,12 +269,8 @@ class DrawingsTabEditor {
             const { width, height } = rendering.canvas;
             return new DOMRect(x, y, width, height);
         });
-        const padding = 8;
-        const bounds = boundRects(rects);
-        bounds.x -= padding;
-        bounds.y -= padding;
-        bounds.width += padding*2;
-        bounds.height += padding*2;
+        const bounds = boundRects(rects, new DOMRect(0, 0, 160, 100));
+        padRect(bounds, 8);
         this.scene.frameRect(bounds);
     }
 

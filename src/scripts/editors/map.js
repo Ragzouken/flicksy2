@@ -56,13 +56,11 @@ class MapTabEditor {
         });
 
         setActionHandler("map/selected/delete", () => {
-            const canvas = sceneToPreviewRendering.get(this.selectedScene).canvas;
-            canvas.remove();
-
-            const index = this.flicksyEditor.projectData.scenes.indexOf(this.selectedScene);
-            this.flicksyEditor.projectData.scenes.splice(index);
-
+            const scene = this.selectedScene;
             this.setSelectedScene(undefined);
+            const canvas = sceneToPreviewRendering.get(scene).canvas;
+            canvas.remove();
+            removeItemFromArray(scene, this.flicksyEditor.projectData.scenes);
         });
     }
 
@@ -73,12 +71,8 @@ class MapTabEditor {
             const { width, height } = rendering.canvas;
             return new DOMRect(x, y, width, height);
         });
-        const padding = 8;
-        const bounds = boundRects(rects);
-        bounds.x -= padding;
-        bounds.y -= padding;
-        bounds.width += padding*2;
-        bounds.height += padding*2;
+        const bounds = boundRects(rects, new DOMRect(0, 0, 160, 100));
+        padRect(bounds, 8);
         this.scene.frameRect(bounds);
     }
 

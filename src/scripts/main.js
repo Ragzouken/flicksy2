@@ -9,8 +9,9 @@ class FlicksyEditor {
         this.projectData = data;
         this.refresh();
 
-        // reset drawing board
+        // reset tabs
         await setDrawingBoardDrawings(this.projectData.drawings);
+        await this.mapTabEditor.reloadFromProject(this.projectData);
     }
 
     async start() {

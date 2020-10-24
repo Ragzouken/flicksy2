@@ -34,6 +34,7 @@
  * @property {string} id
  * @property {string} name
  * @property {string[]} palette
+ * @property {string} start
  */
 
 /**
@@ -65,8 +66,16 @@ const EMPTY_PROJECT_DATA = {
             "#888888",
             "#444444",
             "#000000"
-        ]
+        ],
+        start: "0"
     },
     drawings: [],
-    scenes: []
+    scenes: [
+        {
+            id: "0",
+            name: "unnamed scene",
+            position: { x: 0, y: 0, z: 0 },
+            objects: []
+        }
+    ]
 }

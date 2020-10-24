@@ -134,6 +134,11 @@ input[type="text"], textarea {
     background: black;
 }
 
+input[type="text"][disabled] {
+    cursor: not-allowed;
+    background: rgb(0 0 0 / 50%);
+}
+
 textarea {
     resize: vertical;
 }

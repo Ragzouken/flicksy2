@@ -9,7 +9,9 @@
     .section
         h2 scenes
         h3 starting scene
-        button(data-action="map/pick-starting-scene") test1
+        .button-row
+            input(type="text" data-path="map/start" disabled)
+            button(data-action="map/pick-starting-scene") change
         h3 add scene
         button(data-action="map/add/blank") add blank
         h3 previews

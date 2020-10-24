@@ -4,9 +4,13 @@ class MapTabEditor {
         this.flicksyEditor = flicksyEditor;
         this.selectedScene = undefined;
 
+        this.mode = /** @type {"move" | "pick"} */ ("move");
+        this.onScenePicked = undefined;
+
         this.scene = new PanningScene(ONE("#map-scene"));
         this.scene.refresh();
 
+        this.startSceneButton = elementByPath("map/start", "input");
         this.nameInput = elementByPath("map/selected/name", "input");
         this.nameInput.addEventListener("input", () => {
             if (!this.selectedScene) return;
@@ -21,7 +25,7 @@ class MapTabEditor {
                 objects: [],
             };
             this.flicksyEditor.projectData.scenes.push(scene);
-            await initSceneInEditor(scene);
+            await initSceneInEditor(this, scene);
             this.setSelectedScene(scene);
         });
 
@@ -50,7 +54,7 @@ class MapTabEditor {
                 objects: [],
             };
             this.flicksyEditor.projectData.scenes.push(copy);
-            await initSceneInEditor(copy);
+            await initSceneInEditor(this, copy);
 
             this.setSelectedScene(copy);
         });
@@ -61,6 +65,14 @@ class MapTabEditor {
             const canvas = sceneToPreviewRendering.get(scene).canvas;
             canvas.remove();
             removeItemFromArray(scene, this.flicksyEditor.projectData.scenes);
+        });
+
+        setActionHandler("map/pick-starting-scene", () => {
+            this.onScenePicked = (scene) => {
+                this.flicksyEditor.projectData.details.start = scene.id;
+                this.startSceneButton.value = scene.name;
+            };
+            this.mode = "pick";
         });
     }
 
@@ -74,6 +86,17 @@ class MapTabEditor {
         const bounds = boundRects(rects, new DOMRect(0, 0, 160, 100));
         padRect(bounds, 8);
         this.scene.frameRect(bounds);
+    }
+
+    /** @param {FlicksyDataProject} project */
+    async reloadFromProject(project) {
+        const startId = project.details.start;
+        const startScene = project.scenes.find((scene) => scene.id === startId);
+        this.startSceneButton.value = startScene.name;
+
+        sceneToPreviewRendering.clear();
+        removeAllChildren(this.scene.container);
+        await Promise.all(project.scenes.map((scene) => initSceneInEditor(this, scene)));
     }
 
     /** @param {FlicksyDataScene} scene */
@@ -92,6 +115,12 @@ class MapTabEditor {
         }
     }
 
+    /** @param {FlicksyDataScene} scene */
+    pickScene(scene) {
+        this.mode = "move";
+        this.onScenePicked(scene);
+    }
+
     show() {
         this.scene.hidden = false;
         this.reframe();
@@ -106,16 +135,17 @@ class MapTabEditor {
 const sceneToPreviewRendering = new Map();
 
 /**
+ * @param {MapTabEditor} mapEditor
  * @param {FlicksyDataScene} scene
  */
-async function initSceneInEditor(scene) {
+async function initSceneInEditor(mapEditor, scene) {
     const rendering = createRendering2D(160, 100);
     sceneToPreviewRendering.set(scene, rendering);
     fillRendering2D(rendering, 'magenta');
 
     rendering.canvas.classList.toggle("object", true);
-    editor.mapTabEditor.scene.container.appendChild(rendering.canvas);
-    const object = new DragObjectTest(editor.mapTabEditor.scene, rendering.canvas);
+    mapEditor.scene.container.appendChild(rendering.canvas);
+    const object = new DragObjectTest(mapEditor.scene, rendering.canvas);
 
     rendering.canvas.style.setProperty("z-index", scene.position.z.toString());
 
@@ -131,12 +161,6 @@ async function initSceneInEditor(scene) {
         mouse.preMultiplySelf(object.scene.transform.inverse());
         return mouse;
     }
-
-    function mouseEventToPixel(event) {
-        const mouse = mouseEventToSceneTransform(event);
-        const pixel = object.transform.inverse().multiply(mouse);
-        return [pixel.e, pixel.f];
-    }
     
     function refreshCursors(event) {
         const grabbing = grab !== undefined;
@@ -144,11 +168,13 @@ async function initSceneInEditor(scene) {
         if (grabbing) document.body.style.setProperty("cursor", "grabbed");
         else document.body.style.removeProperty("cursor");
 
-        rendering.canvas.style.setProperty("cursor", grabbing ? "grabbed" : "grab");
+        rendering.canvas.style.setProperty("cursor", grabbing ? "grabbed" : mapEditor.mode === "move" ? "grab" : "pointer");
     }
 
     function pointerdownDrag(event) {
         killEvent(event);
+        mapEditor.setSelectedScene(scene);
+        
         // determine and save the relationship between mouse and element
         // G = M1^ . E (element relative to mouse)
         const mouse = mouseEventToSceneTransform(event);
@@ -171,8 +197,8 @@ async function initSceneInEditor(scene) {
     }
 
     object.element.addEventListener("pointerdown", (event) => {
-        editor.mapTabEditor.setSelectedScene(scene);
-        pointerdownDrag(event);
+        if (mapEditor.mode === "pick") mapEditor.pickScene(scene);
+        else pointerdownDrag(event);
         refreshCursors(event);
     });
 
@@ -193,7 +219,7 @@ async function initSceneInEditor(scene) {
     });
     
     document.addEventListener("pointerup", (event) => {
-        if (editor.mapTabEditor.scene.hidden) return;
+        if (mapEditor.scene.hidden) return;
         killEvent(event);
         grab = undefined;
         refreshCursors(event);

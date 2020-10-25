@@ -21,9 +21,14 @@ class SceneTabEditor {
         this.objectDialogueInput = elementByPath("scene/selected/dialogue", "textarea");
         this.objectDialogueInput.addEventListener("input", () => {
             if (!this.selectedObject) return;
-            this.selectedObject.behaviour.dialogue = this.objectDestinationInput.value;
+            this.selectedObject.behaviour.dialogue = this.objectDialogueInput.value;
         });
         this.objectDestinationInput = elementByPath("scene/selected/destination", "input");
+        this.objectScriptInput = elementByPath("scene/selected/script", "textarea");
+        this.objectScriptInput.addEventListener("input", () => {
+            if (!this.selectedObject) return;
+            this.selectedObject.behaviour.script = this.objectScriptInput.value;
+        });
 
         setActionHandler("scene/add/pick-drawing", async () => {
             // TODO
@@ -87,6 +92,7 @@ class SceneTabEditor {
             this.objectNameInput.value = this.selectedObject.name;
 
             this.objectDialogueInput.value = this.selectedObject.behaviour.dialogue;
+            this.objectScriptInput.value = this.selectedObject.behaviour.script;
             const scene = this.flicksyEditor.projectData.scenes.find((scene) => scene.id === this.selectedObject.behaviour.destination);
             this.objectDestinationInput.value = scene ? scene.name : "no change";
 

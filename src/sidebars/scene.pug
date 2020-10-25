@@ -31,7 +31,10 @@
             .button-row
                 button(data-action="scene/selected/duplicate") duplicate
                 button.delete(data-action="scene/selected/delete") delete
-        .section
+        .button-row
+            button(data-tab-toggle="scene/selected/mode/simple" data-tab-default) simple
+            button(data-tab-toggle="scene/selected/mode/script") script
+        .section(data-tab-body="scene/selected/mode/simple")
             h2 object behaviour
             h3 dialogue
             .button-row
@@ -42,3 +45,9 @@
             .button-row
                 input(type="text" data-path="scene/selected/destination" disabled)
                 button(data-action="map/pick-destination") change
+        .section(data-tab-body="scene/selected/mode/script")
+            h2 object behaviour
+            h3 script
+            .button-row
+                textarea(rows=8 spellcheck="false" data-path="scene/selected/script")
+

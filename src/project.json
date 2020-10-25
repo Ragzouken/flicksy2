@@ -62,7 +62,12 @@
                    "y":96,
                    "z":0
                 },
-                "drawing":"KjYJHtlIAztSeslXVTSgL"
+                "drawing":"KjYJHtlIAztSeslXVTSgL",
+                "behaviour": {
+                   "dialogue": "",
+                   "destination": "",
+                   "script": ""
+                }
              }
           ]
        }

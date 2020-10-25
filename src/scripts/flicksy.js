@@ -14,11 +14,19 @@
  */
 
 /**
+ * @typedef {Object} FlicksyDataObjectBehaviour
+ * @property {string} dialogue
+ * @property {string} destination
+ * @property {string} script
+ */
+
+/**
  * @typedef {Object} FlicksyDataObject
  * @property {string} id
  * @property {string} name
  * @property {Vector3} position
  * @property {string} drawing
+ * @property {FlicksyDataObjectBehaviour} behaviour
  */
 
 /**

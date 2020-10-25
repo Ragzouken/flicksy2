@@ -35,10 +35,10 @@
             h2 object behaviour
             h3 dialogue
             .button-row
-                textarea(rows=8)
+                textarea(rows=8 data-path="scene/selected/dialogue")
             p
             button preview
             h3 scene change
             .button-row
-                input(type="text" data-path="scene/selected/scene-change" disabled)
-                button(data-action="map/pick-scene-change") change
+                input(type="text" data-path="scene/selected/destination" disabled)
+                button(data-action="map/pick-destination") change

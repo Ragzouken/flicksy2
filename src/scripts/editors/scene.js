@@ -18,8 +18,18 @@ class SceneTabEditor {
             this.selectedObject.name = this.objectNameInput.value;
         });
         this.objectDrawingInput = elementByPath("scene/selected/drawing", "input");
+        this.objectDialogueInput = elementByPath("scene/selected/dialogue", "textarea");
+        this.objectDialogueInput.addEventListener("input", () => {
+            if (!this.selectedObject) return;
+            this.selectedObject.behaviour.dialogue = this.objectDestinationInput.value;
+        });
+        this.objectDestinationInput = elementByPath("scene/selected/destination", "input");
 
         setActionHandler("scene/add/pick-drawing", async () => {
+            // TODO
+        });
+
+        setActionHandler("scene/selected/pick-destination", async () => {
             // TODO
         });
 
@@ -45,6 +55,7 @@ class SceneTabEditor {
                 name: original.name + " copy",
                 position: { x: x+8, y: y+8, z: z+1 },
                 drawing: original.drawing,
+                behaviour: { ...original.behaviour },
             };
             this.activeScene.objects.push(copy);
             await initObjectInEditor(this, copy);
@@ -74,6 +85,10 @@ class SceneTabEditor {
             const rendering =  objectToRendering.get(this.selectedObject);
             rendering.canvas.classList.toggle("selected", true);
             this.objectNameInput.value = this.selectedObject.name;
+
+            this.objectDialogueInput.value = this.selectedObject.behaviour.dialogue;
+            const scene = this.flicksyEditor.projectData.scenes.find((scene) => scene.id === this.selectedObject.behaviour.destination);
+            this.objectDestinationInput.value = scene ? scene.name : "no change";
 
             const drawing = this.flicksyEditor.projectData.drawings.find((drawing) => drawing.id === this.selectedObject.drawing);
             this.objectDrawingInput.value = drawing.name;

@@ -12,6 +12,7 @@ class FlicksyEditor {
         // reset tabs
         await setDrawingBoardDrawings(this.projectData.drawings);
         await this.mapTabEditor.reloadFromProject(this.projectData);
+        await this.sceneTabEditor.setActiveScene(this.projectData, this.projectData.scenes[0]);
     }
 
     async start() {
@@ -21,13 +22,16 @@ class FlicksyEditor {
         this.projectTabEditor = new ProjectTabEditor(this);
         this.drawingsTabEditor = new DrawingsTabEditor(this);
         this.mapTabEditor = new MapTabEditor(this);
+        this.sceneTabEditor = new SceneTabEditor(this);
 
         setActionHandler("hide:sidebar", () => {
             this.drawingsTabEditor.hide();
             this.mapTabEditor.hide();
+            this.sceneTabEditor.hide();
         });
         setActionHandler("show:sidebar/drawings", () => this.drawingsTabEditor.show());
         setActionHandler("show:sidebar/map", () => this.mapTabEditor.show());
+        setActionHandler("show:sidebar/scene", () => this.sceneTabEditor.show());
 
         setActionHandler("sidebar/save", async () => {
             await this.prepareSave();

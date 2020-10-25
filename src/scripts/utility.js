@@ -177,6 +177,7 @@ function padRect(rect, padding) {
     rect.y -= padding;
     rect.width += padding * 2;
     rect.height += padding * 2;
+    return rect;
 }
 
 /**

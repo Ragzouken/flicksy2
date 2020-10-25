@@ -44,7 +44,6 @@ class MapTabEditor {
         });
 
         setActionHandler("map/selected/duplicate", async () => {
-            console.log("HELLO");
             const original = this.selectedScene;
             const { x, y, z } = original.position;
             const copy = {

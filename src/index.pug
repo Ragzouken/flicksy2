@@ -20,9 +20,11 @@ html
         script
             include scripts/htmlui.js
         script
-            include scripts/editors/map.js
-        script
             include scripts/editors/drawings.js
+        script
+            include scripts/editors/scene.js
+        script
+            include scripts/editors/map.js
         script
             include scripts/editors/project.js
         script
@@ -39,7 +41,7 @@ html
                 button(data-tab-toggle="sidebar/color" hidden) COLOR
                 button(data-tab-toggle="sidebar/project" data-tab-default) project
                 button(data-tab-toggle="sidebar/drawings") drawings
-                button(data-tab-toggle="sidebar/scene" disabled) scene
+                button(data-tab-toggle="sidebar/scene") scene
                 button(data-tab-toggle="sidebar/map") map
                 button(data-tab-toggle="sidebar/publish" disabled) publish
                 button(disabled) play
@@ -54,5 +56,6 @@ html
         #content
             #drawings-scene.scene(hidden)
             #map-scene.scene(hidden)
+            #scene-scene.scene(hidden)
         script#project-data(type="text/json")
             include project.json

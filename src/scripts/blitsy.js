@@ -29,11 +29,13 @@ function fillRendering2D(rendering, fillStyle = undefined) {
 
 /**
  * @param {CanvasRenderingContext2D} rendering
+ * @param {CanvasRenderingContext2D} destination
  */
-function copyRendering2D(rendering) {
-    const copy = createRendering2D(rendering.canvas.width, rendering.canvas.height);
-    copy.drawImage(rendering.canvas, 0, 0);
-    return copy;
+function copyRendering2D(rendering, destination = undefined) {
+    destination ||= createRendering2D(rendering.canvas.width, rendering.canvas.height);
+    resizeRendering2D(destination, rendering.canvas.width, rendering.canvas.height);
+    destination.drawImage(rendering.canvas, 0, 0);
+    return destination;
 }
 
 /**

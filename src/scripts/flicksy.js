@@ -14,7 +14,7 @@
  */
 
 /**
- * @typedef {Object} FlicksyDataObjectData
+ * @typedef {Object} FlicksyDataObject
  * @property {string} id
  * @property {string} name
  * @property {Vector3} position
@@ -26,7 +26,7 @@
  * @property {string} id
  * @property {string} name
  * @property {Vector3} position
- * @property {FlicksyDataObjectData[]} objects
+ * @property {FlicksyDataObject[]} objects
  */
 
 /**

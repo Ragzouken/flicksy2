@@ -6,31 +6,39 @@
         h3 dialogue styles
         ol
     .section
-        h2 scene: test
-        h3 change scene
-        button pick from scene map
+        h2 scene
+        h3 active scene
+        .button-row
+            input(type="text" data-path="scene/active/name")
+            button(data-action="scene/pick-active") switch
         h3 add object
-        button pick drawing
-    .section
-        h2 object appearance
-        h3 name
-        .button-row
-            input(type="text")
-            button.delete delete
-        h3 drawing
-        button pick drawing
-        h3 layering
-        .button-row
-            button raise
-            button lower
-    .section
-        h2 object behaviour
-        h3 dialogue
-        .button-row
-            textarea(rows=8)
-        p
-        button preview
-        h3 scene change
-        .button-row
-            button pick scene 
-            button.delete none
+        button(data-action="scene/add/pick-drawing") pick drawing
+    .container(data-path="scene/selected")
+        .section
+            h2 object appearance
+            h3 name
+            .button-row
+                input(type="text" data-path="scene/selected/name")
+            h3 drawing
+            .button-row
+                input(type="text" data-path="scene/selected/drawing" disabled)
+                button(data-action="scene/selected/pick-drawing") change
+            h3 layering
+            .button-row
+                button(data-action="scene/selected/raise") raise
+                button(data-action="scene/selected/lower") lower
+            h3 other
+            .button-row
+                button(data-action="scene/selected/duplicate") duplicate
+                button.delete(data-action="scene/selected/delete") delete
+        .section
+            h2 object behaviour
+            h3 dialogue
+            .button-row
+                textarea(rows=8)
+            p
+            button preview
+            h3 scene change
+            .button-row
+                input(type="text" data-path="scene/selected/scene-change" disabled)
+                button(data-action="map/pick-scene-change") change

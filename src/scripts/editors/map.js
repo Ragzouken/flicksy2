@@ -143,7 +143,7 @@ const sceneToPreviewRendering = new Map();
  * @param {FlicksyDataScene} scene
  */
 async function initSceneInEditor(mapEditor, scene) {
-    const rendering = createRendering2D(160, 100);
+    const rendering = renderScene(scene);
     sceneToPreviewRendering.set(scene, rendering);
     fillRendering2D(rendering, 'magenta');
 

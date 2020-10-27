@@ -289,3 +289,30 @@ class PanningScene {
 }
 
 const editor = new FlicksyEditor();
+
+/** 
+ * @param {FlicksyDataScene} scene
+ * @param {number} scale
+ */
+function renderScene(scene, scale = 1) {
+    const sceneRendering = createRendering2D(160 * scale, 100 * scale);
+    fillRendering2D(sceneRendering, 'black');
+    scene.objects.sort((a, b) => a.position.z - b.position.z);
+    scene.objects.forEach((object) => {
+        const drawing = editor.projectData.drawings.find((drawing) => drawing.id === object.drawing);
+        const canvas = editor.drawingsManager.getRendering(drawing).canvas;
+
+        sceneRendering.drawImage(
+            canvas,
+            object.position.x * scale, 
+            object.position.y * scale, 
+            canvas.width * scale, 
+            canvas.height * scale,
+        );
+    });
+    sceneRendering.fillStyle = 'white';
+    sceneRendering.font = "16px monospace";
+    sceneRendering.textBaseline = "hanging";
+    sceneRendering.fillText(scene.name, 0, 0, 160 * scale);
+    return sceneRendering;
+}

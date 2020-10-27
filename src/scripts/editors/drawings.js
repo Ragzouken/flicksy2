@@ -8,11 +8,13 @@ const brushes = [
 
 class DrawingsTabEditor {
     get drawingsManager() { return this.flicksyEditor.drawingsManager; }
+    get isPicking() { return this.onDrawingPicked !== undefined; }
 
     /** @param {FlicksyEditor} flicksyEditor */
     constructor(flicksyEditor) {
         this.flicksyEditor = flicksyEditor;
         this.selectedDrawing = undefined;
+        this.onDrawingPicked = undefined;
 
         this.nameInput = elementByPath("drawings/select/name", "input");
         this.widthInput = elementByPath("drawings/select/width", "input");
@@ -71,7 +73,7 @@ class DrawingsTabEditor {
             };
             this.flicksyEditor.projectData.drawings.push(copy);
             this.drawingsManager.insertDrawing(copy, copyRendering2D(originalRendering));
-            await initDrawingInEditor(copy);
+            await initDrawingInEditor(this, copy);
 
             this.setSelectedDrawing(copy);
         });
@@ -92,7 +94,7 @@ class DrawingsTabEditor {
             const drawing = drawingFromData("");
             this.flicksyEditor.projectData.drawings.push(drawing);
             this.drawingsManager.insertDrawing(drawing, createRendering2D(64, 64));
-            await initDrawingInEditor(drawing);
+            await initDrawingInEditor(this, drawing);
 
             this.setSelectedDrawing(drawing);
         });
@@ -113,7 +115,7 @@ class DrawingsTabEditor {
                 drawing.position.x = i * 8;
                 drawing.position.y = i * 8;
             });
-            await Promise.all(importedDrawings.map(initDrawingInEditor));
+            await Promise.all(importedDrawings.map((drawing) => initDrawingInEditor(this, drawing)));
 
             const palette = this.flicksyEditor.projectData.details.palette.slice(1).map(hexToRGB);
             const mapping = new Map();
@@ -160,14 +162,12 @@ class DrawingsTabEditor {
                 this.refresh();
             }
 
-            this.flicksyEditor.enterExclusive();
-            elementByPath("toggle:sidebar/color", "button").click();
+            elementByPath("toggle:modes/color", "button").click();
         });
 
         setActionHandler("color/confirm", () => {
             this.colorReplacer = undefined;
-            this.flicksyEditor.exitExclusive();
-            elementByPath("toggle:sidebar/drawings", "button").click();
+            elementByPath("toggle:modes/main", "button").click();
         });
 
         const hswheelCanvas = /** @type {HTMLCanvasElement} */ (document.getElementById("hswheel"));
@@ -297,6 +297,15 @@ class DrawingsTabEditor {
         elementByPath(`toggle:drawings/palette/${index}`, "button").click();
     }
 
+    /** @param {FlicksyDataDrawing} drawing */
+    pickDrawing(drawing) {
+        if (this.onDrawingPicked) {
+            const onPicked = this.onDrawingPicked;
+            this.onDrawingPicked = undefined;
+            onPicked(drawing);
+        }
+    }
+
     refresh() {
         ALL("#draw-color-palette div").forEach((element, i) => {
             if (i === 0) return;
@@ -314,9 +323,10 @@ function snap(transform) {
 }
 
 /**
+ * @param {DrawingsTabEditor} drawingsEditor
  * @param {FlicksyDataDrawing} drawing
  */
-async function initDrawingInEditor(drawing) {
+async function initDrawingInEditor(drawingsEditor, drawing) {
     let rendering = editor.drawingsManager.drawingToRendering.get(drawing)
                  || await editor.drawingsManager.loadDrawing(drawing);
 
@@ -377,14 +387,20 @@ async function initDrawingInEditor(drawing) {
         const drawable = mode === "draw" && tool !== "move";
         const grabbing = grab !== undefined;
         const drawing = draw || line;
+        const picking = drawingsEditor.isPicking;
 
         if (grabbing) document.body.style.setProperty("cursor", "grabbed");
         else if (drawing) document.body.style.setProperty("cursor", "crosshair")
         else document.body.style.removeProperty("cursor");
 
-        rendering.canvas.style.setProperty("cursor", grabbing ? "grabbed" : drawable ? "crosshair" : "grab");
+        const objectCursor = grabbing ? "grabbed" 
+                           : picking ? "pointer" 
+                           : drawable ? "crosshair" 
+                           : "grab";
 
-        if (hovered || drawing) {
+        rendering.canvas.style.setProperty("cursor", objectCursor);
+
+        if ((hovered && !picking) || drawing) {
             if (drawable) {
                 cursor.canvas.hidden = false;
                 cursor.canvas.style.setProperty("transform", object.element.style.getPropertyValue("transform"));
@@ -480,6 +496,12 @@ async function initDrawingInEditor(drawing) {
     }
 
     object.element.addEventListener("pointerdown", (event) => {
+        if (drawingsEditor.isPicking) {
+            killEvent(event);
+            drawingsEditor.pickDrawing(drawing);
+            return;
+        }
+
         editor.drawingsTabEditor.setSelectedDrawing(drawing);
 
         const mode = getMode();
@@ -573,7 +595,7 @@ async function setDrawingBoardDrawings(drawings) {
     editor.drawingsManager.clear();
     removeAllChildren(editor.drawingsTabEditor.scene.container);
     editor.drawingsTabEditor.scene.container.appendChild(editor.drawingsTabEditor.cursor.canvas);
-    await Promise.all(drawings.map(initDrawingInEditor));
+    await Promise.all(drawings.map((drawing) => initDrawingInEditor(editor.drawingsTabEditor, drawing)));
 }
 
 function uint32ToRGB(uint32) {

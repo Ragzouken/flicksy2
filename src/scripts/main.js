@@ -19,6 +19,7 @@ class FlicksyEditor {
         initui();
 
         this.sidebarTabs = document.getElementById("menu-buttons");
+        this.pickerTab = new PickerTab(this);
         this.projectTabEditor = new ProjectTabEditor(this);
         this.drawingsTabEditor = new DrawingsTabEditor(this);
         this.mapTabEditor = new MapTabEditor(this);
@@ -49,16 +50,100 @@ class FlicksyEditor {
         this.drawingsTabEditor.refresh();
     }
 
-    enterExclusive() {
-        this.sidebarTabs.hidden = true;
-    }
-
-    exitExclusive() {
-        this.sidebarTabs.hidden = false;
-    }
-
     async prepareSave() {
         this.drawingsManager.flushChanges();
+    }
+
+    /** 
+     * @param {PickerOptions} options 
+     * @returns {Promise<FlicksyDataScene>}
+     */
+    async pickScene(options) {
+        return new Promise((resolve, reject) => {
+            this.mapTabEditor.onScenePicked = (scene) => this.pickerTab.onPicked(scene);
+            this.mapTabEditor.mode = "pick";
+
+            const cleanup = () => {
+                this.mapTabEditor.mode = "move";
+                elementByPath("toggle:modes/main", "button").click();
+            }
+
+            const onCancel = () => reject("cancelled");
+            const onPicked = (scene) => {
+                cleanup();
+                resolve(scene);
+            }
+
+            options.onCancel = onCancel;
+            options.onPicked = onPicked;
+
+            elementByPath("toggle:modes/picker", "button").click();
+            elementByPath("toggle:sidebar/map", "button").click();
+            this.pickerTab.setup(options);
+        });
+    }
+
+    /** 
+     * @param {PickerOptions} options 
+     * @returns {Promise<FlicksyDataDrawing>}
+     */
+    async pickDrawing(options) {
+        return new Promise((resolve, reject) => {
+            this.drawingsTabEditor.onDrawingPicked = (drawing) => this.pickerTab.onPicked(drawing);
+
+            const cleanup = () => {
+                elementByPath("toggle:modes/main", "button").click();
+            }
+
+            const onCancel = () => reject("cancelled");
+            const onPicked = (drawing) => {
+                cleanup();
+                resolve(drawing);
+            }
+
+            options.onCancel = onCancel;
+            options.onPicked = onPicked;
+
+            elementByPath("toggle:modes/picker", "button").click();
+            elementByPath("toggle:sidebar/drawings", "button").click();
+            this.pickerTab.setup(options);
+        });
+    }
+}
+
+/** @typedef PickerOptions
+ * @property {string} heading
+ * @property {string} prompt
+ * @property {() => void} onCancel
+ * @property {(any) => void} onPicked
+ * @property {boolean} allowNone
+ */
+
+class PickerTab {
+    /** @param {FlicksyEditor} flicksyEditor */
+    constructor(flicksyEditor) {
+        this.flicksyEditor = flicksyEditor;
+        this.onPicked = undefined;
+
+        this.headingText = elementByPath("picker/heading", "h3");
+        this.promptText = elementByPath("picker/prompt", "p");
+        this.noneButton = elementByPath("picker/none", "button");
+        this.cancelButton = elementByPath("picker/cancel", "button");
+    }
+
+    /** @param {PickerOptions} options */
+    setup(options) {
+        this.headingText.innerHTML = options.heading;
+        this.promptText.innerHTML = options.prompt;
+        this.noneButton.hidden = !options.allowNone;
+
+        const onNone = options.allowNone 
+                     ? () => options.onPicked(undefined)
+                     : () => {}; 
+
+        this.onPicked = options.onPicked;
+        setActionHandler("picker/none", onNone);
+        setActionHandler("picker/cancel", options.onCancel);
     }
 }
 

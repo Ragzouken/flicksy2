@@ -31,11 +31,37 @@ class SceneTabEditor {
         });
 
         setActionHandler("scene/add/pick-drawing", async () => {
-            // TODO
+        });
+
+        setActionHandler("scene/selected/pick-drawing", async () => {
+            try {
+                const drawing = await this.flicksyEditor.pickDrawing({
+                    heading: "pick object drawing",
+                    prompt: "pick what this object looks like",
+                    allowNone: false,
+                    onCancel: undefined, onPicked: undefined,
+                })
+                this.selectedObject.drawing = drawing.id;
+                copyRendering2D(
+                    this.flicksyEditor.drawingsManager.getRendering(drawing),
+                    objectToRendering.get(this.selectedObject),
+                )
+            } catch(e) {}
+            elementByPath("toggle:sidebar/scene", "button").click();
         });
 
         setActionHandler("scene/selected/pick-destination", async () => {
-            // TODO
+            try {
+                const scene = await this.flicksyEditor.pickScene({
+                    heading: "pick destination scene",
+                    prompt: "pick the scene to enter after clicking the object and finishing its dialogue",
+                    allowNone: true,
+                    onCancel: undefined, onPicked: undefined,
+                })
+                this.selectedObject.behaviour.destination = scene ? scene.id : "";
+                this.setSelectedObject(this.selectedObject);
+            } catch(e) {}
+            elementByPath("toggle:sidebar/scene", "button").click();
         });
 
         setActionHandler("scene/selected/raise", () => {

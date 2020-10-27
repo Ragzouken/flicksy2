@@ -162,7 +162,7 @@ textarea {
     padding: 0; gap: 1em;
 }
 
-.sidebar-panel > .container { 
+#sidebar .container { 
     display: flex; flex-direction: column;
     padding: 0; gap: 1em;
 }

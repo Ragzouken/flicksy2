@@ -66,12 +66,17 @@ class MapTabEditor {
             removeItemFromArray(scene, this.flicksyEditor.projectData.scenes);
         });
 
-        setActionHandler("map/pick-starting-scene", () => {
-            this.onScenePicked = (scene) => {
+        setActionHandler("map/pick-starting-scene", async () => {
+            try {
+                const scene = await this.flicksyEditor.pickScene({
+                    heading: "pick starting scene",
+                    prompt: "pick the scene to start in when the page first loads",
+                    allowNone: false,
+                    onCancel: undefined, onPicked: undefined,
+                })
                 this.flicksyEditor.projectData.details.start = scene.id;
                 this.startSceneButton.value = scene.name;
-            };
-            this.mode = "pick";
+            } catch(e) {}
         });
     }
 

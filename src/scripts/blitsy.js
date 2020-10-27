@@ -33,7 +33,8 @@ function fillRendering2D(rendering, fillStyle = undefined) {
  */
 function copyRendering2D(rendering, destination = undefined) {
     destination ||= createRendering2D(rendering.canvas.width, rendering.canvas.height);
-    resizeRendering2D(destination, rendering.canvas.width, rendering.canvas.height);
+    destination.canvas.width = rendering.canvas.width;
+    destination.canvas.height = rendering.canvas.height;
     destination.drawImage(rendering.canvas, 0, 0);
     return destination;
 }

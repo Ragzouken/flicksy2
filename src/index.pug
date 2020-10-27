@@ -35,24 +35,32 @@ html
             include scripts/main.js
     body(onload="editor.start()")
         #sidebar
-            .section
-                h2 non-functional wip
-            #menu-buttons.button-bag
-                button(data-tab-toggle="sidebar/color" hidden) COLOR
-                button(data-tab-toggle="sidebar/project" data-tab-default) project
-                button(data-tab-toggle="sidebar/drawings") drawings
-                button(data-tab-toggle="sidebar/scene") scene
-                button(data-tab-toggle="sidebar/map") map
-                button(data-tab-toggle="sidebar/publish" disabled) publish
-                button(disabled) play
-                button(data-action="sidebar/save") save
-            #menu-content
-                include sidebars/project.pug
-                include sidebars/drawings.pug
-                include sidebars/scene.pug
-                include sidebars/map.pug
-                include sidebars/publish.pug
+            .container(hidden)
+                button(data-tab-toggle="modes/main" data-tab-default) main
+                button(data-tab-toggle="modes/picker") picker
+                button(data-tab-toggle="modes/color") color
+            .container(data-tab-body="modes/main")
+                .section
+                    h2 non-functional wip
+                #menu-buttons.button-bag
+                    button(data-tab-toggle="sidebar/project" data-tab-default) project
+                    button(data-tab-toggle="sidebar/drawings") drawings
+                    button(data-tab-toggle="sidebar/scene") scene
+                    button(data-tab-toggle="sidebar/map") map
+                    button(data-tab-toggle="sidebar/publish" disabled) publish
+                    button(disabled) play
+                    button(data-action="sidebar/save") save
+                #menu-content
+                    include sidebars/project.pug
+                    include sidebars/drawings.pug
+                    include sidebars/scene.pug
+                    include sidebars/map.pug
+                    include sidebars/publish.pug
+            div(data-tab-body="modes/picker")
+                include sidebars/picker.pug
+            div(data-tab-body="modes/color")
                 include sidebars/color.pug
+
         #content
             #drawings-scene.scene(hidden)
             #map-scene.scene(hidden)

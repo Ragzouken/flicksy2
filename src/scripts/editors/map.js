@@ -78,6 +78,14 @@ class MapTabEditor {
                 this.startSceneButton.value = scene.name;
             } catch(e) {}
         });
+
+        setActionHandler("map/regenerate-previews", async () => {
+            this.flicksyEditor.projectData.scenes.forEach((scene) => {
+                const render = renderScene(scene);
+                const preview = sceneToPreviewRendering.get(scene);
+                copyRendering2D(render, preview);
+            });
+        });
     }
 
     reframe() {
@@ -145,7 +153,6 @@ const sceneToPreviewRendering = new Map();
 async function initSceneInEditor(mapEditor, scene) {
     const rendering = renderScene(scene);
     sceneToPreviewRendering.set(scene, rendering);
-    fillRendering2D(rendering, 'magenta');
 
     rendering.canvas.classList.toggle("object", true);
     mapEditor.scene.container.appendChild(rendering.canvas);

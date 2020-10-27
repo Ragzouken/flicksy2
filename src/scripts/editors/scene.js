@@ -168,11 +168,13 @@ class SceneTabEditor {
     }
 
     hide() {
-        this.scene.hidden = true;
-        copyRendering2D(
-            renderScene(this.activeScene),
-            sceneToPreviewRendering.get(this.activeScene),
-        );
+        if (!this.scene.hidden) {
+            this.scene.hidden = true;
+            copyRendering2D(
+                renderScene(this.activeScene),
+                sceneToPreviewRendering.get(this.activeScene),
+            );
+        }
     }
 
     reframe() {

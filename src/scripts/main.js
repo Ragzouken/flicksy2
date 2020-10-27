@@ -295,6 +295,7 @@ const editor = new FlicksyEditor();
  * @param {number} scale
  */
 function renderScene(scene, scale = 1) {
+    console.log("RENDERING SCENE");
     const sceneRendering = createRendering2D(160 * scale, 100 * scale);
     fillRendering2D(sceneRendering, 'black');
     scene.objects.sort((a, b) => a.position.z - b.position.z);

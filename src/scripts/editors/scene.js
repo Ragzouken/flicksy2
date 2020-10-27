@@ -51,6 +51,19 @@ class SceneTabEditor {
             elementByPath("toggle:sidebar/scene", "button").click();
         });
 
+        setActionHandler("scene/pick-active", async () => {
+            try {
+                const scene = await this.flicksyEditor.pickScene({
+                    heading: "pick a scene to edit",
+                    prompt: "pick a scene to start editing",
+                    allowNone: false,
+                    onCancel: undefined, onPicked: undefined,
+                })
+                this.setActiveScene(this.flicksyEditor.projectData, scene);
+            } catch(e) {}
+            elementByPath("toggle:sidebar/scene", "button").click();
+        });
+
         setActionHandler("scene/selected/pick-drawing", async () => {
             try {
                 const drawing = await this.flicksyEditor.pickDrawing({

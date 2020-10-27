@@ -43,6 +43,11 @@ class MapTabEditor {
             canvas.style.setProperty("z-index", this.selectedScene.position.z.toString());
         });
 
+        setActionHandler("map/selected/edit", () => {
+            this.flicksyEditor.sceneTabEditor.setActiveScene(this.flicksyEditor.projectData, this.selectedScene);
+            elementByPath("toggle:sidebar/scene", "button").click();
+        });
+
         setActionHandler("map/selected/duplicate", async () => {
             const original = this.selectedScene;
             const { x, y, z } = original.position;
@@ -206,6 +211,12 @@ async function initSceneInEditor(mapEditor, scene) {
         scene.position.x = object.transform.e;
         scene.position.y = object.transform.f;
     }
+
+    object.element.addEventListener("dblclick", (event) => {
+        killEvent(event);
+        editor.sceneTabEditor.setActiveScene(editor.projectData, scene);
+        elementByPath("toggle:sidebar/scene", "button").click();
+    })
 
     object.element.addEventListener("pointerdown", (event) => {
         if (mapEditor.mode === "pick") mapEditor.pickScene(scene);

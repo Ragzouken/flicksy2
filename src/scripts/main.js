@@ -335,8 +335,6 @@ function renderScene(scene, scale = 1, label = true) {
 function pointcastScene(scene, point) {
     const { x: sx, y: sy } = point;
 
-    console.log(sx, sy);
-
     scene.objects.sort((a, b) => a.position.z - b.position.z);
     scene.objects.reverse();
     for (let object of scene.objects) {

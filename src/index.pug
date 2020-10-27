@@ -28,6 +28,8 @@ html
         script
             include scripts/editors/project.js
         script
+            include scripts/editors/play.js
+        script
             include scripts/flicksy.js
         script
             include scripts/utility.js
@@ -48,7 +50,7 @@ html
                     button(data-tab-toggle="sidebar/scene") scene
                     button(data-tab-toggle="sidebar/map") map
                     button(data-tab-toggle="sidebar/publish" disabled) publish
-                    button(disabled) play
+                    button(data-tab-toggle="sidebar/play") play
                     button(data-action="sidebar/save") save
                 #menu-content
                     include sidebars/project.pug
@@ -56,6 +58,7 @@ html
                     include sidebars/scene.pug
                     include sidebars/map.pug
                     include sidebars/publish.pug
+                    include sidebars/play.pug
             div(data-tab-body="modes/picker")
                 include sidebars/picker.pug
             div(data-tab-body="modes/color")
@@ -65,5 +68,6 @@ html
             #drawings-scene.scene(hidden)
             #map-scene.scene(hidden)
             #scene-scene.scene(hidden)
+            #play-scene.scene(hidden)
         script#project-data(type="text/json")
             include project.json

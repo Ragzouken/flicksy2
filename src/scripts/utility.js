@@ -170,7 +170,7 @@ function clamp(value, min, max) {
 
 /**
  * @param {Rect} rect 
- * @param {*} padding 
+ * @param {number} padding 
  */
 function padRect(rect, padding) {
     rect.x -= padding;
@@ -178,6 +178,17 @@ function padRect(rect, padding) {
     rect.width += padding * 2;
     rect.height += padding * 2;
     return rect;
+}
+
+/**
+ * @param {Rect} rect
+ * @param {{ x: number, y: number }} point 
+ */
+function rectContainsPoint(rect, point) {
+    return point.x >= rect.x
+        && point.y >= rect.y
+        && point.x <  rect.x + rect.width
+        && point.y <  rect.y + rect.height;
 }
 
 /**

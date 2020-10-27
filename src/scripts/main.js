@@ -24,15 +24,18 @@ class FlicksyEditor {
         this.drawingsTabEditor = new DrawingsTabEditor(this);
         this.mapTabEditor = new MapTabEditor(this);
         this.sceneTabEditor = new SceneTabEditor(this);
+        this.playTab = new PlayTab(this);
 
         setActionHandler("hide:sidebar", () => {
             this.drawingsTabEditor.hide();
             this.mapTabEditor.hide();
             this.sceneTabEditor.hide();
+            this.playTab.hide();
         });
         setActionHandler("show:sidebar/drawings", () => this.drawingsTabEditor.show());
         setActionHandler("show:sidebar/map", () => this.mapTabEditor.show());
         setActionHandler("show:sidebar/scene", () => this.sceneTabEditor.show());
+        setActionHandler("show:sidebar/play", () => this.playTab.show());
 
         setActionHandler("sidebar/save", async () => {
             await this.prepareSave();
@@ -255,6 +258,8 @@ class PanningScene {
 
             this.refresh();
         });
+
+        this.refresh();
     }
 
     refresh() {
@@ -294,7 +299,7 @@ const editor = new FlicksyEditor();
  * @param {FlicksyDataScene} scene
  * @param {number} scale
  */
-function renderScene(scene, scale = 1) {
+function renderScene(scene, scale = 1, label = true) {
     const sceneRendering = createRendering2D(160 * scale, 100 * scale);
     fillRendering2D(sceneRendering, 'black');
     scene.objects.sort((a, b) => a.position.z - b.position.z);
@@ -310,9 +315,42 @@ function renderScene(scene, scale = 1) {
             canvas.height * scale,
         );
     });
-    sceneRendering.fillStyle = 'white';
-    sceneRendering.font = "16px monospace";
-    sceneRendering.textBaseline = "hanging";
-    sceneRendering.fillText(scene.name, 0, 0, 160 * scale);
+    if (label) {
+        sceneRendering.fillStyle = 'white';
+        sceneRendering.strokeStyle = 'black';
+        sceneRendering.lineWidth = 4;
+        sceneRendering.font = "16px monospace";
+        sceneRendering.textBaseline = "hanging";
+        sceneRendering.strokeText(scene.name, 0, 0, 160 * scale);
+        sceneRendering.fillText(scene.name, 0, 0, 160 * scale);
+    }
     return sceneRendering;
+}
+
+/**
+ * @param {FlicksyDataScene} scene
+ * @param {{ x: number, y: number }} point
+ * @returns {FlicksyDataObject}
+ */
+function pointcastScene(scene, point) {
+    const { x: sx, y: sy } = point;
+
+    console.log(sx, sy);
+
+    scene.objects.sort((a, b) => a.position.z - b.position.z);
+    scene.objects.reverse();
+    for (let object of scene.objects) {
+        const drawing = editor.projectData.drawings.find((drawing) => drawing.id === object.drawing);
+        const rendering = editor.drawingsManager.getRendering(drawing);
+
+        const { x, y } = object.position;
+        const { width, height } = rendering.canvas;
+        const rect = { x, y, width, height };
+
+        if (rectContainsPoint(rect, point)) {
+            const [ cx, cy ] = [ sx - object.position.x, sy - object.position.y ];
+            const pixel = rendering.getImageData(cx, cy, 1, 1).data[0];
+            if (pixel !== 0) return object;
+        }
+    }
 }

@@ -78,6 +78,14 @@ body {
     outline: 1px dotted red;
 }
 
+#scene-scene {
+    background: black;
+}
+
+#play-scene canvas {
+    cursor: pointer;
+}
+
 #sidebar {
     width: 320px;
     overflow: hidden scroll;

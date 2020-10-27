@@ -8,7 +8,6 @@ class MapTabEditor {
         this.onScenePicked = undefined;
 
         this.scene = new PanningScene(ONE("#map-scene"));
-        this.scene.refresh();
 
         this.startSceneButton = elementByPath("map/start", "input");
         this.nameInput = elementByPath("map/selected/name", "input");

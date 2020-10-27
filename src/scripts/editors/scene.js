@@ -31,6 +31,24 @@ class SceneTabEditor {
         });
 
         setActionHandler("scene/add/pick-drawing", async () => {
+            try {
+                const drawing = await this.flicksyEditor.pickDrawing({
+                    heading: "pick object drawing",
+                    prompt: "pick what this object looks like",
+                    allowNone: false,
+                    onCancel: undefined, onPicked: undefined,
+                })
+                const object = {
+                    id: nanoid(),
+                    name: "unnamed object",
+                    position: { x: 0, y: 0, z: 0 },
+                    drawing: drawing.id,
+                    behaviour: { script: "", dialogue: "", destination: "" },
+                };
+                this.activeScene.objects.push(object);
+                await initObjectInEditor(this, object);
+            } catch(e) {}
+            elementByPath("toggle:sidebar/scene", "button").click();
         });
 
         setActionHandler("scene/selected/pick-drawing", async () => {
@@ -140,11 +158,13 @@ class SceneTabEditor {
         objectToRendering.clear();
         removeAllChildren(this.scene.container);
         await Promise.all(scene.objects.map((object) => initObjectInEditor(this, object)));
+        this.refreshDrawings();
     }
 
     show() {
         this.scene.hidden = false;
         this.reframe();
+        this.setActiveScene(editor.projectData, this.activeScene);
     }
 
     hide() {
@@ -153,6 +173,14 @@ class SceneTabEditor {
 
     reframe() {
         this.scene.frameRect(padRect(new DOMRect(0, 0, 160, 100), 8));
+    }
+
+    refreshDrawings() {
+        this.activeScene.objects.forEach((object) => {
+            const drawing = this.flicksyEditor.projectData.drawings.find((drawing) => drawing.id === object.drawing);
+            const rendering = this.flicksyEditor.drawingsManager.getRendering(drawing);
+            copyRendering2D(rendering, objectToRendering.get(object));
+        });
     }
 }
 
@@ -164,9 +192,9 @@ const objectToRendering = new Map();
  * @param {FlicksyDataObject} object
  */
 async function initObjectInEditor(sceneEditor, object) {
-    const rendering = createRendering2D(64, 64);
+    const drawing = sceneEditor.flicksyEditor.projectData.drawings.find((drawing) => drawing.id === object.drawing);
+    const rendering = copyRendering2D(editor.drawingsManager.getRendering(drawing));
     objectToRendering.set(object, rendering);
-    fillRendering2D(rendering, 'magenta');
 
     rendering.canvas.classList.toggle("object", true);
     sceneEditor.scene.container.appendChild(rendering.canvas);

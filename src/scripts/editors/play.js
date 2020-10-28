@@ -2,11 +2,11 @@ class PlayTab {
     /** @param {FlicksyEditor} flicksyEditor */
     constructor(flicksyEditor) {
         this.flicksyEditor = flicksyEditor;
+        this.player = new FlicksyPlayer();
 
         this.scene = new PanningScene(ONE("#play-scene"));
-        this.rendering = createRendering2D(160, 100);
-        this.rendering.canvas.classList.add('.object');
-        this.scene.container.appendChild(this.rendering.canvas);
+        this.player.sceneRendering.canvas.classList.add('.object');
+        this.scene.container.appendChild(this.player.sceneRendering.canvas);
 
         setActionHandler("play/restart", () => this.restart());
 
@@ -22,14 +22,10 @@ class PlayTab {
             return [mouse.e, mouse.f];
         }
 
-        this.rendering.canvas.addEventListener("click", (event) => {
+        this.player.sceneRendering.canvas.addEventListener("click", (event) => {
             killEvent(event);
             const [x, y] = mouseEventToPixel(event);
-
-            const scene = this.flicksyEditor.projectData.scenes.find((scene) => scene.id === this.flicksyEditor.projectData.details.start);
-            const object = pointcastScene(scene, { x, y });
-
-            console.log(object ? object.name : "none");
+            this.player.click(x, y);
         });
     }
 
@@ -44,9 +40,7 @@ class PlayTab {
     
     restart() {
         this.scene.frameRect(padRect(new DOMRect(0, 0, 160, 100), 8));
-
-        const scene = this.flicksyEditor.projectData.scenes.find((scene) => scene.id === this.flicksyEditor.projectData.details.start);
-        const render = renderScene(scene, 1, false);
-        this.rendering.drawImage(render.canvas, 0, 0);
+        this.player.restart();
+        this.player.render();
     }
 }

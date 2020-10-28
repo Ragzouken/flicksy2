@@ -1,4 +1,6 @@
 class SceneTabEditor {
+    get isPicking() { return this.onObjectPicked !== undefined; }
+
     /** @param {FlicksyEditor} flicksyEditor */
     constructor(flicksyEditor) {
         this.flicksyEditor = flicksyEditor;
@@ -6,6 +8,8 @@ class SceneTabEditor {
         this.activeScene = undefined;
         /** @type {FlicksyDataObject} */
         this.selectedObject = undefined;
+
+        this.onObjectPicked = undefined;
 
         this.scene = new PanningScene(ONE("#scene-scene"));
         this.scene.refresh();
@@ -132,6 +136,65 @@ class SceneTabEditor {
             canvas.remove();
             removeItemFromArray(object, this.activeScene.objects);
         });
+
+        const makeReplacer = (initial) => {
+            const start = this.objectScriptInput.selectionStart || 0;
+            const end = this.objectScriptInput.selectionEnd || 0;
+            return (text) => insertText(initial, text, start, end);
+        }
+
+        setActionHandler("scene/selected/script/reference/scene", async () => {
+            const replacer = makeReplacer(this.selectedObject.behaviour.script);
+            
+            try {
+                const scene = await this.flicksyEditor.pickScene({
+                    heading: "pick scene",
+                    prompt: "pick a scene to reference in an object's script",
+                    allowNone: true,
+                });
+                this.selectedObject.behaviour.script = replacer(`"${scene ? scene.id : ""}"`);
+                this.objectScriptInput.value = this.selectedObject.behaviour.script;
+            } catch (e) { console.log(e) }
+            elementByPath("toggle:sidebar/scene", "button").click();
+        });
+
+        setActionHandler("scene/selected/script/reference/drawing", async () => {
+            const replacer = makeReplacer(this.selectedObject.behaviour.script);
+            
+            try {
+                const drawing = await this.flicksyEditor.pickDrawing({
+                    heading: "pick drawing",
+                    prompt: "pick a drawing to reference in an object's script",
+                    allowNone: true,
+                });
+                this.selectedObject.behaviour.script = replacer(`"${drawing ? drawing.id : ""}"`);
+                this.objectScriptInput.value = this.selectedObject.behaviour.script;
+            } catch (e) { console.log(e) }
+            elementByPath("toggle:sidebar/scene", "button").click();
+        });
+
+        setActionHandler("scene/selected/script/reference/object", async () => {
+            const replacer = makeReplacer(this.selectedObject.behaviour.script);
+            const activeScene = this.activeScene;
+            const selectedObject = this.selectedObject;
+            
+            try {
+                const scene = await this.flicksyEditor.pickScene({
+                    heading: "pick scene",
+                    prompt: "pick the scene containing an object to reference in an object's script",
+                    allowNone: false,
+                });
+                const object = await this.flicksyEditor.pickObject({
+                    heading: "pick object",
+                    prompt: "pick an object to reference in an object's script",
+                    allowNone: false,
+                }, scene);
+                selectedObject.behaviour.script = replacer(`"${object ? object.id : ""}"`);
+            } catch (e) { console.log(e) }
+            elementByPath("toggle:sidebar/scene", "button").click();
+            this.setActiveScene(this.flicksyEditor.projectData, activeScene);
+            this.setSelectedObject(selectedObject);
+        });
     }
 
     /** @param {FlicksyDataObject} object */
@@ -201,6 +264,15 @@ class SceneTabEditor {
             copyRendering2D(rendering, objectToRendering.get(object));
         });
     }
+
+    /** @param {FlicksyDataObject} object */
+    pickObject(object) {
+        if (this.onObjectPicked) {
+            const onPicked = this.onObjectPicked;
+            this.onObjectPicked = undefined;
+            onPicked(object);
+        }
+    }
 }
 
 /** @type {Map<FlicksyDataObject, CanvasRenderingContext2D>} */
@@ -236,11 +308,12 @@ async function initObjectInEditor(sceneEditor, object) {
     
     function refreshCursors(event) {
         const grabbing = grab !== undefined;
+        const picking = sceneEditor.isPicking;
 
         if (grabbing) document.body.style.setProperty("cursor", "grabbed");
         else document.body.style.removeProperty("cursor");
 
-        rendering.canvas.style.setProperty("cursor", grabbing ? "grabbed" : "grab");
+        rendering.canvas.style.setProperty("cursor", grabbing ? "grabbed" : picking ? "pointer" : "grab");
     }
 
     function pointerdownDrag(event) {
@@ -269,6 +342,12 @@ async function initObjectInEditor(sceneEditor, object) {
     }
 
     draggable.element.addEventListener("pointerdown", (event) => {
+        if (sceneEditor.isPicking) {
+            killEvent(event);
+            sceneEditor.pickObject(object);
+            return;
+        }
+
         pointerdownDrag(event);
         refreshCursors(event);
     });

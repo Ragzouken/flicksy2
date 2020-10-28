@@ -58,7 +58,7 @@ class FlicksyEditor {
     }
 
     /** 
-     * @param {PickerOptions} options 
+     * @param {Partial<PickerOptions>} options 
      * @returns {Promise<FlicksyDataScene>}
      */
     async pickScene(options) {
@@ -87,7 +87,7 @@ class FlicksyEditor {
     }
 
     /** 
-     * @param {PickerOptions} options 
+     * @param {Partial<PickerOptions>} options 
      * @returns {Promise<FlicksyDataDrawing>}
      */
     async pickDrawing(options) {
@@ -109,6 +109,35 @@ class FlicksyEditor {
 
             elementByPath("toggle:modes/picker", "button").click();
             elementByPath("toggle:sidebar/drawings", "button").click();
+            this.pickerTab.setup(options);
+        });
+    }
+
+    /** 
+     * @param {Partial<PickerOptions>} options 
+     * @param {FlicksyDataScene} scene
+     * @returns {Promise<FlicksyDataObject>}
+     */
+    async pickObject(options, scene) {
+        return new Promise((resolve, reject) => {
+            this.sceneTabEditor.setActiveScene(editor.projectData, scene);
+            this.sceneTabEditor.onObjectPicked = (object) => this.pickerTab.onPicked(object);
+
+            const cleanup = () => {
+                elementByPath("toggle:modes/main", "button").click();
+            }
+
+            const onCancel = () => reject("cancelled");
+            const onPicked = (object) => {
+                cleanup();
+                resolve(object);
+            }
+
+            options.onCancel = onCancel;
+            options.onPicked = onPicked;
+
+            elementByPath("toggle:modes/picker", "button").click();
+            elementByPath("toggle:sidebar/scene", "button").click();
             this.pickerTab.setup(options);
         });
     }

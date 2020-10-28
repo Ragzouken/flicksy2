@@ -221,3 +221,16 @@ function removeItemFromArray(item, array) {
     const index = array.indexOf(item);
     array.splice(index, 1);
 }
+
+/**
+ * 
+ * @param {string} original 
+ * @param {string} insert 
+ * @param {number} start 
+ * @param {number} end 
+ */
+function insertText(original, insert, start, end) {
+    const left = original.substring(0, start);
+    const right = original.substring(end);
+    return `${left}${insert}${right}`;
+}

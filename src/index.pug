@@ -51,7 +51,6 @@ html
                     button(data-tab-toggle="sidebar/drawings") drawings
                     button(data-tab-toggle="sidebar/scene") scene
                     button(data-tab-toggle="sidebar/map") map
-                    button(data-tab-toggle="sidebar/publish" disabled) publish
                     button(data-tab-toggle="sidebar/play") play
                     button(data-action="sidebar/save") save
                 #menu-content
@@ -59,7 +58,6 @@ html
                     include sidebars/drawings.pug
                     include sidebars/scene.pug
                     include sidebars/map.pug
-                    include sidebars/publish.pug
                     include sidebars/play.pug
             div(data-tab-body="modes/picker")
                 include sidebars/picker.pug

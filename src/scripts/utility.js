@@ -234,3 +234,11 @@ function insertText(original, insert, start, end) {
     const right = original.substring(end);
     return `${left}${insert}${right}`;
 }
+
+/**
+ * @param {number} min 
+ * @param {number} max 
+ */
+function range(min, max) {
+    return Array.from(new Array(max-min+1), (x, i) => i + min);
+}

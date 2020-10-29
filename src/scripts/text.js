@@ -13,12 +13,6 @@
  */
 
 /**
- * @typedef {Object} Vector2
- * @property {number} x
- * @property {number} y
- */
-
-/**
  * @typedef {Object} BlitsyGlyph
  * @property {HTMLCanvasElement} image
  * @property {Vector2} position
@@ -26,6 +20,13 @@
  * @property {boolean} hidden
  * @property {string} fillStyle
  * @property {Map<string, any>} styles
+ */
+
+/**
+ * @typedef {Object} BlitsyTextRenderOptions
+ * @property {BlitsyFont} font
+ * @property {number} lineCount
+ * @property {number} lineWidth
  */
 
 /** @typedef {BlitsyGlyph[]} BlitsyPage */
@@ -86,8 +87,10 @@ function copyImageRect(source, rect) {
  * @param {BlitsyPage} page 
  * @param {number} width
  * @param {number} height
+ * @param {number} ox
+ * @param {number} oy
  */
-function renderPage(page, width, height)
+function renderPage(page, width, height, ox = 0, oy = 0)
 {
     const result = createRendering2D(width, height);
     const buffer = createRendering2D(width, height);
@@ -97,16 +100,15 @@ function renderPage(page, width, height)
         if (glyph.hidden) continue;
 
         // padding + position + offset
-        const dx = glyph.position.x + glyph.offset.x;
-        const dy = glyph.position.y + glyph.offset.y;
+        const x = ox + glyph.position.x + glyph.offset.x;
+        const y = oy + glyph.position.y + glyph.offset.y;
         
         // draw tint layer
         result.fillStyle = glyph.fillStyle;
-        console.log(result.fillStyle)
-        result.fillRect(dx, dy, glyph.image.width, glyph.image.height);
+        result.fillRect(x, y, glyph.image.width, glyph.image.height);
         
         // draw text layer
-        buffer.drawImage(glyph.image, dx, dy);
+        buffer.drawImage(glyph.image, x, y);
     }
 
     // draw text layer in tint color
@@ -127,6 +129,12 @@ const defaultStyleHandler = (styles, style) => {
     }
 }
 
+/**
+ * @param {string} script 
+ * @param {BlitsyTextRenderOptions} options 
+ * @param {*} styleHandler 
+ * @returns {BlitsyPage[]}
+ */
 function scriptToPages(script, options, styleHandler = defaultStyleHandler) {
     const tokens = tokeniseScript(script);
     const commands = tokensToCommands(tokens);
@@ -210,8 +218,13 @@ function tokensToCommands(tokens) {
     return commands;
 }
 
-function commandsToPages(commands, layout, styleHandler) {
-    commandsBreakLongSpans(commands, layout);
+/**
+ * @param {*} commands 
+ * @param {BlitsyTextRenderOptions} options 
+ * @param {*} styleHandler 
+ */
+function commandsToPages(commands, options, styleHandler) {
+    commandsBreakLongSpans(commands, options);
 
     const styles = new Map();
     const pages = [];
@@ -225,12 +238,12 @@ function commandsToPages(commands, layout, styleHandler) {
     }
 
     function endPage() { 
-        do { endLine(); } while (currLine % layout.lineCount !== 0)
+        do { endLine(); } while (currLine % options.lineCount !== 0)
     }
 
     function endLine() {
         currLine += 1;
-        if (currLine === layout.lineCount) newPage();
+        if (currLine === options.lineCount) newPage();
     }
 
     function doBreak(target) {
@@ -246,9 +259,9 @@ function commandsToPages(commands, layout, styleHandler) {
             if (command.type === "break") return i;
             if (command.type === "style") continue;
 
-            width += computeLineWidth(layout.font, command.char);
+            width += computeLineWidth(options.font, command.char);
             // if we overshot, look backward for last possible breakable glyph
-            if (width > layout.lineWidth) {
+            if (width > options.lineWidth) {
                 const result = find(commands, i, -1, command => command.type === "glyph" && command.breakable);
                 if (result) return result[1];
             }
@@ -257,8 +270,8 @@ function commandsToPages(commands, layout, styleHandler) {
 
     function addGlyph(command, offset) {
         const codepoint = command.char.codePointAt(0);
-        const char = layout.font.characters.get(codepoint);
-        const position = { x: offset, y: currLine * (layout.font.lineHeight + 4) };
+        const char = options.font.characters.get(codepoint);
+        const position = { x: offset, y: currLine * (options.font.lineHeight + 4) };
         const glyph = { 
             image: char.image,
             position: position,
@@ -310,8 +323,10 @@ function commandsToPages(commands, layout, styleHandler) {
 /**
  * Find spans of unbreakable commands that are too long to fit within a page 
  * width and amend those spans so that breaking permitted in all positions. 
+ * @param {*} commands
+ * @param {BlitsyTextRenderOptions} options
  */
-function commandsBreakLongSpans(commands, context) {
+function commandsBreakLongSpans(commands, options) {
     const canBreak = (command) => command.type === "break" 
                                || (command.type === "glyph" && command.breakable); 
 
@@ -319,15 +334,19 @@ function commandsBreakLongSpans(commands, context) {
 
     for (const span of spans) {
         const glyphs = span.filter(command => command.type === "glyph");
-        const charWidths = glyphs.map(command => computeLineWidth(context.font, command.char));
+        const charWidths = glyphs.map(command => computeLineWidth(options.font, command.char));
         const spanWidth = charWidths.reduce((x, y) => x + y, 0);
 
-        if (spanWidth > context.lineWidth) {
+        if (spanWidth > options.lineWidth) {
             for (const command of glyphs) command.breakable = true;
         }
     }
 }
 
+/**
+ * @param {BlitsyFont} font 
+ * @param {string} line 
+ */
 function computeLineWidth(font, line) {
     let width = 0;
     for (const char of line) {

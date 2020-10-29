@@ -1,6 +1,12 @@
 'use strict'
 
 /**
+ * @typedef {Object} Vector2
+ * @property {number} x
+ * @property {number} y
+ */
+
+/**
  * @typedef {Object} Rect
  * @property {number} x
  * @property {number} y
@@ -241,4 +247,14 @@ function insertText(original, insert, start, end) {
  */
 function range(min, max) {
     return Array.from(new Array(max-min+1), (x, i) => i + min);
+}
+
+/**
+ * @param {number} min 
+ * @param {number} max 
+ */
+function randomInt(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1) + min);
 }

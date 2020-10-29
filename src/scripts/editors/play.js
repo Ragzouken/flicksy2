@@ -5,8 +5,8 @@ class PlayTab {
         this.player = new FlicksyPlayer();
 
         this.scene = new PanningScene(ONE("#play-scene"));
-        this.player.sceneRendering.canvas.classList.add('.object');
-        this.scene.container.appendChild(this.player.sceneRendering.canvas);
+        this.player.viewRendering.canvas.classList.add('.object');
+        this.scene.container.appendChild(this.player.viewRendering.canvas);
 
         setActionHandler("play/restart", () => this.restart());
 
@@ -22,7 +22,10 @@ class PlayTab {
             return [mouse.e, mouse.f];
         }
 
-        this.player.sceneRendering.canvas.addEventListener("click", (event) => {
+        this.player.viewRendering.canvas.addEventListener("pointerdown", (event) => {
+            event.stopPropagation();
+        });
+        this.player.viewRendering.canvas.addEventListener("click", (event) => {
             killEvent(event);
             const [x, y] = mouseEventToPixel(event);
             this.player.click(x, y);
@@ -39,7 +42,10 @@ class PlayTab {
     }
     
     restart() {
-        this.scene.frameRect(padRect(new DOMRect(0, 0, 160, 100), 8));
+        const width = this.player.viewRendering.canvas.width;
+        const height = this.player.viewRendering.canvas.height;
+
+        this.scene.frameRect(padRect(new DOMRect(0, 0, width, height), 8));
         this.player.restart();
         this.player.render();
     }

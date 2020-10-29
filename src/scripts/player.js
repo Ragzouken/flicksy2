@@ -1,11 +1,30 @@
+const CONT_ICON_DATA = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAGCAYAAAD68A/GAAAAAXNSR0IArs4c6QAAADNJREFUCJmNzrENACAMA0E/++/8NAhRBEg6yyc5SePUoNqwDICnWP04ww1tWOHfUqqf1UwGcw4T9WFhtgAAAABJRU5ErkJggg==";
+const STOP_ICON_DATA = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAGCAYAAAD68A/GAAAAAXNSR0IArs4c6QAAACJJREFUCJljZICC/////2fAAhgZGRn////PwIRNEhsYCgoBIkQHCf7H+yAAAAAASUVORK5CYII="
+
 class FlicksyPlayer {
     constructor() {
+        this.viewRendering = createRendering2D(160*2, 100*2);
         this.sceneRendering = createRendering2D(160, 100);
+
+        this.dialoguePlayer = new DialoguePlayer();
 
         /** @type {Map<string, CanvasRenderingContext2D>} */
         this.drawingIdToRendering = new Map();
         /** @type {Map<string, FlicksyDataScene>} */
         this.sceneIdToScene = new Map();
+    }
+
+    async load() {
+        await this.dialoguePlayer.load();
+
+        let prev;
+        const timer = (next) => {
+            prev ||= Date.now();
+            this.update(next - prev);
+            prev = next;
+            window.requestAnimationFrame(timer);
+        }
+        timer();
     }
 
     restart() {
@@ -29,6 +48,13 @@ class FlicksyPlayer {
         };
     }
 
+    update(dt) {
+        if (!this.gameState) return;
+
+        if (this.dialoguePlayer.active) this.dialoguePlayer.update(dt);
+        this.render();
+    }
+
     render() {
         const scene = this.sceneIdToScene.get(this.gameState.currentScene);
 
@@ -44,6 +70,18 @@ class FlicksyPlayer {
                 canvas.height,
             );
         });
+
+        this.viewRendering.drawImage(this.sceneRendering.canvas, 0, 0, 160*2, 100*2);
+
+        const dw = this.dialoguePlayer.dialogueRendering.canvas.width;
+        const dh = this.dialoguePlayer.dialogueRendering.canvas.height;
+        const x = (160*2-dw)/2;
+        const y = (100+(100-dh)/2);
+
+        if (this.dialoguePlayer.active) {
+            this.dialoguePlayer.render();
+            this.viewRendering.drawImage(this.dialoguePlayer.dialogueRendering.canvas, x, y);
+        }
     }
 
     /**
@@ -51,6 +89,13 @@ class FlicksyPlayer {
      * @param {number} y 
      */
     click(x, y) {
+        if (this.dialoguePlayer.active) {
+            this.dialoguePlayer.skip();
+            return;
+        }
+
+        x /= 2;
+        y /= 2;
         const scene = this.sceneIdToScene.get(this.gameState.currentScene);
         const object = pointcastScene(scene, { x, y });
 
@@ -61,7 +106,7 @@ class FlicksyPlayer {
                 RESKIN: (drawing) => object.drawing = drawing,
                 REDRAW: () => this.render(),
                 MOVE: (scene) => this.gameState.currentScene = scene,
-                SAY: console.log,
+                SAY: (dialogue) => this.dialoguePlayer.queueScript(dialogue),
             }
 
             try {
@@ -73,7 +118,7 @@ class FlicksyPlayer {
         }
 
         if (object.behaviour.dialogue) {
-            console.log(object.behaviour.dialogue);
+            this.dialoguePlayer.queueScript(object.behaviour.dialogue);
         }
 
         if (object.behaviour.destination) {
@@ -81,5 +126,151 @@ class FlicksyPlayer {
         }
 
         this.render();
+    }
+}
+
+class DialoguePlayer {
+    get active() {
+        return this.currentPage !== undefined;
+    }
+
+    get currentGlyph() {
+        return this.currentPage ? this.currentPage[this.showGlyphCount] : undefined;
+    } 
+
+    constructor() {
+        this.dialogueRendering = createRendering2D(8, 8);
+        this.restart();
+    }
+
+    async load() {
+        this.font = await loadBasicFont(/** @type {HTMLScriptElement} */ (ONE("#font-data")));
+        this.contIcon = await loadImage(CONT_ICON_DATA);
+        this.stopIcon = await loadImage(STOP_ICON_DATA);
+    }
+
+    restart() {
+        this.showCharTime = .05 * 1000;
+        /** @type {BlitsyPage[]} */
+        this.queuedPages = [];
+
+        this.setPage(undefined);
+    }
+
+    /** @param {BlitsyPage} page */
+    setPage(page) {
+        this.currentPage = page;
+        this.pageTime = 0;
+        this.showGlyphCount = 0;
+        this.showGlyphElapsed = 0;
+        this.pageGlyphCount = page ? page.length : 0;
+    }
+
+    /** @param {number} dt */
+    update(dt) {
+        if (!this.currentPage)
+            return;
+
+        this.pageTime += dt;
+        this.showGlyphElapsed += dt;
+
+        this.applyStyle();
+
+        while (this.showGlyphElapsed > this.showCharTime && this.showGlyphCount < this.pageGlyphCount) {
+            this.showGlyphElapsed -= this.showCharTime;
+            this.revealNextChar();
+            this.applyStyle();
+        }
+    }
+
+    render() {
+        const padding = 8;
+        const lines = 3;
+        const height = ((lines + 1) * 4) + this.font.lineHeight * lines + 15;
+        const width = 256;
+        const lineWidth = width - padding * 2;
+
+        resizeRendering2D(this.dialogueRendering, width, height);
+        fillRendering2D(this.dialogueRendering, "maroon");
+        const render = renderPage(this.currentPage, width, height, padding, padding);
+        this.dialogueRendering.drawImage(render.canvas, 0, 0);
+
+        if (this.showGlyphCount === this.pageGlyphCount) {
+            const prompt = this.queuedPages.length > 0 
+                         ? this.contIcon 
+                         : this.stopIcon;
+            this.dialogueRendering.drawImage(prompt, width-padding-prompt.width, height-4-prompt.height);
+        }
+    }
+
+    revealNextChar() {
+        this.showGlyphCount = Math.min(this.showGlyphCount + 1, this.pageGlyphCount);
+        
+        if (!this.currentPage) return;
+
+        this.currentPage.forEach((glyph, i) => {
+            if (i < this.showGlyphCount) glyph.hidden = false;
+        });
+    }
+
+    revealAll() {
+        if (!this.currentPage) return;
+
+        this.showGlyphCount = this.currentPage.length;
+        this.revealNextChar();
+    }
+
+    cancel() {
+        this.queuedPages.length = 0;
+        this.currentPage = undefined;
+    }
+
+    skip() {
+        if (this.showGlyphCount === this.pageGlyphCount) {
+            this.moveToNextPage();
+        } else {
+            this.showGlyphCount = this.pageGlyphCount;
+
+            if (this.currentPage)
+                this.currentPage.forEach((glyph) => glyph.hidden = false);
+        }
+    }
+
+    moveToNextPage() {
+        const nextPage = this.queuedPages.shift();
+        this.setPage(nextPage);
+    }
+
+    queueScript(script) {
+        const pages = scriptToPages(script, { font: this.font, lineWidth: 240, lineCount: 3 });
+        this.queuedPages.push(...pages);
+        
+        if (!this.currentPage)
+            this.moveToNextPage();
+    }
+
+    applyStyle() {
+        if (!this.currentPage) return;
+
+        const current = this.currentGlyph;
+
+        if (current) {
+            if (current.styles.has("delay")) {
+                this.showCharTime = parseFloat(current.styles.get("delay"));
+            } else {
+                this.showCharTime = .05 * 1000;
+            }
+        }
+
+        this.currentPage.forEach((glyph, i) => {
+            if (glyph.styles.has("r"))
+                glyph.hidden = false;
+            if (glyph.styles.has("clr"))
+                glyph.fillStyle = glyph.styles.get("clr");
+            if (glyph.styles.has("shk")) 
+                glyph.offset = { x: randomInt(-1, 1), y: randomInt(-1, 1) };
+            if (glyph.styles.has("wvy"))
+                glyph.offset.y = (Math.sin(i + this.pageTime * 5) * 3) | 0;
+        });
     }
 }

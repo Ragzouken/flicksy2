@@ -25,6 +25,7 @@ class FlicksyEditor {
         this.mapTabEditor = new MapTabEditor(this);
         this.sceneTabEditor = new SceneTabEditor(this);
         this.playTab = new PlayTab(this);
+        await this.playTab.player.load();
 
         setActionHandler("hide:sidebar", () => {
             this.drawingsTabEditor.hide();

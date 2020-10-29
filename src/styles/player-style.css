@@ -1,0 +1,8 @@
+[data-play] #content {
+    background: black;
+}
+
+[data-play] #play-scene {
+    width: 320px; height: 200px;
+    outline: 1px solid #222222;
+}

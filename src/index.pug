@@ -9,6 +9,8 @@ html
             include styles/base-style.css
         style#editor-style
             include styles/editor-style.css
+        style#player-style
+            include styles/player-style.css
         // third party libraries
         script
             include library/FileSaver.min.js
@@ -46,8 +48,6 @@ html
                 button(data-tab-toggle="modes/picker") picker
                 button(data-tab-toggle="modes/color") color
             .container(data-tab-body="modes/main")
-                .section
-                    h2 non-functional wip
                 #menu-buttons.button-bag
                     button(data-tab-toggle="sidebar/project" data-tab-default) project
                     button(data-tab-toggle="sidebar/drawings") drawings
@@ -66,10 +66,10 @@ html
             div(data-tab-body="modes/color")
                 include sidebars/color.pug
         #content
-            #drawings-scene.scene(hidden)
-            #map-scene.scene(hidden)
-            #scene-scene.scene(hidden)
-            #play-scene.scene(hidden)
+            #drawings-scene.scene(hidden data-empty)
+            #map-scene.scene(hidden data-empty)
+            #scene-scene.scene(hidden data-empty)
+            #play-scene.scene(hidden data-empty)
         script#project-data(type="text/json")
             include project.json
         script#font-data(type="text" data-char-width="8" data-char-height="13" data-runs="0-0,32-126,160-544,546-563,592-685,688-750,768-847,864-879,884-885,890-890,894-894,900-908,910-929,931-974,976-1014,1024-1158,1160-1230,1232-1269,1272-1273,1280-1295,1329-1366,1369-1375,1377-1415,1417-1418,1456-1465,1467-1476,1488-1514,1520-1524")

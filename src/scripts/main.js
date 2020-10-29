@@ -44,9 +44,16 @@ class FlicksyEditor {
             localStorage.setItem("flicksy/test", json);
         });
 
-        const json = localStorage.getItem("flicksy/test") || ONE("#project-data").innerHTML;
-        const data = JSON.parse(json);
-        await this.setProjectData(data);
+        const dataElement = ONE("#project-data");
+        const play = ONE("body").getAttribute("data-play") === "true";
+
+        if (play) {
+            await this.setProjectData(JSON.parse(dataElement.innerHTML));
+            elementByPath("toggle:sidebar/play", "button").click();
+        } else {
+            const json = localStorage.getItem("flicksy/test") || dataElement.innerHTML;
+            await this.setProjectData(JSON.parse(json));
+        }        
     }
 
     refresh() {
@@ -237,12 +244,13 @@ class PanningScene {
         this.viewport = container.parentElement;
         this.container = container;
         this.transform = new DOMMatrix();
+        this.locked = false;
 
         let grab = undefined;
     
         const viewport = this.container.parentElement;
         viewport.addEventListener("pointerdown", (event) => {
-            if (this.hidden) return;
+            if (this.hidden || this.locked) return;
             killEvent(event);
     
             // determine and save the relationship between mouse and scene
@@ -324,61 +332,3 @@ class PanningScene {
 }
 
 const editor = new FlicksyEditor();
-
-/** 
- * @param {FlicksyDataScene} scene
- * @param {number} scale
- */
-function renderScene(scene, scale = 1, label = true) {
-    const sceneRendering = createRendering2D(160 * scale, 100 * scale);
-    fillRendering2D(sceneRendering, 'black');
-    scene.objects.sort((a, b) => a.position.z - b.position.z);
-    scene.objects.forEach((object) => {
-        const drawing = editor.projectData.drawings.find((drawing) => drawing.id === object.drawing);
-        const canvas = editor.drawingsManager.getRendering(drawing).canvas;
-
-        sceneRendering.drawImage(
-            canvas,
-            object.position.x * scale, 
-            object.position.y * scale, 
-            canvas.width * scale, 
-            canvas.height * scale,
-        );
-    });
-    if (label) {
-        sceneRendering.fillStyle = 'white';
-        sceneRendering.strokeStyle = 'black';
-        sceneRendering.lineWidth = 4;
-        sceneRendering.font = "16px monospace";
-        sceneRendering.textBaseline = "hanging";
-        sceneRendering.strokeText(scene.name, 0, 0, 160 * scale);
-        sceneRendering.fillText(scene.name, 0, 0, 160 * scale);
-    }
-    return sceneRendering;
-}
-
-/**
- * @param {FlicksyDataScene} scene
- * @param {{ x: number, y: number }} point
- * @returns {FlicksyDataObject}
- */
-function pointcastScene(scene, point) {
-    const { x: sx, y: sy } = point;
-
-    scene.objects.sort((a, b) => a.position.z - b.position.z);
-    scene.objects.reverse();
-    for (let object of scene.objects) {
-        const drawing = editor.projectData.drawings.find((drawing) => drawing.id === object.drawing);
-        const rendering = editor.drawingsManager.getRendering(drawing);
-
-        const { x, y } = object.position;
-        const { width, height } = rendering.canvas;
-        const rect = { x, y, width, height };
-
-        if (rectContainsPoint(rect, point)) {
-            const [ cx, cy ] = [ sx - object.position.x, sy - object.position.y ];
-            const pixel = rendering.getImageData(cx, cy, 1, 1).data[0];
-            if (pixel !== 0) return object;
-        }
-    }
-}

@@ -82,6 +82,10 @@ body {
     background: black;
 }
 
+#play-scene {
+    outline: none;
+}
+
 #play-scene canvas {
     cursor: pointer;
 }

@@ -5,6 +5,7 @@ class PlayTab {
         this.player = new FlicksyPlayer();
 
         this.scene = new PanningScene(ONE("#play-scene"));
+        this.scene.locked = true;
         this.player.viewRendering.canvas.classList.add('.object');
         this.scene.container.appendChild(this.player.viewRendering.canvas);
 
@@ -30,6 +31,8 @@ class PlayTab {
             const [x, y] = mouseEventToPixel(event);
             this.player.click(x, y);
         });
+
+        window.addEventListener("resize", () => this.reframe());
     }
 
     show() {
@@ -39,13 +42,17 @@ class PlayTab {
 
     hide() {
         this.scene.hidden = true;
+        this.player.stop();
     }
     
-    restart() {
+    reframe() {
         const width = this.player.viewRendering.canvas.width;
         const height = this.player.viewRendering.canvas.height;
-
         this.scene.frameRect(padRect(new DOMRect(0, 0, width, height), 8));
+    }
+
+    restart() {
+        this.reframe();
         this.player.restart();
         this.player.render();
     }

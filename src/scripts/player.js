@@ -20,11 +20,15 @@ class FlicksyPlayer {
         let prev;
         const timer = (next) => {
             prev ||= Date.now();
-            this.update(next - prev);
+            this.update((next - prev) / 1000.);
             prev = next;
             window.requestAnimationFrame(timer);
         }
         timer();
+    }
+
+    stop() {
+        this.gameState = undefined;
     }
 
     restart() {
@@ -150,7 +154,7 @@ class DialoguePlayer {
     }
 
     restart() {
-        this.showCharTime = .05 * 1000;
+        this.showCharTime = .05;
         /** @type {BlitsyPage[]} */
         this.queuedPages = [];
 
@@ -191,7 +195,7 @@ class DialoguePlayer {
         const lineWidth = width - padding * 2;
 
         resizeRendering2D(this.dialogueRendering, width, height);
-        fillRendering2D(this.dialogueRendering, "maroon");
+        fillRendering2D(this.dialogueRendering, "#222222");
         const render = renderPage(this.currentPage, width, height, padding, padding);
         this.dialogueRendering.drawImage(render.canvas, 0, 0);
 
@@ -258,7 +262,7 @@ class DialoguePlayer {
             if (current.styles.has("delay")) {
                 this.showCharTime = parseFloat(current.styles.get("delay"));
             } else {
-                this.showCharTime = .05 * 1000;
+                this.showCharTime = .05;
             }
         }
 
@@ -272,5 +276,63 @@ class DialoguePlayer {
             if (glyph.styles.has("wvy"))
                 glyph.offset.y = (Math.sin(i + this.pageTime * 5) * 3) | 0;
         });
+    }
+}
+
+/** 
+ * @param {FlicksyDataScene} scene
+ * @param {number} scale
+ */
+function renderScene(scene, scale = 1, label = true) {
+    const sceneRendering = createRendering2D(160 * scale, 100 * scale);
+    fillRendering2D(sceneRendering, 'black');
+    scene.objects.sort((a, b) => a.position.z - b.position.z);
+    scene.objects.forEach((object) => {
+        const drawing = editor.projectData.drawings.find((drawing) => drawing.id === object.drawing);
+        const canvas = editor.drawingsManager.getRendering(drawing).canvas;
+
+        sceneRendering.drawImage(
+            canvas,
+            object.position.x * scale, 
+            object.position.y * scale, 
+            canvas.width * scale, 
+            canvas.height * scale,
+        );
+    });
+    if (label) {
+        sceneRendering.fillStyle = 'white';
+        sceneRendering.strokeStyle = 'black';
+        sceneRendering.lineWidth = 4;
+        sceneRendering.font = "16px monospace";
+        sceneRendering.textBaseline = "hanging";
+        sceneRendering.strokeText(scene.name, 0, 0, 160 * scale);
+        sceneRendering.fillText(scene.name, 0, 0, 160 * scale);
+    }
+    return sceneRendering;
+}
+
+/**
+ * @param {FlicksyDataScene} scene
+ * @param {{ x: number, y: number }} point
+ * @returns {FlicksyDataObject}
+ */
+function pointcastScene(scene, point) {
+    const { x: sx, y: sy } = point;
+
+    scene.objects.sort((a, b) => a.position.z - b.position.z);
+    scene.objects.reverse();
+    for (let object of scene.objects) {
+        const drawing = editor.projectData.drawings.find((drawing) => drawing.id === object.drawing);
+        const rendering = editor.drawingsManager.getRendering(drawing);
+
+        const { x, y } = object.position;
+        const { width, height } = rendering.canvas;
+        const rect = { x, y, width, height };
+
+        if (rectContainsPoint(rect, point)) {
+            const [ cx, cy ] = [ sx - object.position.x, sy - object.position.y ];
+            const alpha = rendering.getImageData(cx, cy, 1, 1).data[3];
+            if (alpha !== 0) return object;
+        }
     }
 }

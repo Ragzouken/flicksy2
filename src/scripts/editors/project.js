@@ -40,9 +40,14 @@ class ProjectTabEditor {
             await this.flicksyEditor.prepareSave();
             const name = this.flicksyEditor.projectData.details.name + ".html";
             const json = JSON.stringify(this.flicksyEditor.projectData);
-            ONE("#project-data").innerHTML = json;
+            const dataElement = ONE("#project-data");
+            dataElement.innerHTML = json;
             
             const clone = /** @type {HTMLElement} */ (document.documentElement.cloneNode(true));
+            ALL("[data-empty]", clone).forEach(removeAllChildren);
+            ONE("#sidebar", clone).hidden = true;
+            ONE("body", clone).setAttribute("data-play", "true");
+
             const blob = textToBlob(clone.outerHTML, "text/html");
             saveAs(blob, name);
         });

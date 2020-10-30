@@ -9,12 +9,14 @@
             li export your finished game using the <em>export html</em> button below
     .section
         h2 playback
-        h3 restart
+        h3 game
         button.delete(data-action="play/restart") restart
         h3 scene
-        .button-row
-            input(type="text" disabled data-path="play/scene")
-            button(data-action="play/pick-scene") jump
+        .container
+            .button-row
+                input(type="text" disabled data-path="play/scene")
+                button(data-action="play/pick-scene") jump
+            button(data-action="play/edit-scene") open scene in editor
     .section
         h2 publish
         h3 export

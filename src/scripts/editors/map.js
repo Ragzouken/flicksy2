@@ -90,6 +90,11 @@ class MapTabEditor {
                 copyRendering2D(render, preview);
             });
         });
+
+        setActionHandler("map/selected/play", () => {
+            elementByPath("toggle:sidebar/play", "button").click();
+            this.flicksyEditor.playTab.restart(this.selectedScene.id);
+        });
     }
 
     reframe() {
@@ -97,7 +102,7 @@ class MapTabEditor {
         const rects = pairs.map(([scene, rendering]) => {
             const { x, y } = scene.position;
             const { width, height } = rendering.canvas;
-            return new DOMRect(x, y, width, height);
+            return new DOMRect(x, y, width/2, height/2);
         });
         const bounds = boundRects(rects, new DOMRect(0, 0, 160, 100));
         padRect(bounds, 8);
@@ -166,6 +171,7 @@ async function initSceneInEditor(mapEditor, scene) {
 
     object.transform.e = scene.position.x;
     object.transform.f = scene.position.y;
+    object.transform.scaleSelf(.5);
     object.refresh();
 
     let grab = undefined;

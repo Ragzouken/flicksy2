@@ -195,6 +195,11 @@ class SceneTabEditor {
             this.setActiveScene(this.flicksyEditor.projectData, activeScene);
             this.setSelectedObject(selectedObject);
         });
+
+        setActionHandler("scene/active/play", () => {
+            elementByPath("toggle:sidebar/play", "button").click();
+            this.flicksyEditor.playTab.restart(this.activeScene.id);
+        });
     }
 
     /** @param {FlicksyDataObject} object */

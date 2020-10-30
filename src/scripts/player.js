@@ -31,7 +31,7 @@ class FlicksyPlayer {
         this.gameState = undefined;
     }
 
-    restart() {
+    restart(startScene = undefined) {
         // make copies of drawings from editor
         this.drawingIdToRendering.clear();
         editor.projectData.drawings.forEach((drawing) => {
@@ -48,7 +48,7 @@ class FlicksyPlayer {
 
         // set initial game state
         this.gameState = {
-            currentScene: editor.projectData.details.start,
+            currentScene: startScene || editor.projectData.details.start,
         };
     }
 
@@ -192,7 +192,6 @@ class DialoguePlayer {
         const lines = 3;
         const height = ((lines + 1) * 4) + this.font.lineHeight * lines + 15;
         const width = 256;
-        const lineWidth = width - padding * 2;
 
         resizeRendering2D(this.dialogueRendering, width, height);
         fillRendering2D(this.dialogueRendering, "#222222");
@@ -283,7 +282,7 @@ class DialoguePlayer {
  * @param {FlicksyDataScene} scene
  * @param {number} scale
  */
-function renderScene(scene, scale = 1, label = true) {
+function renderScene(scene, scale = 2) {
     const sceneRendering = createRendering2D(160 * scale, 100 * scale);
     fillRendering2D(sceneRendering, 'black');
     scene.objects.sort((a, b) => a.position.z - b.position.z);
@@ -299,15 +298,14 @@ function renderScene(scene, scale = 1, label = true) {
             canvas.height * scale,
         );
     });
-    if (label) {
-        sceneRendering.fillStyle = 'white';
-        sceneRendering.strokeStyle = 'black';
-        sceneRendering.lineWidth = 4;
-        sceneRendering.font = "16px monospace";
-        sceneRendering.textBaseline = "hanging";
-        sceneRendering.strokeText(scene.name, 0, 0, 160 * scale);
-        sceneRendering.fillText(scene.name, 0, 0, 160 * scale);
-    }
+
+    const font = editor.playTab.player.dialoguePlayer.font;
+    const page = scriptToPages(scene.name, { font, lineCount: 1, lineWidth: 160*scale-4 })[0];
+    page.forEach((glyph) => glyph.hidden = false);
+    const render = renderPage(page, 160, 20, 2, 2);
+    sceneRendering.fillRect(0, 0, 4+8*scene.name.length, 4+13);
+    sceneRendering.drawImage(render.canvas, 0, 0);
+
     return sceneRendering;
 }
 

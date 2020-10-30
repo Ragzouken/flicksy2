@@ -51,9 +51,9 @@ class PlayTab {
         this.scene.frameRect(padRect(new DOMRect(0, 0, width, height), 8));
     }
 
-    restart() {
+    restart(startScene = undefined) {
         this.reframe();
-        this.player.restart();
+        this.player.restart(startScene);
         this.player.render();
     }
 }

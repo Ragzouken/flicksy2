@@ -46,9 +46,10 @@ class PlayTab {
                 elementByPath("toggle:sidebar/play", "button").click();
                 this.player.gameState.currentScene = scene.id;
                 this.player.render();
-                
                 this.refresh();
-            } catch (e) {}
+            } catch (e) {
+                elementByPath("toggle:sidebar/play", "button").click();
+            }
         });
     }
 

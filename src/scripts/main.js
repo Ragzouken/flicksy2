@@ -79,7 +79,10 @@ class FlicksyEditor {
                 elementByPath("toggle:modes/main", "button").click();
             }
 
-            const onCancel = () => reject("cancelled");
+            const onCancel = () => {
+                reject("cancelled");
+                cleanup();
+            };
             const onPicked = (scene) => {
                 cleanup();
                 resolve(scene);
@@ -106,7 +109,10 @@ class FlicksyEditor {
                 elementByPath("toggle:modes/main", "button").click();
             }
 
-            const onCancel = () => reject("cancelled");
+            const onCancel = () => {
+                reject("cancelled");
+                cleanup();
+            };
             const onPicked = (drawing) => {
                 cleanup();
                 resolve(drawing);
@@ -135,7 +141,10 @@ class FlicksyEditor {
                 elementByPath("toggle:modes/main", "button").click();
             }
 
-            const onCancel = () => reject("cancelled");
+            const onCancel = () => {
+                reject("cancelled");
+                cleanup();
+            };
             const onPicked = (object) => {
                 cleanup();
                 resolve(object);

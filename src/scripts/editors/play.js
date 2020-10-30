@@ -30,6 +30,8 @@ class PlayTab {
             killEvent(event);
             const [x, y] = mouseEventToPixel(event);
             this.player.click(x, y);
+
+            this.refresh();
         });
 
         window.addEventListener("resize", () => this.reframe());
@@ -43,7 +45,9 @@ class PlayTab {
                 });
                 elementByPath("toggle:sidebar/play", "button").click();
                 this.player.gameState.currentScene = scene.id;
-                this.player.render(); 
+                this.player.render();
+                
+                this.refresh();
             } catch (e) {}
         });
     }
@@ -64,9 +68,15 @@ class PlayTab {
         this.scene.frameRect(padRect(new DOMRect(0, 0, width, height), 8));
     }
 
+    refresh() {
+        const scene = this.player.sceneIdToScene.get(this.player.gameState.currentScene);
+        elementByPath("play/scene", "input").value = scene.name;
+    }
+
     restart(startScene = undefined) {
         this.reframe();
         this.player.restart(startScene);
         this.player.render();
+        this.refresh();
     }
 }

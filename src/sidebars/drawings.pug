@@ -7,34 +7,33 @@
             li click the <em>draw</em> button to enter the drawing mode
             li pick a brush size and colour to draw in
             li click and drag on a drawing to draw on it
+    .section
+        h2 add drawing
+        .button-bag
+            button(data-action="drawings/add/blank") add blank
+            button(data-action="drawings/add/import") import file
     .button-row
         button(data-tab-toggle="drawings/mode/select" data-tab-default) select
         button(data-tab-toggle="drawings/mode/draw") draw
-    .container(data-tab-body="drawings/mode/select")
-        .section(hidden data-path="drawings/mode/selected")
-            h2 selected drawing
-            h3 name
-            .button-row
-                input(type="text" data-path="drawings/select/name")
-            h3 layering
-            .button-row
-                button(data-action="drawings/select/raise") raise
-                button(data-action="drawings/select/lower") lower
-            h3 size
-            .button-row
-                input(type="text" data-path="drawings/select/width")
-                input(type="text" data-path="drawings/select/height")
-                button(data-path="drawings/select/resize" data-action="drawings/select/resize") resize
-            h3 other
-            .button-row
-                button(data-action="drawings/select/duplicate") duplicate
-                button(data-action="drawings/select/export") export
-                button.delete(data-action="drawings/select/delete") delete
-        .section
-            h2 add drawing
-            .button-bag
-                button(data-action="drawings/add/blank") add blank
-                button(data-action="drawings/add/import") import file
+    .section(hidden data-path="drawings/mode/selected")
+        h2 selected drawing
+        h3 name
+        .button-row
+            input(type="text" data-path="drawings/select/name")
+        h3 layering
+        .button-row
+            button(data-action="drawings/select/raise") raise
+            button(data-action="drawings/select/lower") lower
+        h3 size
+        .button-row
+            input(type="text" data-path="drawings/select/width")
+            input(type="text" data-path="drawings/select/height")
+            button(data-path="drawings/select/resize" data-action="drawings/select/resize") resize
+        h3 other
+        .button-row
+            button(data-action="drawings/select/duplicate") duplicate
+            button(data-action="drawings/select/export") export
+            button.delete(data-action="drawings/select/delete") delete
     .section(data-tab-body="drawings/mode/draw")
         h2 drawing tools
         .tool-row

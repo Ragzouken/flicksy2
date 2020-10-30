@@ -48,13 +48,19 @@ class MapTabEditor {
         });
 
         setActionHandler("map/selected/duplicate", async () => {
+            function duplicateObject(object) {
+                const copy = JSON.parse(JSON.stringify(object));
+                copy.id = nanoid();
+                return copy;
+            }
+
             const original = this.selectedScene;
             const { x, y, z } = original.position;
             const copy = {
                 id: nanoid(),
                 name: original.name + " copy",
                 position: { x: x+8, y: y+8, z: z+1 },
-                objects: [],
+                objects: original.objects.map(duplicateObject),
             };
             this.flicksyEditor.projectData.scenes.push(copy);
             await initSceneInEditor(this, copy);

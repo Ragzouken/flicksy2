@@ -7,9 +7,6 @@
             li click and drag the object to position it within the scene
             li type some dialogue into the <em>object behaviour</em> section below
             li click <em>play scene</em> in the <em>playtest</em> section below and click on your object!
-        h3 scripting
-        ol
-            li this section is unwritten
     .section
         h2 scene
         h3 active scene
@@ -41,26 +38,44 @@
         .button-row
             button(data-tab-toggle="scene/selected/mode/simple" data-tab-default) simple
             button(data-tab-toggle="scene/selected/mode/script") script
-        .section(data-tab-body="scene/selected/mode/simple")
-            h2 object behaviour
-            h3 dialogue
-            .button-row
-                textarea(rows=8 data-path="scene/selected/dialogue")
-            p
-            //button preview
-            h3 scene change
-            .button-row
-                input(type="text" data-path="scene/selected/destination" disabled)
-                button(data-action="scene/selected/pick-destination") change
-        .section(data-tab-body="scene/selected/mode/script")
-            h2 object behaviour
-            h3 script
-            .button-row
-                textarea(rows=8 spellcheck="false" data-path="scene/selected/script")
-            h3 insert reference
-            .button-row
-                button(data-action="scene/selected/script/reference/drawing") drawing
-                button(data-action="scene/selected/script/reference/scene") scene
-                button(data-action="scene/selected/script/reference/object") object
+        .container(data-tab-body="scene/selected/mode/simple")
+            .section
+                h2 object behaviour
+                h3 dialogue
+                .button-row
+                    textarea(rows=8 data-path="scene/selected/dialogue")
+                p
+                //button preview
+                h3 scene change
+                .button-row
+                    input(type="text" data-path="scene/selected/destination" disabled)
+                    button(data-action="scene/selected/pick-destination") change
+            .section
+                h2 simple behaviour
+                h3 clicking on an object
+                ol
+                    li text is presented in a series of dialogue boxes
+                    li the game jumps to another scene
+                h3 dialogue formatting
+                ul
+                    li.code page{ep}break
+                    li.code {+wvy}wavey text{-wvy} and {+shk}shakey text{-shk}
+                    li.code {clr=red}red text{-clr} and {clr=#FF00FF}magenta text{-clr}
+                    li.code {delay=.25}slow text{-delay} and {+r}revealed text{-r}
+        .container(data-tab-body="scene/selected/mode/script")
+            .section
+                h2 object behaviour
+                h3 script
+                .button-row
+                    textarea(rows=8 spellcheck="false" data-path="scene/selected/script")
+                h3 insert reference
+                .button-row
+                    button(data-action="scene/selected/script/reference/drawing") drawing
+                    button(data-action="scene/selected/script/reference/scene") scene
+                    button(data-action="scene/selected/script/reference/object") object
+            .section
+                h2 scripting
+                h3 intro
+                p in flicksy2 you can script objects using javascript. however i have not documentated anything you need to know in order to do that, so check back later :)
 
 

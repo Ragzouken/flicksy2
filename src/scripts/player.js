@@ -69,8 +69,8 @@ class FlicksyPlayer {
         const scene = this.sceneIdToScene.get(this.gameState.currentScene);
 
         fillRendering2D(this.sceneRendering, 'black');
-        scene.objects.slice().sort((a, b) => a.position.z - b.position.z);
-        scene.objects.forEach((object) => {
+        const objects = scene.objects.slice().sort((a, b) => a.position.z - b.position.z);
+        objects.forEach((object) => {
             const canvas = this.drawingIdToRendering.get(object.drawing).canvas;
             this.sceneRendering.drawImage(
                 canvas,
@@ -308,8 +308,8 @@ class DialoguePlayer {
 function renderScene(scene, scale = 2) {
     const sceneRendering = createRendering2D(160 * scale, 100 * scale);
     fillRendering2D(sceneRendering, 'black');
-    scene.objects.slice().sort((a, b) => a.position.z - b.position.z);
-    scene.objects.forEach((object) => {
+    const objects = scene.objects.slice().sort((a, b) => a.position.z - b.position.z);
+    objects.forEach((object) => {
         const drawing = editor.projectData.drawings.find((drawing) => drawing.id === object.drawing);
         const canvas = editor.drawingsManager.getRendering(drawing).canvas;
 
@@ -340,9 +340,8 @@ function renderScene(scene, scale = 2) {
 function pointcastScene(scene, point) {
     const { x: sx, y: sy } = point;
 
-    scene.objects.slice().sort((a, b) => a.position.z - b.position.z);
-    scene.objects.reverse();
-    for (let object of scene.objects) {
+    const objects = scene.objects.slice().sort((a, b) => a.position.z - b.position.z).reverse();
+    for (let object of objects) {
         const drawing = editor.projectData.drawings.find((drawing) => drawing.id === object.drawing);
         const rendering = editor.drawingsManager.getRendering(drawing);
 

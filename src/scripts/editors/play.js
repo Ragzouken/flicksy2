@@ -33,6 +33,19 @@ class PlayTab {
         });
 
         window.addEventListener("resize", () => this.reframe());
+
+        setActionHandler("play/pick-scene", async () => {
+            try {
+                const scene = await this.flicksyEditor.pickScene({ 
+                    heading: "pick scene",
+                    prompt: "pick a scene to jump to during playback. the game will not be reset",
+                    allowNone: false, 
+                });
+                elementByPath("toggle:sidebar/play", "button").click();
+                this.player.gameState.currentScene = scene.id;
+                this.player.render(); 
+            } catch (e) {}
+        });
     }
 
     show() {

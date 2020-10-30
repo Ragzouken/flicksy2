@@ -11,5 +11,7 @@
         h2 options
         h3 playback
         .button-row
-            button(data-action="play/restart") restart
-            button(data-action="project/export/html") export html
+            button.delete(data-action="play/restart") restart
+            button(data-action="play/pick-scene") jump to scene
+        h3 publish
+        button(data-action="project/export/html") export html

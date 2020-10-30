@@ -33,6 +33,13 @@ class PlayTab {
 
             this.refresh();
         });
+        this.player.viewRendering.canvas.addEventListener("pointermove", (event) => {
+            killEvent(event);
+            const [x, y] = mouseEventToPixel(event);
+            const clickable = this.player.doesHoveredObjectHaveBehaviour(x, y);
+
+            this.player.viewRendering.canvas.style.setProperty("cursor", clickable ? "pointer" : "default");
+        });
 
         window.addEventListener("resize", () => this.reframe());
 

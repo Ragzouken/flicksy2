@@ -49,13 +49,19 @@ class FlicksyPlayer {
         // set initial game state
         this.gameState = {
             currentScene: startScene || editor.projectData.details.start,
+            nextScene: undefined,
         };
     }
 
     update(dt) {
         if (!this.gameState) return;
 
-        if (this.dialoguePlayer.active) this.dialoguePlayer.update(dt);
+        if (this.dialoguePlayer.active) {
+            this.dialoguePlayer.update(dt);
+        } else if (this.gameState.nextScene) {
+            this.gameState.currentScene = this.gameState.nextScene;
+            this.gameState.nextScene = undefined;
+        }
         this.render();
     }
 
@@ -92,6 +98,20 @@ class FlicksyPlayer {
      * @param {number} x 
      * @param {number} y 
      */
+    doesHoveredObjectHaveBehaviour(x, y) {
+        x /= 2;
+        y /= 2;
+        const scene = this.sceneIdToScene.get(this.gameState.currentScene);
+        const object = pointcastScene(scene, { x, y });
+
+        return object !== undefined
+            && (object.behaviour.destination.length + object.behaviour.dialogue.length + object.behaviour.script.length) > 0;
+    }
+
+    /**
+     * @param {number} x 
+     * @param {number} y 
+     */
     click(x, y) {
         if (this.dialoguePlayer.active) {
             this.dialoguePlayer.skip();
@@ -111,10 +131,13 @@ class FlicksyPlayer {
                 REDRAW: () => this.render(),
                 MOVE: (scene) => this.gameState.currentScene = scene,
                 SAY: (dialogue) => this.dialoguePlayer.queueScript(dialogue),
+                DELAY: async (time) => new Promise((resolve) => setInterval(resolve, time * 1000)), 
             }
 
+            let AsyncFunction = Object.getPrototypeOf(async function(){}).constructor
+
             try {
-                const script = new Function("DO", object.behaviour.script);
+                const script = new AsyncFunction("DO", object.behaviour.script);
                 script(DO);
             } catch (e) {
                 console.log(`SCRIPT ERROR in OBJECT '${object.name}' of SCENE '${scene.name}'`, e);
@@ -126,7 +149,7 @@ class FlicksyPlayer {
         }
 
         if (object.behaviour.destination) {
-            this.gameState.currentScene = object.behaviour.destination;
+            this.gameState.nextScene = object.behaviour.destination;
         }
 
         this.render();

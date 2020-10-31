@@ -262,7 +262,17 @@ class DrawingsTabEditor {
         this.scene.hidden = true;
     }
 
-    reframe() {
+    reframe(drawing = undefined) {
+        if (drawing !== undefined) {
+            const rendering = this.drawingsManager.drawingToRendering.get(drawing);
+            const { x, y } = drawing.position;
+            const { width, height } = rendering.canvas;
+            const bounds = new DOMRect(x, y, width, height);
+            padRect(bounds, 8);
+            this.scene.frameRect(bounds);
+            return;
+        }
+
         const pairs = Array.from(this.drawingsManager.drawingToRendering.entries());
         const rects = pairs.map(([drawing, rendering]) => {
             const { x, y } = drawing.position;
@@ -494,6 +504,10 @@ async function initDrawingInEditor(drawingsEditor, drawing) {
         drawing.position.x = object.transform.e;
         drawing.position.y = object.transform.f;
     }
+
+    object.element.addEventListener("dblclick", (event) => {
+        drawingsEditor.reframe(drawing);
+    })
 
     object.element.addEventListener("pointerdown", (event) => {
         if (drawingsEditor.isPicking) {

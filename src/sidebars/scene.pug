@@ -10,13 +10,14 @@
     .section
         h2 scene
         h3 active scene
-        .button-row
-            input(type="text" data-path="scene/active/name")
-            button(data-action="scene/pick-active") switch
+        .container
+            .button-row
+                input(type="text" data-path="scene/active/name")
+                button(data-action="scene/pick-active") switch
+            .button-row
+                button(data-action="scene/active/play") playtest scene
         h3 add object
         button(data-action="scene/add/pick-drawing") pick drawing
-        h3 playtest
-        button(data-action="scene/active/play") play scene
     .container(data-path="scene/selected")
         .section
             h2 object appearance

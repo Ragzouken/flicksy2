@@ -144,7 +144,9 @@ input[type="text"], textarea {
     border: 0; border-radius: .5em;
     color: white;
     background: black;
+}
 
+textarea {
     line-height: 1.8;
     word-break: break-all;
 }
@@ -168,7 +170,7 @@ textarea {
     justify-items: stretch;
     padding: 0; gap: .5em;
 }
-.button-row > button {
+.button-row > * {
     flex: 1;
 }
 
@@ -287,6 +289,10 @@ a {
     background-color: black;
     color: white;
     font-family: monospace;
-    border-radius: .5em;
-    padding: .25em;
+    padding: .5em .75em;
+    border: 0; border-radius: .5em;
+}
+
+span.code {
+    padding: .1em .3em;
 }

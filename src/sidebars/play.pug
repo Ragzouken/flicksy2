@@ -19,8 +19,6 @@
                 input(type="text" disabled data-path="play/scene")
                 button(data-action="play/pick-scene") jump
             button(data-action="play/edit-scene") open scene in editor
-    .section
-        h2 debugging
         h3 log
         .button-row
-            textarea(data-path="play/log" rows="8")
+            .code(data-path="play/log")

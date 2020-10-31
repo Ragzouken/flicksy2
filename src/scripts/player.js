@@ -13,7 +13,7 @@ class FlicksyPlayer {
         /** @type {Map<string, FlicksyDataScene>} */
         this.sceneIdToScene = new Map();
 
-        this.logText = elementByPath("play/log", "textarea");
+        this.logText = elementByPath("play/log", "div");
     }
 
     async load() {
@@ -56,11 +56,11 @@ class FlicksyPlayer {
             variables: {},
         };
 
-        this.logText.value = "";
+        this.logText.innerText = "[restarted]";
     }
 
     log(text) {
-        this.logText.value += text + "\n";
+        this.logText.innerText += text + "\n";
         this.logText.scrollTo(0, this.logText.scrollHeight);
     }
 
@@ -175,7 +175,7 @@ class FlicksyPlayer {
                 SHOW: (object) => objectFromId(object).hidden = false,
 
                 SET: (key, value) => this.gameState.variables[key] = value,
-                GET: (key) => this.gameState.variables[key],
+                GET: (key, default_=0) => this.gameState.variables[key] || default_,
 
                 DIALOGUE: DONE_WAITER,
                 DIALOG: DONE_WAITER,

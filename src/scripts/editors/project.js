@@ -14,6 +14,12 @@ class ProjectTabEditor {
             this.flicksyEditor.setProjectData(data);
         });
 
+        setActionHandler("project/demo", () => {
+            const data = JSON.parse(ONE("#project-data").innerHTML);
+            data.details.id = nanoid();
+            this.flicksyEditor.setProjectData(data);
+        });
+
         setActionHandler("project/open", async () => {
             const [file] = await pickFiles(".flicksy.json,.html");
             const text = await textFromFile(file);

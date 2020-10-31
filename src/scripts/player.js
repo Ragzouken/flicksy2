@@ -166,8 +166,7 @@ class FlicksyPlayer {
                 VARS: this.gameState.variables,
                 LOG: (text) => this.log(text),
 
-                RESKIN: (object, drawing) => objectFromId(object).drawing = drawing,
-                TRANSFORM: () => this.render(),
+                TRANSFORM: (object, drawing) => objectFromId(object).drawing = drawing,
                 TRAVEL: (scene) => this.gameState.currentScene = scene,
                 SAY: (dialogue) => this.dialoguePlayer.queueScript(dialogue),
                 DELAY: async (time) => new Promise((resolve) => setInterval(resolve, time * 1000)),

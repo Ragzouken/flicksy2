@@ -41,7 +41,7 @@ class FlicksyEditor {
         setActionHandler("sidebar/save", async () => {
             await this.prepareSave();
             const json = JSON.stringify(this.projectData);
-            localStorage.setItem("flicksy/test", json);
+            localStorage.setItem("flicksy2/test-save", json);
         });
 
         const dataElement = ONE("#project-data");
@@ -51,7 +51,7 @@ class FlicksyEditor {
             await this.setProjectData(JSON.parse(dataElement.innerHTML));
             elementByPath("toggle:sidebar/play", "button").click();
         } else {
-            const json = localStorage.getItem("flicksy/test") || dataElement.innerHTML;
+            const json = localStorage.getItem("flicksy2/test-save") || dataElement.innerHTML;
             await this.setProjectData(JSON.parse(json));
         }        
     }

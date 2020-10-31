@@ -57,11 +57,10 @@
                     li text is presented in a series of dialogue boxes
                     li the game jumps to another scene
                 h3 dialogue formatting
-                ul
-                    li.code page{ep}break
-                    li.code {+wvy}wavey text{-wvy} and {+shk}shakey text{-shk}
-                    li.code {clr=red}red text{-clr} and {clr=#FF00FF}magenta text{-clr}
-                    li.code {delay=.25}slow text{-delay} and {+r}revealed text{-r}
+                p.code page{ep}break
+                p.code {+wvy}wavey text{-wvy} and {+shk}shakey text{-shk}
+                p.code {clr=red}red text{-clr} and {clr=#FF00FF}magenta text{-clr}
+                p.code {delay=.25}slow text{-delay} and {+r}revealed text{-r}
         .container(data-tab-body="scene/selected/mode/script")
             .section
                 h2 object behaviour
@@ -76,6 +75,21 @@
             .section
                 h2 scripting
                 h3 intro
-                p in flicksy2 you can script objects using javascript. however i have not documentated anything you need to know in order to do that, so check back later :)
+                p in flicksy2 you can script objects using javascript. it's easiest to use the provided commands but you can do anything
+                h3 values
+                p #[span.code SCENE] the reference id of this scene
+                p #[span.code OBJECT] the reference id of this object
+                h3 actions
+                p #[span.code SAY("SOME TEXT")] queue dialogue
+                p #[span.code LOG("SOME TEXT")] put a line of text in the playtest log, to help debug
+                p #[span.code HIDE("object reference")] hide the referenced object, making it invisible and unclickable
+                p #[span.code SHOW("object reference")] unhide the referenced object
+                p #[span.code SET("variable name", "value")] set a new or existing variable to some value. numbers, reference ids, dialogue, etc all allowed
+                p #[span.code GET("variable name")] get the value of a previous set variable. use this is conjunction with an #[span.code if] statement to do conditional scripting
+                p #[span.code TRANSFORM("object reference", "drawing reference")] change an object's drawing
+                p #[span.code TRAVEL("scene reference")] switch to a new scene
+                h3 waiting
+                p #[span.code await DIALOGUE] wait until there is no dialogue on screen
+                p #[span.code await DELAY(.5)] wait for some number of seconds
 
 

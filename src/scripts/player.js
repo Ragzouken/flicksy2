@@ -12,6 +12,8 @@ class FlicksyPlayer {
         this.drawingIdToRendering = new Map();
         /** @type {Map<string, FlicksyDataScene>} */
         this.sceneIdToScene = new Map();
+
+        this.logText = elementByPath("play/log", "textarea");
     }
 
     async load() {
@@ -50,7 +52,16 @@ class FlicksyPlayer {
         this.gameState = {
             currentScene: startScene || editor.projectData.details.start,
             nextScene: undefined,
+            runningScript: false,
+            variables: {},
         };
+
+        this.logText.value = "";
+    }
+
+    log(text) {
+        this.logText.value += text + "\n";
+        this.logText.scrollTo(0, this.logText.scrollHeight);
     }
 
     update(dt) {
@@ -71,6 +82,8 @@ class FlicksyPlayer {
         fillRendering2D(this.sceneRendering, 'black');
         const objects = scene.objects.slice().sort((a, b) => a.position.z - b.position.z);
         objects.forEach((object) => {
+            if (object.hidden) return;
+
             const canvas = this.drawingIdToRendering.get(object.drawing).canvas;
             this.sceneRendering.drawImage(
                 canvas,
@@ -102,7 +115,7 @@ class FlicksyPlayer {
         x /= 2;
         y /= 2;
         const scene = this.sceneIdToScene.get(this.gameState.currentScene);
-        const object = pointcastScene(scene, { x, y });
+        const object = pointcastScene(scene, { x, y }, true);
 
         return object !== undefined
             && (object.behaviour.destination.length + object.behaviour.dialogue.length + object.behaviour.script.length) > 0;
@@ -112,7 +125,7 @@ class FlicksyPlayer {
      * @param {number} x 
      * @param {number} y 
      */
-    click(x, y) {
+    async click(x, y) {
         if (this.dialoguePlayer.active) {
             this.dialoguePlayer.skip();
             return;
@@ -121,25 +134,63 @@ class FlicksyPlayer {
         x /= 2;
         y /= 2;
         const scene = this.sceneIdToScene.get(this.gameState.currentScene);
-        const object = pointcastScene(scene, { x, y });
+        const object = pointcastScene(scene, { x, y }, true);
 
         if (!object) return;
 
         if (object.behaviour.script) {
-            const DO = {
-                RESKIN: (drawing) => object.drawing = drawing,
-                REDRAW: () => this.render(),
-                MOVE: (scene) => this.gameState.currentScene = scene,
-                SAY: (dialogue) => this.dialoguePlayer.queueScript(dialogue),
-                DELAY: async (time) => new Promise((resolve) => setInterval(resolve, time * 1000)), 
+            const DONE_WAITER = {}
+            DONE_WAITER.then = (resolve) => {
+                const check = () => {
+                    if (this.dialoguePlayer.currentPage === undefined) {
+                        resolve();
+                        clearInterval(handle);
+                    }
+                }
+                const handle = setInterval(check, 50);
+            };
+
+            const objectFromId = (id) => {
+                for (const scene of this.sceneIdToScene.values()) {
+                    for (const object of scene.objects) {
+                        if (object.id === id) return object;
+                    }
+                }
+
+                throw new Error(`NO OBJECT ${id}`);
             }
 
-            let AsyncFunction = Object.getPrototypeOf(async function(){}).constructor
+            const DEFINES = {
+                OBJECT: object.id,
+                SCENE: scene.id,
+                VARS: this.gameState.variables,
+                LOG: (text) => this.log(text),
+
+                RESKIN: (object, drawing) => objectFromId(object).drawing = drawing,
+                TRANSFORM: () => this.render(),
+                TRAVEL: (scene) => this.gameState.currentScene = scene,
+                SAY: (dialogue) => this.dialoguePlayer.queueScript(dialogue),
+                DELAY: async (time) => new Promise((resolve) => setInterval(resolve, time * 1000)),
+
+                HIDE: (object) => objectFromId(object).hidden = true,
+                SHOW: (object) => objectFromId(object).hidden = false,
+
+                SET: (key, value) => this.gameState.variables[key] = value,
+                GET: (key) => this.gameState.variables[key],
+
+                DIALOGUE: DONE_WAITER,
+                DIALOG: DONE_WAITER,
+            }
+
+            const names = Object.keys(DEFINES).join(", ");
+            const preamble = `const { ${names} } = COMMANDS;\n`;
 
             try {
-                const script = new AsyncFunction("DO", object.behaviour.script);
-                script(DO);
+                const script = new AsyncFunction("COMMANDS", preamble + object.behaviour.script);
+                this.gameState.runningScript = true;
+                await script(DEFINES);
             } catch (e) {
+                this.gameState.runningScript = false;
                 console.log(`SCRIPT ERROR in OBJECT '${object.name}' of SCENE '${scene.name}'`, e);
             }
         }
@@ -273,6 +324,16 @@ class DialoguePlayer {
         
         if (!this.currentPage)
             this.moveToNextPage();
+
+        return new Promise((resolve) => {
+            const last = pages[pages.length - 1];
+            const handle = setInterval(() => {
+                if (!this.queuedPages.includes(last) && this.currentPage !== last) {
+                    clearInterval(handle);
+                    resolve();
+                }
+            }, 50);
+        });
     }
 
     applyStyle() {
@@ -337,11 +398,13 @@ function renderScene(scene, scale = 2) {
  * @param {{ x: number, y: number }} point
  * @returns {FlicksyDataObject}
  */
-function pointcastScene(scene, point) {
+function pointcastScene(scene, point, onlyVisible = false) {
     const { x: sx, y: sy } = point;
 
     const objects = scene.objects.slice().sort((a, b) => a.position.z - b.position.z).reverse();
     for (let object of objects) {
+        if (object.hidden && onlyVisible) continue;
+
         const drawing = editor.projectData.drawings.find((drawing) => drawing.id === object.drawing);
         const rendering = editor.drawingsManager.getRendering(drawing);
 

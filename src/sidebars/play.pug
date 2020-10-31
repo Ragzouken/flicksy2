@@ -8,9 +8,11 @@
             li go to the <em>map</em> tab to add new scenes or change the starting scene
             li export your finished game using the <em>export html</em> button below
     .section
-        h2 playback
+        h2 playtest
         h3 game
-        button.delete(data-action="play/restart") restart
+        .button-row
+            button.delete(data-action="play/restart") restart
+            button(data-action="project/export/html") export html
         h3 scene
         .container
             .button-row
@@ -18,6 +20,7 @@
                 button(data-action="play/pick-scene") jump
             button(data-action="play/edit-scene") open scene in editor
     .section
-        h2 publish
-        h3 export
-        button(data-action="project/export/html") export html
+        h2 debugging
+        h3 log
+        .button-row
+            textarea(data-path="play/log" rows="8")

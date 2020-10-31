@@ -144,6 +144,9 @@ input[type="text"], textarea {
     border: 0; border-radius: .5em;
     color: white;
     background: black;
+
+    line-height: 1.8;
+    word-break: break-all;
 }
 
 input[type="text"][disabled] {
@@ -217,10 +220,6 @@ a {
     margin: .5em 0;
 }
 
-.code {
-    font-family: monospace;
-}
-
 .palette-grid {
     display: grid;
     width: 100%;
@@ -282,4 +281,12 @@ a {
 #sidebar .tool-row > button > img {
     filter: brightness(0);
     width: 32px; height: 32px;
+}
+
+.code {
+    background-color: black;
+    color: white;
+    font-family: monospace;
+    border-radius: .5em;
+    padding: .25em;
 }

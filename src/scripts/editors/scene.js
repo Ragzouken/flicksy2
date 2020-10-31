@@ -145,7 +145,7 @@ class SceneTabEditor {
 
         setActionHandler("scene/selected/script/reference/scene", async () => {
             const replacer = makeReplacer(this.selectedObject.behaviour.script);
-            
+            const selectedObject = this.selectedObject;
             try {
                 const scene = await this.flicksyEditor.pickScene({
                     heading: "pick scene",
@@ -156,11 +156,12 @@ class SceneTabEditor {
                 this.objectScriptInput.value = this.selectedObject.behaviour.script;
             } catch (e) { console.log(e) }
             elementByPath("toggle:sidebar/scene", "button").click();
+            this.setSelectedObject(selectedObject);
         });
 
         setActionHandler("scene/selected/script/reference/drawing", async () => {
             const replacer = makeReplacer(this.selectedObject.behaviour.script);
-            
+            const selectedObject = this.selectedObject;
             try {
                 const drawing = await this.flicksyEditor.pickDrawing({
                     heading: "pick drawing",
@@ -171,6 +172,7 @@ class SceneTabEditor {
                 this.objectScriptInput.value = this.selectedObject.behaviour.script;
             } catch (e) { console.log(e) }
             elementByPath("toggle:sidebar/scene", "button").click();
+            this.setSelectedObject(selectedObject);
         });
 
         setActionHandler("scene/selected/script/reference/object", async () => {

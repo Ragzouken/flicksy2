@@ -139,55 +139,14 @@ class FlicksyPlayer {
         if (!object) return;
 
         if (object.behaviour.script) {
-            const DONE_WAITER = {}
-            DONE_WAITER.then = (resolve) => {
-                const check = () => {
-                    if (this.dialoguePlayer.currentPage === undefined) {
-                        resolve();
-                        clearInterval(handle);
-                    }
-                }
-                const handle = setInterval(check, 50);
-            };
-
-            const objectFromId = (id) => {
-                for (const scene of this.sceneIdToScene.values()) {
-                    for (const object of scene.objects) {
-                        if (object.id === id) return object;
-                    }
-                }
-
-                throw new Error(`NO OBJECT ${id}`);
-            }
-
-            const DEFINES = {
-                OBJECT: object.id,
-                SCENE: scene.id,
-                VARS: this.gameState.variables,
-                LOG: (text) => this.log(text),
-
-                TRANSFORM: (object, drawing) => objectFromId(object).drawing = drawing,
-                TRAVEL: (scene) => this.gameState.currentScene = scene,
-                SAY: (dialogue) => this.dialoguePlayer.queueScript(dialogue),
-                DELAY: async (time) => new Promise((resolve) => setInterval(resolve, time * 1000)),
-
-                HIDE: (object) => objectFromId(object).hidden = true,
-                SHOW: (object) => objectFromId(object).hidden = false,
-
-                SET: (key, value) => this.gameState.variables[key] = value,
-                GET: (key, default_=0) => this.gameState.variables[key] || default_,
-
-                DIALOGUE: DONE_WAITER,
-                DIALOG: DONE_WAITER,
-            }
-
-            const names = Object.keys(DEFINES).join(", ");
+            const defines = generateScriptingDefines(this, this.gameState, scene, object);
+            const names = Object.keys(defines).join(", ");
             const preamble = `const { ${names} } = COMMANDS;\n`;
 
             try {
                 const script = new AsyncFunction("COMMANDS", preamble + object.behaviour.script);
                 this.gameState.runningScript = true;
-                await script(DEFINES);
+                await script(defines);
             } catch (e) {
                 this.gameState.runningScript = false;
                 console.log(`SCRIPT ERROR in OBJECT '${object.name}' of SCENE '${scene.name}'`, e);
@@ -417,4 +376,57 @@ function pointcastScene(scene, point, onlyVisible = false) {
             if (alpha !== 0) return object;
         }
     }
+}
+
+/**
+ * @param {FlicksyPlayer} player 
+ * @param {*} state 
+ * @param {FlicksyDataScene} scene 
+ * @param {FlicksyDataObject} object 
+ */
+function generateScriptingDefines(player, state, scene, object) {
+    const objectFromId = (id) => {
+        for (const scene of player.sceneIdToScene.values()) {
+            for (const object of scene.objects) {
+                if (object.id === id) return object;
+            }
+        }
+
+        throw new Error(`NO OBJECT ${id}`);
+    }
+
+    const dialogueWaiter = {}
+    dialogueWaiter.then = (resolve) => {
+        const check = () => {
+            if (player.dialoguePlayer.currentPage === undefined) {
+                resolve();
+                clearInterval(handle);
+            }
+        }
+        const handle = setInterval(check, 50);
+    };
+
+    // edit here to add new scripting functions
+    const defines = {};
+    
+    defines.OBJECT = object.id;
+    defines.SCENE = scene.id;
+    defines.VARS = state.variables;
+
+    defines.LOG = (text) => player.log(text);
+    defines.SET = (key, value) => state.variables[key] = value;
+    defines.GET = (key, fallback=0) => state.variables[key] || fallback;
+
+    defines.TRANSFORM = (object, drawing) => objectFromId(object).drawing = drawing;
+    defines.TRAVEL = (scene) => state.currentScene = scene;
+    
+    defines.HIDE = (object) => objectFromId(object).hidden = true;
+    defines.SHOW = (object) => objectFromId(object).hidden = false;
+
+    defines.SAY = async (dialogue) => player.dialoguePlayer.queueScript(dialogue);
+    defines.DELAY = async (time) => new Promise((resolve) => setInterval(resolve, time * 1000));
+    defines.DIALOGUE = dialogueWaiter;
+    defines.DIALOG = defines.DIALOGUE;
+
+    return defines;
 }

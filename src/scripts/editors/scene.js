@@ -48,6 +48,7 @@ class SceneTabEditor {
                     position: { x: 0, y: 0, z: 0 },
                     drawing: drawing.id,
                     behaviour: { script: "", dialogue: "", destination: "" },
+                    hidden: false,
                 };
                 this.activeScene.objects.push(object);
                 await initObjectInEditor(this, object);
@@ -122,6 +123,7 @@ class SceneTabEditor {
                 position: { x: x+8, y: y+8, z: z+1 },
                 drawing: original.drawing,
                 behaviour: { ...original.behaviour },
+                hidden: original.hidden,
             };
             this.activeScene.objects.push(copy);
             await initObjectInEditor(this, copy);
@@ -254,7 +256,7 @@ class SceneTabEditor {
         if (!this.scene.hidden) {
             this.scene.hidden = true;
             copyRendering2D(
-                renderScene(this.activeScene),
+                renderScenePreview(this.activeScene),
                 sceneToPreviewRendering.get(this.activeScene),
             );
         }

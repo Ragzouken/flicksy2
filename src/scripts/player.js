@@ -329,6 +329,8 @@ function renderScene(scene, scale = 2) {
     fillRendering2D(sceneRendering, 'black');
     const objects = scene.objects.slice().sort((a, b) => a.position.z - b.position.z);
     objects.forEach((object) => {
+        if (object.hidden) return;
+
         const drawing = editor.projectData.drawings.find((drawing) => drawing.id === object.drawing);
         const canvas = editor.drawingsManager.getRendering(drawing).canvas;
 
@@ -340,6 +342,16 @@ function renderScene(scene, scale = 2) {
             canvas.height * scale,
         );
     });
+
+    return sceneRendering;
+}
+
+/** 
+ * @param {FlicksyDataScene} scene
+ * @param {number} scale
+ */
+function renderScenePreview(scene, scale = 2) {
+    const sceneRendering = renderScene(scene, scale);
 
     const font = editor.playTab.player.dialoguePlayer.font;
     const page = scriptToPages(scene.name, { font, lineCount: 1, lineWidth: 160*scale-4 })[0];

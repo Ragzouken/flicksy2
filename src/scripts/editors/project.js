@@ -2,6 +2,7 @@ class ProjectTabEditor {
     /** @param {FlicksyEditor} flicksyEditor */
     constructor(flicksyEditor) {
         this.flicksyEditor = flicksyEditor;
+        this.scene = ONE("#manual");
 
         this.projectNameInput = elementByPath("project/name", "input");
         this.projectNameInput.addEventListener("input", () => {
@@ -61,5 +62,13 @@ class ProjectTabEditor {
 
     refresh() {
         this.projectNameInput.value = this.flicksyEditor.projectData.details.name;
+    }
+
+    show() {
+        this.scene.hidden = false;
+    }
+
+    hide() {
+        this.scene.hidden = true;
     }
 }

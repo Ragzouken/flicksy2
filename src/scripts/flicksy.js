@@ -26,6 +26,7 @@
  * @property {string} name
  * @property {Vector3} position
  * @property {string} drawing
+ * @property {boolean} hidden
  * @property {FlicksyDataObjectBehaviour} behaviour
  */
 

@@ -101,7 +101,7 @@ body {
     padding: 1em; gap: 1em;
 }
 
-#sidebar select {
+select {
     flex: 1; flex-basis: 100%;
     padding: .5em .75em;
     border: 0; border-radius: .5em;
@@ -111,7 +111,7 @@ body {
     background: var(--emphasis-color-a);
 }
 
-#sidebar button {
+button {
     padding: .5em .75em;
     border: 0; border-radius: .5em;
     
@@ -120,17 +120,17 @@ body {
     background: var(--emphasis-color-a);
 }
 
-#sidebar button:active {
+button:active {
     filter: invert();
 }
 
-#sidebar button.active {
+button.active {
     pointer-events: none;
     color: var(--emphasis-color-a);
     background: var(--background-color-b);
 }
 
-#sidebar button.delete {
+button.delete {
     background: var(--delete-color);
 }
 
@@ -179,12 +179,12 @@ textarea {
     padding: 0; gap: 1em;
 }
 
-#sidebar .container { 
+.container { 
     display: flex; flex-direction: column;
     padding: 0; gap: 1em;
 }
 
-#sidebar .section {
+.section {
     padding: 1em;
     border-radius: .5em;
 
@@ -192,7 +192,7 @@ textarea {
     background: var(--background-color-b);
 }
 
-h2, h3 {
+h1, h2, h3 {
     margin-top: .7em;
     margin-bottom: .4em;
 }
@@ -206,19 +206,24 @@ a {
     color: var(--emphasis-color-a);
 }
 
-#sidebar .section h2 {
+.section h1 {
+    color: var(--emphasis-color-a);
+    font-size: 3rem;
+}
+
+.section h2 {
     color: var(--emphasis-color-a);
 }
 
-#sidebar .section h3 {
+.section h3 {
     color: var(--emphasis-color-b);
 }
 
-#sidebar ol, ul {
+ol, ul {
     padding-left: 1.2em;
 }
 
-#sidebar ol, ul, li {
+ol, ul, li {
     margin: .5em 0;
 }
 
@@ -295,4 +300,21 @@ a {
 
 span.code {
     padding: .1em .3em;
+}
+
+#manual {
+    width: 100%; height: 100%;
+    overflow: auto;
+    display: flex; justify-content: center;
+    cursor: initial;
+}
+
+#manual > .column {
+    max-width: 40em; margin: 1em;
+    display: flex; flex-direction: column; gap: 1em;
+}
+
+#manual .section {
+    border-radius: 1.5em;
+    padding: 1.5em;
 }

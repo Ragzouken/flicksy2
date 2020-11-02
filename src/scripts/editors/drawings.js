@@ -117,26 +117,11 @@ class DrawingsTabEditor {
             });
             await Promise.all(importedDrawings.map((drawing) => initDrawingInEditor(this, drawing)));
 
-            const palette = this.flicksyEditor.projectData.details.palette.slice(1).map(hexToRGB);
-            const mapping = new Map();
+            const palette = this.flicksyEditor.projectData.details.palette.slice(1);//.map(hexToRGB);
 
             importedDrawings.forEach((drawing) => {
                 const rendering = this.drawingsManager.getRendering(drawing);
-                withPixels(rendering, (pixels) => {
-                    for (let i = 0; i < pixels.length; ++i) {
-                        const pixel = pixels[i];
-                        const alpha = (pixel >>> 24) < 16;
-                        const check = pixel & 0xFFF8F8F8;
-
-                        if (alpha) {
-                            pixels[i] = 0;
-                        } else {
-                            const color = mapping.get(check) || colordiff.closest(uint32ToRGB(check), palette).uint32;
-                            mapping.set(check, color);
-                            pixels[i] = color;
-                        }
-                    }
-                });
+                recolorToPalette(rendering, palette);
             });
 
             this.setSelectedDrawing(importedDrawings[0]);

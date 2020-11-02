@@ -254,3 +254,57 @@ function RGBToHSV(rgb) {
 
     return { h, s, v };
 }
+
+function HSVToCone(hsv) {
+    const a = Math.PI * hsv.h;
+    const r = hsv.s * .5 * hsv.v;
+    const x = Math.cos(a) * r;
+    const y = Math.sin(a) * r;
+    return { x, y, z: hsv.v };
+}
+
+/**
+ * @param {CanvasRenderingContext2D} rendering 
+ * @param {string[]} palette 
+ */
+function recolorToPalette(rendering, palette) {
+    const paletteConverted = palette.map((hex) => { 
+        const cone = HSVToCone(RGBToHSV(hexToRGB(hex)));
+        const uint32 = hexToNumber(hex);
+        return { ...cone, uint32 };
+    });
+    const mapping = new Map();
+
+    function chooseColor(uint32) {
+        const alpha = (uint32 >>> 24) < 16;
+        if (alpha) return 0;
+
+        const existing = mapping.get(uint32);
+        if (existing) return existing;
+
+        const actual = HSVToCone(RGBToHSV(uint32ToRGB(uint32)));
+        let bestSqrDistance = Infinity;
+        let best = paletteConverted[0];
+
+        for (let candidate of paletteConverted) {
+            const dx = Math.abs(actual.x - candidate.x);
+            const dy = Math.abs(actual.y - candidate.y);
+            const dz = Math.abs(actual.z - candidate.z);
+            const sqrDistance = dx*dx + dy*dy + dz*dz;
+            
+            if (sqrDistance < bestSqrDistance) {
+                bestSqrDistance = sqrDistance;
+                best = candidate;
+            }
+        }
+
+        mapping.set(uint32, best.uint32);
+        return best.uint32;
+    }
+
+    withPixels(rendering, (pixels) => {
+        for (let i = 0; i < pixels.length; ++i) {
+            pixels[i] = chooseColor(pixels[i]);
+        }
+    });
+}

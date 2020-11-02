@@ -32,11 +32,13 @@ class FlicksyEditor {
             this.mapTabEditor.hide();
             this.sceneTabEditor.hide();
             this.playTab.hide();
+            this.projectTabEditor.hide();
         });
         setActionHandler("show:sidebar/drawings", () => this.drawingsTabEditor.show());
         setActionHandler("show:sidebar/map", () => this.mapTabEditor.show());
         setActionHandler("show:sidebar/scene", () => this.sceneTabEditor.show());
         setActionHandler("show:sidebar/play", () => this.playTab.show());
+        setActionHandler("show:sidebar/project", () => this.projectTabEditor.show());
 
         setActionHandler("sidebar/save", async () => {
             await this.prepareSave();

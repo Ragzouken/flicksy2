@@ -91,7 +91,7 @@ class MapTabEditor {
 
         setActionHandler("map/regenerate-previews", async () => {
             this.flicksyEditor.projectData.scenes.forEach((scene) => {
-                const render = renderScene(scene);
+                const render = renderScenePreview(scene);
                 const preview = sceneToPreviewRendering.get(scene);
                 copyRendering2D(render, preview);
             });
@@ -166,7 +166,7 @@ const sceneToPreviewRendering = new Map();
  * @param {FlicksyDataScene} scene
  */
 async function initSceneInEditor(mapEditor, scene) {
-    const rendering = renderScene(scene);
+    const rendering = renderScenePreview(scene);
     sceneToPreviewRendering.set(scene, rendering);
 
     rendering.canvas.classList.toggle("object", true);

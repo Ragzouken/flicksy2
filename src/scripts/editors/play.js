@@ -9,6 +9,7 @@ class PlayTab {
         this.player.viewRendering.canvas.classList.add('.object');
         this.scene.container.appendChild(this.player.viewRendering.canvas);
 
+        this.logText = elementByPath("play/log", "div");
         setActionHandler("play/restart", () => this.restart());
 
         const mouseEventToSceneTransform = (event) => {
@@ -63,6 +64,11 @@ class PlayTab {
             const scene = getSceneById(this.flicksyEditor.projectData, this.player.gameState.currentScene);
             this.flicksyEditor.sceneTabEditor.setActiveScene(this.flicksyEditor.projectData, scene);
             elementByPath("toggle:sidebar/scene", "button").click();
+        });
+
+        this.player.events.on("log", (text) => {
+            this.logText.innerText += text + "\n";
+            this.logText.scrollTo(0, this.logText.scrollHeight);
         });
     }
 

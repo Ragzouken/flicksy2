@@ -50,6 +50,7 @@ class FlicksyEditor {
         const play = ONE("body").getAttribute("data-play") === "true";
 
         if (play) {
+            this.playTab.player.events.on("log", console.log);
             await this.setProjectData(JSON.parse(dataElement.innerHTML));
             elementByPath("toggle:sidebar/play", "button").click();
         } else {

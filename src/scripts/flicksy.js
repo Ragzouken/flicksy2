@@ -53,6 +53,13 @@
  * @property {FlicksyDataScene[]} scenes
  */
 
+/**
+ * @typedef {Object} FlicksyPlayState
+ * @property {string} currentScene
+ * @property {boolean} runningScript
+ * @property {Object} variables
+ */
+
 /** @type {FlicksyDataProject} */
 const EMPTY_PROJECT_DATA = {
     details: {

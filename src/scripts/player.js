@@ -3,6 +3,8 @@ const STOP_ICON_DATA = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAGCA
 
 class FlicksyPlayer {
     constructor() {
+        this.events = new EventEmitter();
+
         this.viewRendering = createRendering2D(160*2, 100*2);
         this.sceneRendering = createRendering2D(160, 100);
 
@@ -14,10 +16,12 @@ class FlicksyPlayer {
         /** @type {Map<string, FlicksyDataScene>} */
         this.sceneIdToScene = new Map();
 
-        this.logText = elementByPath("play/log", "div");
-
         this.dialogueWaiter = {
-            then: (resolve, reject) => this.dialoguePlayer.events.wait("done").then(resolve, reject),
+            /** @type {(resolve: () => void, reject: () => void) => any} */
+            then: (resolve, reject) => 
+                this.dialoguePlayer.active 
+                ? this.dialoguePlayer.events.wait("done").then(resolve, reject)
+                : resolve(),
         };
     }
 
@@ -54,19 +58,18 @@ class FlicksyPlayer {
         });
 
         // set initial game state
+        /** @type {FlicksyPlayState} */
         this.gameState = {
             currentScene: startScene || editor.projectData.details.start,
-            nextScene: undefined,
             runningScript: false,
             variables: {},
         };
 
-        this.logText.innerText = "[restarted]";
+        this.log("[restarted]");
     }
 
     log(text) {
-        this.logText.innerText += text + "\n";
-        this.logText.scrollTo(0, this.logText.scrollHeight);
+        this.events.emit("log", text);
     }
 
     update(dt) {
@@ -74,9 +77,6 @@ class FlicksyPlayer {
 
         if (this.dialoguePlayer.active) {
             this.dialoguePlayer.update(dt);
-        } else if (this.gameState.nextScene) {
-            this.gameState.currentScene = this.gameState.nextScene;
-            this.gameState.nextScene = undefined;
         }
         this.render();
     }
@@ -130,19 +130,23 @@ class FlicksyPlayer {
      * @param {number} x 
      * @param {number} y 
      */
-    async click(x, y) {
+    click(x, y) {
         if (this.dialoguePlayer.active) {
             this.dialoguePlayer.skip();
-            return;
+        } else {
+            x /= 2;
+            y /= 2;
+            const scene = this.sceneIdToScene.get(this.gameState.currentScene);
+            const object = pointcastScene(scene, { x, y }, true);
+            if (object) this.runObjectBehaviour(scene, object);
         }
+    }
 
-        x /= 2;
-        y /= 2;
-        const scene = this.sceneIdToScene.get(this.gameState.currentScene);
-        const object = pointcastScene(scene, { x, y }, true);
-
-        if (!object) return;
-
+    /**
+     * @param {FlicksyDataScene} scene 
+     * @param {FlicksyDataObject} object 
+     */
+    async runObjectBehaviour(scene, object) { 
         if (object.behaviour.script) {
             const defines = generateScriptingDefines(this, this.gameState, scene, object);
             const names = Object.keys(defines).join(", ");
@@ -154,7 +158,7 @@ class FlicksyPlayer {
                 await script(defines);
             } catch (e) {
                 this.gameState.runningScript = false;
-                console.log(`SCRIPT ERROR in OBJECT '${object.name}' of SCENE '${scene.name}'`, e);
+                this.log(`SCRIPT ERROR in OBJECT '${object.name}' of SCENE '${scene.name}'\n${e}`);
             }
         }
 
@@ -162,11 +166,11 @@ class FlicksyPlayer {
             this.dialoguePlayer.queueScript(object.behaviour.dialogue);
         }
 
-        if (object.behaviour.destination) {
-            this.gameState.nextScene = object.behaviour.destination;
-        }
+        await this.dialogueWaiter;
 
-        this.render();
+        if (object.behaviour.destination) {
+            this.gameState.currentScene = object.behaviour.destination;
+        }
     }
 }
 
@@ -377,7 +381,7 @@ function renderScenePreview(scene, scale = 2) {
 
 /**
  * @param {FlicksyDataScene} scene
- * @param {{ x: number, y: number }} point
+ * @param {Vector2} point
  * @returns {FlicksyDataObject}
  */
 function pointcastScene(scene, point, onlyVisible = false) {
@@ -404,7 +408,7 @@ function pointcastScene(scene, point, onlyVisible = false) {
 
 /**
  * @param {FlicksyPlayer} player 
- * @param {*} state 
+ * @param {FlicksyPlayState} state 
  * @param {FlicksyDataScene} scene 
  * @param {FlicksyDataObject} object 
  */

@@ -52,7 +52,7 @@ class FlicksyEditor {
         if (play) {
             this.playTab.player.events.on("log", console.log);
             await this.setProjectData(JSON.parse(dataElement.innerHTML));
-            elementByPath("toggle:sidebar/play", "button").click();
+            switchTab("sidebar/play");
         } else {
             const json = localStorage.getItem("flicksy2/test-save") || dataElement.innerHTML;
             await this.setProjectData(JSON.parse(json));
@@ -79,7 +79,7 @@ class FlicksyEditor {
 
             const cleanup = () => {
                 this.mapTabEditor.mode = "move";
-                elementByPath("toggle:modes/main", "button").click();
+                switchTab("modes/main");
             }
 
             const onCancel = () => {
@@ -94,8 +94,8 @@ class FlicksyEditor {
             options.onCancel = onCancel;
             options.onPicked = onPicked;
 
-            elementByPath("toggle:modes/picker", "button").click();
-            elementByPath("toggle:sidebar/map", "button").click();
+            switchTab("modes/picker");
+            switchTab("sidebar/map");
             this.pickerTab.setup(options);
         });
     }
@@ -109,7 +109,7 @@ class FlicksyEditor {
             this.drawingsTabEditor.onDrawingPicked = (drawing) => this.pickerTab.onPicked(drawing);
 
             const cleanup = () => {
-                elementByPath("toggle:modes/main", "button").click();
+                switchTab("modes/main");
             }
 
             const onCancel = () => {
@@ -124,8 +124,8 @@ class FlicksyEditor {
             options.onCancel = onCancel;
             options.onPicked = onPicked;
 
-            elementByPath("toggle:modes/picker", "button").click();
-            elementByPath("toggle:sidebar/drawings", "button").click();
+            switchTab("modes/picker");
+            switchTab("sidebar/drawings");
             this.pickerTab.setup(options);
         });
     }
@@ -141,7 +141,7 @@ class FlicksyEditor {
             this.sceneTabEditor.onObjectPicked = (object) => this.pickerTab.onPicked(object);
 
             const cleanup = () => {
-                elementByPath("toggle:modes/main", "button").click();
+                switchTab("modes/main");
             }
 
             const onCancel = () => {
@@ -156,8 +156,8 @@ class FlicksyEditor {
             options.onCancel = onCancel;
             options.onPicked = onPicked;
 
-            elementByPath("toggle:modes/picker", "button").click();
-            elementByPath("toggle:sidebar/scene", "button").click();
+            switchTab("modes/picker");
+            switchTab("sidebar/scene");
             this.pickerTab.setup(options);
         });
     }

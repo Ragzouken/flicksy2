@@ -38,6 +38,10 @@ function invokeAction(action) {
     if (handler) handler();
 }
 
+function switchTab(path) {
+    elementByPath(`toggle:${path}`, "button").click();
+}
+
 function initui() {
     const toggles = ALL("[data-tab-toggle]");
     const bodies = ALL("[data-tab-body]");

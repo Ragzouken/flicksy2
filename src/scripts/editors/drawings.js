@@ -147,12 +147,12 @@ class DrawingsTabEditor {
                 this.refresh();
             }
 
-            elementByPath("toggle:modes/color", "button").click();
+            switchTab("modes/color");
         });
 
         setActionHandler("color/confirm", () => {
             this.colorReplacer = undefined;
-            elementByPath("toggle:modes/main", "button").click();
+            switchTab("modes/main");
         });
 
         const hswheelCanvas = /** @type {HTMLCanvasElement} */ (document.getElementById("hswheel"));

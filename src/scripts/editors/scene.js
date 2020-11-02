@@ -53,7 +53,7 @@ class SceneTabEditor {
                 this.activeScene.objects.push(object);
                 await initObjectInEditor(this, object);
             } catch(e) {}
-            elementByPath("toggle:sidebar/scene", "button").click();
+            switchTab("sidebar/scene");
         });
 
         setActionHandler("scene/pick-active", async () => {
@@ -66,7 +66,7 @@ class SceneTabEditor {
                 })
                 this.setActiveScene(this.flicksyEditor.projectData, scene);
             } catch(e) {}
-            elementByPath("toggle:sidebar/scene", "button").click();
+            switchTab("sidebar/scene");
         });
 
         setActionHandler("scene/selected/pick-drawing", async () => {
@@ -83,7 +83,7 @@ class SceneTabEditor {
                     objectToRendering.get(this.selectedObject),
                 )
             } catch(e) {}
-            elementByPath("toggle:sidebar/scene", "button").click();
+            switchTab("sidebar/scene");
         });
 
         setActionHandler("scene/selected/pick-destination", async () => {
@@ -97,7 +97,7 @@ class SceneTabEditor {
                 this.selectedObject.behaviour.destination = scene ? scene.id : "";
                 this.setSelectedObject(this.selectedObject);
             } catch(e) {}
-            elementByPath("toggle:sidebar/scene", "button").click();
+            switchTab("sidebar/scene");
         });
 
         setActionHandler("scene/selected/raise", () => {
@@ -157,7 +157,7 @@ class SceneTabEditor {
                 this.selectedObject.behaviour.script = replacer(`"${scene ? scene.id : ""}"`);
                 this.objectScriptInput.value = this.selectedObject.behaviour.script;
             } catch (e) { console.log(e) }
-            elementByPath("toggle:sidebar/scene", "button").click();
+            switchTab("sidebar/scene");
             this.setSelectedObject(selectedObject);
         });
 
@@ -173,7 +173,7 @@ class SceneTabEditor {
                 this.selectedObject.behaviour.script = replacer(`"${drawing ? drawing.id : ""}"`);
                 this.objectScriptInput.value = this.selectedObject.behaviour.script;
             } catch (e) { console.log(e) }
-            elementByPath("toggle:sidebar/scene", "button").click();
+            switchTab("sidebar/scene");
             this.setSelectedObject(selectedObject);
         });
 
@@ -195,13 +195,13 @@ class SceneTabEditor {
                 }, scene);
                 selectedObject.behaviour.script = replacer(`"${object ? object.id : ""}"`);
             } catch (e) { console.log(e) }
-            elementByPath("toggle:sidebar/scene", "button").click();
+            switchTab("sidebar/scene");
             this.setActiveScene(this.flicksyEditor.projectData, activeScene);
             this.setSelectedObject(selectedObject);
         });
 
         setActionHandler("scene/active/play", () => {
-            elementByPath("toggle:sidebar/play", "button").click();
+            switchTab("sidebar/play");
             this.flicksyEditor.playTab.restart(this.activeScene.id);
         });
     }

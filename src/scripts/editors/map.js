@@ -44,7 +44,7 @@ class MapTabEditor {
 
         setActionHandler("map/selected/edit", () => {
             this.flicksyEditor.sceneTabEditor.setActiveScene(this.flicksyEditor.projectData, this.selectedScene);
-            elementByPath("toggle:sidebar/scene", "button").click();
+            switchTab("sidebar/scene");
         });
 
         setActionHandler("map/selected/duplicate", async () => {
@@ -98,7 +98,7 @@ class MapTabEditor {
         });
 
         setActionHandler("map/selected/play", () => {
-            elementByPath("toggle:sidebar/play", "button").click();
+            switchTab("sidebar/play");
             this.flicksyEditor.playTab.restart(this.selectedScene.id);
         });
     }
@@ -226,7 +226,7 @@ async function initSceneInEditor(mapEditor, scene) {
     object.element.addEventListener("dblclick", (event) => {
         killEvent(event);
         editor.sceneTabEditor.setActiveScene(editor.projectData, scene);
-        elementByPath("toggle:sidebar/scene", "button").click();
+        switchTab("sidebar/scene");
     })
 
     object.element.addEventListener("pointerdown", (event) => {

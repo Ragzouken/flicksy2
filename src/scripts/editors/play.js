@@ -47,19 +47,19 @@ class PlayTab {
                     prompt: "pick a scene to jump to during playback. the game will not be reset",
                     allowNone: false, 
                 });
-                elementByPath("toggle:sidebar/play", "button").click();
+                switchTab("sidebar/play");
                 this.player.gameState.currentScene = scene.id;
                 this.player.render();
                 this.refresh();
             } catch (e) {
-                elementByPath("toggle:sidebar/play", "button").click();
+                switchTab("sidebar/play");
             }
         });
 
         setActionHandler("play/edit-scene", () => {
             const scene = getSceneById(this.flicksyEditor.projectData, this.player.gameState.currentScene);
             this.flicksyEditor.sceneTabEditor.setActiveScene(this.flicksyEditor.projectData, scene);
-            elementByPath("toggle:sidebar/scene", "button").click();
+            switchTab("sidebar/scene");
         });
 
         this.player.events.on("next-scene", (sceneId) => {

@@ -17,7 +17,7 @@ class FlicksyPlayer {
         this.logText = elementByPath("play/log", "div");
 
         this.dialogueWaiter = {
-            then: (resolve, reject) => pollCondition(() => this.dialoguePlayer.currentPage === undefined).then(resolve, reject),
+            then: (resolve, reject) => this.dialoguePlayer.events.wait("done").then(resolve, reject),
         };
     }
 
@@ -180,6 +180,7 @@ class DialoguePlayer {
     } 
 
     constructor() {
+        this.events = new EventEmitter();
         this.dialogueRendering = createRendering2D(8, 8);
         this.restart();
     }
@@ -205,6 +206,12 @@ class DialoguePlayer {
         this.showGlyphCount = 0;
         this.showGlyphElapsed = 0;
         this.pageGlyphCount = page ? page.length : 0;
+
+        if (page !== undefined) {
+            this.events.emit("next-page", page);
+        } else {
+            this.events.emit("done");
+        }
     }
 
     /** @param {number} dt */
@@ -289,7 +296,14 @@ class DialoguePlayer {
             this.moveToNextPage();
     
         const last = pages[pages.length - 1];
-        return pollCondition(() => !this.queuedPages.includes(last) && this.currentPage !== last);
+        return new Promise((resolve) => {
+            const remove = this.events.on("next-page", (page) => {
+                if (page !== last && !this.queuedPages.includes(last)) {
+                    remove();
+                    resolve();
+                }
+            });
+        });
     }
 
     applyStyle() {

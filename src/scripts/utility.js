@@ -262,26 +262,47 @@ function randomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
-/**
- * @param {() => boolean} predicate 
- * @param {number} timeout 
- */
-function pollCondition(predicate, timeout = undefined) {
-    return new Promise((resolve, reject) => {
-        function check() {
-            if (predicate()) {
-                clearInterval(handle);
-                resolve();
-            };
-        }
-        
-        const handle = setInterval(check, 0);
-        if (timeout) 
-            setTimeout(() => { clearInterval(handle); reject() }, timeout);
-    });
-}
-
 /** @param {number} milliseconds */
 function sleep(milliseconds) {
     return new Promise(resolve => setTimeout(resolve, milliseconds));
 }
+
+class EventEmitter {
+    constructor() {
+        this.listeners = {};
+    }
+
+    on(event, listener) {
+        if (this.listeners[event] === undefined)
+            this.listeners[event] = [];
+        this.listeners[event].push(listener);
+        return () => this.off(event, listener);
+    }
+
+    off(event, listener) {
+        const listeners = this.listeners[event] || [];
+        const index = listeners.indexOf(listener);
+        if (index !== -1)
+            this.listeners[event].splice(index, 1);
+    }
+
+    emit(event, ...args) {
+        const listeners = this.listeners[event] || [];
+        [...listeners].forEach((listener) => listener(...args));
+    }
+
+    once(event, listener) {
+        const remove = this.on(event, (...args) => {
+            remove();
+            listener(...args);
+        });
+        return remove;
+    }
+
+    async wait(event, timeout = undefined) {
+        return new Promise((resolve, reject) => {
+            if (timeout) setTimeout(reject, timeout);
+            this.once(event, resolve);
+        });
+    }
+};

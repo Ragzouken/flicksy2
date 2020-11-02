@@ -222,10 +222,10 @@ class SceneTabEditor {
 
             this.objectDialogueInput.value = this.selectedObject.behaviour.dialogue;
             this.objectScriptInput.value = this.selectedObject.behaviour.script;
-            const scene = this.flicksyEditor.projectData.scenes.find((scene) => scene.id === this.selectedObject.behaviour.destination);
+            const scene = getSceneById(this.flicksyEditor.projectData, this.selectedObject.behaviour.destination);
             this.objectDestinationInput.value = scene ? scene.name : "no change";
 
-            const drawing = this.flicksyEditor.projectData.drawings.find((drawing) => drawing.id === this.selectedObject.drawing);
+            const drawing = getDrawingById(this.flicksyEditor.projectData, this.selectedObject.drawing);
             this.objectDrawingInput.value = drawing.name;
         }
     }
@@ -268,7 +268,7 @@ class SceneTabEditor {
 
     refreshDrawings() {
         this.activeScene.objects.forEach((object) => {
-            const drawing = this.flicksyEditor.projectData.drawings.find((drawing) => drawing.id === object.drawing);
+            const drawing = getDrawingById(this.flicksyEditor.projectData, object.drawing);
             const rendering = this.flicksyEditor.drawingsManager.getRendering(drawing);
             copyRendering2D(rendering, objectToRendering.get(object));
         });
@@ -292,7 +292,7 @@ const objectToRendering = new Map();
  * @param {FlicksyDataObject} object
  */
 async function initObjectInEditor(sceneEditor, object) {
-    const drawing = sceneEditor.flicksyEditor.projectData.drawings.find((drawing) => drawing.id === object.drawing);
+    const drawing = getDrawingById(sceneEditor.flicksyEditor.projectData, object.drawing);
     const rendering = copyRendering2D(editor.drawingsManager.getRendering(drawing));
     objectToRendering.set(object, rendering);
 

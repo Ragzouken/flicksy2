@@ -60,7 +60,7 @@ class PlayTab {
         });
 
         setActionHandler("play/edit-scene", () => {
-            const scene = this.flicksyEditor.projectData.scenes.find((scene) => scene.id === this.player.gameState.currentScene);
+            const scene = getSceneById(this.flicksyEditor.projectData, this.player.gameState.currentScene);
             this.flicksyEditor.sceneTabEditor.setActiveScene(this.flicksyEditor.projectData, scene);
             elementByPath("toggle:sidebar/scene", "button").click();
         });

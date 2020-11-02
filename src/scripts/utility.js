@@ -261,3 +261,27 @@ function randomInt(min, max) {
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min + 1) + min);
 }
+
+/**
+ * @param {() => boolean} predicate 
+ * @param {number} timeout 
+ */
+function pollCondition(predicate, timeout = undefined) {
+    return new Promise((resolve, reject) => {
+        function check() {
+            if (predicate()) {
+                clearInterval(handle);
+                resolve();
+            };
+        }
+        
+        const handle = setInterval(check, 0);
+        if (timeout) 
+            setTimeout(() => { clearInterval(handle); reject() }, timeout);
+    });
+}
+
+/** @param {number} milliseconds */
+function sleep(milliseconds) {
+    return new Promise(resolve => setTimeout(resolve, milliseconds));
+}

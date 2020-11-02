@@ -88,3 +88,28 @@ const EMPTY_PROJECT_DATA = {
         }
     ]
 }
+
+/**
+ * @param {FlicksyDataProject} project 
+ * @param {string} sceneId 
+ */
+function getSceneById(project, sceneId) {
+    return project.scenes.find((scene) => scene.id === sceneId);
+}
+
+/**
+ * @param {FlicksyDataProject} project 
+ * @param {string} drawingId 
+ */
+function getDrawingById(project, drawingId) {
+    return project.drawings.find((drawing) => drawing.id === drawingId);
+}
+
+/**
+ * @param {FlicksyDataProject} project 
+ * @param {string} objectId 
+ */
+function getObjectById(project, objectId) {
+    const objects = project.scenes.flatMap((scene) => scene.objects);
+    return objects.find((object) => object.id === objectId);
+}

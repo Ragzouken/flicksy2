@@ -7,6 +7,7 @@ class FlicksyPlayer {
         this.sceneRendering = createRendering2D(160, 100);
 
         this.dialoguePlayer = new DialoguePlayer();
+        this.projectData = undefined;
 
         /** @type {Map<string, CanvasRenderingContext2D>} */
         this.drawingIdToRendering = new Map();
@@ -14,6 +15,10 @@ class FlicksyPlayer {
         this.sceneIdToScene = new Map();
 
         this.logText = elementByPath("play/log", "div");
+
+        this.dialogueWaiter = {
+            then: (resolve, reject) => pollCondition(() => this.dialoguePlayer.currentPage === undefined).then(resolve, reject),
+        };
     }
 
     async load() {
@@ -282,16 +287,9 @@ class DialoguePlayer {
         
         if (!this.currentPage)
             this.moveToNextPage();
-
-        return new Promise((resolve) => {
-            const last = pages[pages.length - 1];
-            const handle = setInterval(() => {
-                if (!this.queuedPages.includes(last) && this.currentPage !== last) {
-                    clearInterval(handle);
-                    resolve();
-                }
-            }, 50);
-        });
+    
+        const last = pages[pages.length - 1];
+        return pollCondition(() => !this.queuedPages.includes(last) && this.currentPage !== last);
     }
 
     applyStyle() {
@@ -331,7 +329,7 @@ function renderScene(scene, scale = 2) {
     objects.forEach((object) => {
         if (object.hidden) return;
 
-        const drawing = editor.projectData.drawings.find((drawing) => drawing.id === object.drawing);
+        const drawing = getDrawingById(editor.projectData, object.drawing);
         const canvas = editor.drawingsManager.getRendering(drawing).canvas;
 
         sceneRendering.drawImage(
@@ -375,7 +373,7 @@ function pointcastScene(scene, point, onlyVisible = false) {
     for (let object of objects) {
         if (object.hidden && onlyVisible) continue;
 
-        const drawing = editor.projectData.drawings.find((drawing) => drawing.id === object.drawing);
+        const drawing = getDrawingById(editor.projectData, object.drawing);
         const rendering = editor.drawingsManager.getRendering(drawing);
 
         const { x, y } = object.position;
@@ -398,25 +396,11 @@ function pointcastScene(scene, point, onlyVisible = false) {
  */
 function generateScriptingDefines(player, state, scene, object) {
     const objectFromId = (id) => {
-        for (const scene of player.sceneIdToScene.values()) {
-            for (const object of scene.objects) {
-                if (object.id === id) return object;
-            }
-        }
-
-        throw new Error(`NO OBJECT ${id}`);
+        const objects = Array.from(player.sceneIdToScene.values()).flatMap((scene) => scene.objects);
+        const object = objects.find((object) => object.id === id);
+        if (object === undefined) throw new Error(`NO OBJECT ${id}`);
+        return object;
     }
-
-    const dialogueWaiter = {}
-    dialogueWaiter.then = (resolve) => {
-        const check = () => {
-            if (player.dialoguePlayer.currentPage === undefined) {
-                resolve();
-                clearInterval(handle);
-            }
-        }
-        const handle = setInterval(check, 50);
-    };
 
     // edit here to add new scripting functions
     const defines = {};
@@ -436,8 +420,8 @@ function generateScriptingDefines(player, state, scene, object) {
     defines.SHOW = (object) => objectFromId(object).hidden = false;
 
     defines.SAY = async (dialogue) => player.dialoguePlayer.queueScript(dialogue);
-    defines.DELAY = async (time) => new Promise((resolve) => setInterval(resolve, time * 1000));
-    defines.DIALOGUE = dialogueWaiter;
+    defines.DELAY = async (seconds) => sleep(seconds * 1000);
+    defines.DIALOGUE = player.dialogueWaiter;
     defines.DIALOG = defines.DIALOGUE;
 
     return defines;

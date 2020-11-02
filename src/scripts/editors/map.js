@@ -118,7 +118,7 @@ class MapTabEditor {
     /** @param {FlicksyDataProject} project */
     async reloadFromProject(project) {
         const startId = project.details.start;
-        const startScene = project.scenes.find((scene) => scene.id === startId);
+        const startScene = getSceneById(project, startId);
         this.startSceneButton.value = startScene.name;
 
         sceneToPreviewRendering.clear();

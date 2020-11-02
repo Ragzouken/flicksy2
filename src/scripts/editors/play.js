@@ -20,7 +20,6 @@ class PlayTab {
 
         const mouseEventToPixel = (event) => {
             const mouse = mouseEventToSceneTransform(event);
-            //const pixel = object.transform.inverse().multiply(mouse);
             return [mouse.e, mouse.f];
         }
 
@@ -31,14 +30,11 @@ class PlayTab {
             killEvent(event);
             const [x, y] = mouseEventToPixel(event);
             this.player.click(x, y);
-
-            this.refresh();
         });
         this.player.viewRendering.canvas.addEventListener("pointermove", (event) => {
             killEvent(event);
             const [x, y] = mouseEventToPixel(event);
-            const clickable = this.player.doesHoveredObjectHaveBehaviour(x, y);
-
+            const clickable = this.player.isInteractableHovered(x, y);
             this.player.viewRendering.canvas.style.setProperty("cursor", clickable ? "pointer" : "default");
         });
 
@@ -64,6 +60,10 @@ class PlayTab {
             const scene = getSceneById(this.flicksyEditor.projectData, this.player.gameState.currentScene);
             this.flicksyEditor.sceneTabEditor.setActiveScene(this.flicksyEditor.projectData, scene);
             elementByPath("toggle:sidebar/scene", "button").click();
+        });
+
+        this.player.events.on("next-scene", (sceneId) => {
+            this.refresh();
         });
 
         this.player.events.on("log", (text) => {

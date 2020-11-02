@@ -56,7 +56,6 @@
 /**
  * @typedef {Object} FlicksyPlayState
  * @property {string} currentScene
- * @property {boolean} runningScript
  * @property {Object} variables
  */
 
@@ -119,4 +118,9 @@ function getDrawingById(project, drawingId) {
 function getObjectById(project, objectId) {
     const objects = project.scenes.flatMap((scene) => scene.objects);
     return objects.find((object) => object.id === objectId);
+}
+
+/** @param {FlicksyDataObject} object */
+function isObjectInteractable(object) {
+    return 0 < (object.behaviour.script.length + object.behaviour.dialogue.length + object.behaviour.destination.length);
 }

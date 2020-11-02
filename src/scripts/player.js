@@ -5,23 +5,27 @@ class FlicksyPlayer {
     constructor() {
         this.events = new EventEmitter();
 
+        // view is twice scene resolution, for text rendering
         this.viewRendering = createRendering2D(160*2, 100*2);
         this.sceneRendering = createRendering2D(160, 100);
 
         this.dialoguePlayer = new DialoguePlayer();
-        this.projectData = undefined;
 
         /** @type {Map<string, CanvasRenderingContext2D>} */
         this.drawingIdToRendering = new Map();
         /** @type {Map<string, FlicksyDataScene>} */
         this.sceneIdToScene = new Map();
 
+        // an awaitable that generates a new promise that resolves once no dialogue is active
+        /** @type {PromiseLike<void>} */
         this.dialogueWaiter = {
-            /** @type {(resolve: () => void, reject: () => void) => any} */
-            then: (resolve, reject) => 
-                this.dialoguePlayer.active 
-                ? this.dialoguePlayer.events.wait("done").then(resolve, reject)
-                : resolve(),
+            then: (resolve, reject) => {
+                if (this.dialoguePlayer.active) {
+                    return this.dialoguePlayer.events.wait("done").then(resolve, reject);
+                } else {
+                    resolve();
+                }
+            },
         };
     }
 
@@ -61,7 +65,6 @@ class FlicksyPlayer {
         /** @type {FlicksyPlayState} */
         this.gameState = {
             currentScene: startScene || editor.projectData.details.start,
-            runningScript: false,
             variables: {},
         };
 
@@ -82,31 +85,28 @@ class FlicksyPlayer {
     }
 
     render() {
-        const scene = this.sceneIdToScene.get(this.gameState.currentScene);
-
+        // clear to black, then render objects in depth order
         fillRendering2D(this.sceneRendering, 'black');
+        const scene = this.sceneIdToScene.get(this.gameState.currentScene);
         const objects = scene.objects.slice().sort((a, b) => a.position.z - b.position.z);
         objects.forEach((object) => {
             if (object.hidden) return;
 
             const canvas = this.drawingIdToRendering.get(object.drawing).canvas;
-            this.sceneRendering.drawImage(
-                canvas,
-                object.position.x, 
-                object.position.y, 
-                canvas.width, 
-                canvas.height,
-            );
+            const { x, y } = object.position;
+            this.sceneRendering.drawImage(canvas, x, y);
         });
 
+        // copy scene to view at 2x scale
         this.viewRendering.drawImage(this.sceneRendering.canvas, 0, 0, 160*2, 100*2);
 
-        const dw = this.dialoguePlayer.dialogueRendering.canvas.width;
-        const dh = this.dialoguePlayer.dialogueRendering.canvas.height;
-        const x = (160*2-dw)/2;
-        const y = (100+(100-dh)/2);
-
+        // render dialogue box if necessary
         if (this.dialoguePlayer.active) {
+            const dw = this.dialoguePlayer.dialogueRendering.canvas.width;
+            const dh = this.dialoguePlayer.dialogueRendering.canvas.height;
+            const x = (160*2-dw)/2;
+            const y = (100+(100-dh)/2);
+
             this.dialoguePlayer.render();
             this.viewRendering.drawImage(this.dialoguePlayer.dialogueRendering.canvas, x, y);
         }
@@ -116,14 +116,9 @@ class FlicksyPlayer {
      * @param {number} x 
      * @param {number} y 
      */
-    doesHoveredObjectHaveBehaviour(x, y) {
-        x /= 2;
-        y /= 2;
-        const scene = this.sceneIdToScene.get(this.gameState.currentScene);
-        const object = pointcastScene(scene, { x, y }, true);
-
-        return object !== undefined
-            && (object.behaviour.destination.length + object.behaviour.dialogue.length + object.behaviour.script.length) > 0;
+    isInteractableHovered(x, y) {
+        const object = this.pointcast(x, y);
+        return object !== undefined && isObjectInteractable(object);
     }
 
     /**
@@ -134,30 +129,39 @@ class FlicksyPlayer {
         if (this.dialoguePlayer.active) {
             this.dialoguePlayer.skip();
         } else {
-            x /= 2;
-            y /= 2;
-            const scene = this.sceneIdToScene.get(this.gameState.currentScene);
-            const object = pointcastScene(scene, { x, y }, true);
-            if (object) this.runObjectBehaviour(scene, object);
+            const object = this.pointcast(x, y);
+            if (object) this.runObjectBehaviour(object);
         }
     }
 
     /**
-     * @param {FlicksyDataScene} scene 
-     * @param {FlicksyDataObject} object 
+     * @param {number} x 
+     * @param {number} y 
      */
-    async runObjectBehaviour(scene, object) { 
+    pointcast(x, y) {
+        x /= 2; y /= 2;
+        const scene = this.sceneIdToScene.get(this.gameState.currentScene);
+        return pointcastScene(scene, { x, y }, true);
+    }
+
+    /** @param {string} sceneId */
+    changeScene(sceneId) {
+        this.gameState.currentScene = sceneId;
+        this.events.emit("next-scene", sceneId);
+    }
+
+    /** @param {FlicksyDataObject} object */
+    async runObjectBehaviour(object) { 
         if (object.behaviour.script) {
+            const scene = this.sceneIdToScene.get(this.gameState.currentScene);
             const defines = generateScriptingDefines(this, this.gameState, scene, object);
             const names = Object.keys(defines).join(", ");
             const preamble = `const { ${names} } = COMMANDS;\n`;
 
             try {
                 const script = new AsyncFunction("COMMANDS", preamble + object.behaviour.script);
-                this.gameState.runningScript = true;
                 await script(defines);
             } catch (e) {
-                this.gameState.runningScript = false;
                 this.log(`SCRIPT ERROR in OBJECT '${object.name}' of SCENE '${scene.name}'\n${e}`);
             }
         }
@@ -169,7 +173,7 @@ class FlicksyPlayer {
         await this.dialogueWaiter;
 
         if (object.behaviour.destination) {
-            this.gameState.currentScene = object.behaviour.destination;
+            this.changeScene(object.behaviour.destination);
         }
     }
 }
@@ -432,7 +436,7 @@ function generateScriptingDefines(player, state, scene, object) {
     defines.GET = (key, fallback=0) => state.variables[key] || fallback;
 
     defines.TRANSFORM = (object, drawing) => objectFromId(object).drawing = drawing;
-    defines.TRAVEL = (scene) => state.currentScene = scene;
+    defines.TRAVEL = (scene) => player.changeScene(scene);
     
     defines.HIDE = (object) => objectFromId(object).hidden = true;
     defines.SHOW = (object) => objectFromId(object).hidden = false;

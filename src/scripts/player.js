@@ -1,5 +1,6 @@
 const CONT_ICON_DATA = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAGCAYAAAD68A/GAAAAAXNSR0IArs4c6QAAADNJREFUCJmNzrENACAMA0E/++/8NAhRBEg6yyc5SePUoNqwDICnWP04ww1tWOHfUqqf1UwGcw4T9WFhtgAAAABJRU5ErkJggg==";
 const STOP_ICON_DATA = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAGCAYAAAD68A/GAAAAAXNSR0IArs4c6QAAACJJREFUCJljZICC/////2fAAhgZGRn////PwIRNEhsYCgoBIkQHCf7H+yAAAAAASUVORK5CYII="
+const CURSOR_DATA = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAAXCAYAAADtNKTnAAAAmklEQVQ4T+2UURKAIAhE83CcmsPV4Aihkq5O/dVXo/BmF1fTEXzMfMoyEaVov13rigRARLmOmSHQD+lHPZ2JtoxOagrxJ/UEXIK0QFW3DRGg5ihpOjWhQdh88ML/DAlkDtNeFBiwgrioI1fmhpRGUwN3l0JRZYP1tlZA70N2bVVKdiCWk9b/ymy+haC2/NMZPsSIJQiCZEVv8QUbvb1oFvm1hQAAAABJRU5ErkJggg==";
 
 class FlicksyPlayer {
     constructor() {
@@ -31,6 +32,9 @@ class FlicksyPlayer {
 
     async load() {
         await this.dialoguePlayer.load();
+
+        this.cursor = await loadImage(CURSOR_DATA);
+        this.mouse = undefined;
 
         let prev;
         const timer = (next) => {
@@ -97,6 +101,9 @@ class FlicksyPlayer {
             this.sceneRendering.drawImage(canvas, x, y);
         });
 
+        if (this.mouse)
+            this.sceneRendering.drawImage(this.cursor, this.mouse.x/2-6, this.mouse.y/2-2);
+
         // copy scene to view at 2x scale
         this.viewRendering.drawImage(this.sceneRendering.canvas, 0, 0, 160*2, 100*2);
 
@@ -117,6 +124,7 @@ class FlicksyPlayer {
      * @param {number} y 
      */
     isInteractableHovered(x, y) {
+        this.mouse = { x, y, };
         const object = this.pointcast(x, y);
         return object !== undefined && isObjectInteractable(object);
     }

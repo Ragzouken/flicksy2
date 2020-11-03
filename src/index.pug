@@ -15,29 +15,29 @@ html
         script
             include library/FileSaver.min.js
         // scripts
-        script
+        script(id="blitsy.js")
             include scripts/blitsy.js
-        script
+        script(id="text.js")
             include scripts/text.js
-        script
+        script(id="htmlui.js")
             include scripts/htmlui.js
-        script
+        script(id="editors/drawings.js")
             include scripts/editors/drawings.js
-        script
+        script(id="editors/scene.js")
             include scripts/editors/scene.js
-        script
+        script(id="editors/map.js")
             include scripts/editors/map.js
-        script
+        script(id="editors/project.js")
             include scripts/editors/project.js
-        script
+        script(id="editors/play.js")
             include scripts/editors/play.js
-        script
+        script(id="flicksy.js")
             include scripts/flicksy.js
-        script
+        script(id="utility.js")
             include scripts/utility.js
-        script
+        script(id="player.js")
             include scripts/player.js
-        script
+        script(id="main.js")
             include scripts/main.js
     body(onload="editor.start()")
         #sidebar

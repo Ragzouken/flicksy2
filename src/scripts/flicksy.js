@@ -44,6 +44,7 @@
  * @property {string} name
  * @property {string[]} palette
  * @property {string} start
+ * @property {Record<string, string>} cursors
  */
 
 /**
@@ -82,7 +83,8 @@ const EMPTY_PROJECT_DATA = {
             "#444444",
             "#000000"
         ],
-        start: "0"
+        start: "0",
+        cursors: {}
     },
     drawings: [],
     scenes: [

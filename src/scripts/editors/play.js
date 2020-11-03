@@ -35,7 +35,7 @@ class PlayTab {
             killEvent(event);
             const [x, y] = mouseEventToPixel(event);
             const clickable = this.player.isInteractableHovered(x, y);
-            this.player.viewRendering.canvas.style.setProperty("cursor", clickable ? "pointer" : "default");
+            //this.player.viewRendering.canvas.style.setProperty("cursor", clickable ? "pointer" : "default");
         });
 
         window.addEventListener("resize", () => this.reframe());

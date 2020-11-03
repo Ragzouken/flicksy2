@@ -317,11 +317,9 @@ class DialoguePlayer {
     applyStyle() {
         if (!this.currentPage) return;
 
-        const current = this.currentGlyph;
-
-        if (current) {
-            if (current.styles.has("delay")) {
-                this.showCharTime = parseFloat(current.styles.get("delay"));
+        if (this.currentGlyph) {
+            if (this.currentGlyph.styles.has("delay")) {
+                this.showCharTime = parseFloat(this.currentGlyph.styles.get("delay"));
             } else {
                 this.showCharTime = .05;
             }

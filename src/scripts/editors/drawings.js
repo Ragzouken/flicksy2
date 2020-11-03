@@ -21,10 +21,29 @@ class DrawingsTabEditor {
         this.heightInput = elementByPath("drawings/select/height", "input");
         this.resizeButton = elementByPath("drawings/select/resize", "button");
 
+        this.cursorPivotXInput = elementByPath("drawings/cursor/pivot/x", "input");
+        this.cursorPivotYInput = elementByPath("drawings/cursor/pivot/y", "input");
+
+        this.pivotXInput = elementByPath("drawings/select/pivot/x", "input");
+        this.pivotYInput = elementByPath("drawings/select/pivot/y", "input");
+
         this.scene = new PanningScene(ONE("#drawings-scene"));
         this.scene.transform.translateSelf(100, 50);
         this.scene.transform.scaleSelf(4, 4);
         this.scene.refresh();
+
+        this.cursorDrawingLabel = elementByPath("drawings/cursor", "input");
+        setActionHandler("drawings/pick-cursor-drawing", async () => {
+            try {
+                const drawing = await this.flicksyEditor.pickDrawing({
+                    heading: "pick cursor drawing",
+                    prompt: "pick the drawing to use as a cursor",
+                    allowNone: true,
+                });
+                this.flicksyEditor.projectData.details.cursor = drawing ? drawing.id : "";
+                this.refreshCursor();
+            } catch(e) {}
+        });
 
         this.nameInput.addEventListener("input", () => {
             if (!this.selectedDrawing) return;
@@ -40,6 +59,24 @@ class DrawingsTabEditor {
         }
         this.widthInput.addEventListener("input", refreshResize);
         this.heightInput.addEventListener("input", refreshResize);
+
+        const refreshPivot = () => {
+            if (!this.selectedDrawing) return;
+            this.selectedDrawing.pivot.x = parseInt(this.pivotXInput.value, 10);
+            this.selectedDrawing.pivot.y = parseInt(this.pivotYInput.value, 10);
+        }
+        this.pivotXInput.addEventListener("input", refreshPivot);
+        this.pivotYInput.addEventListener("input", refreshPivot);
+
+        const refreshCursorPivot = () => {
+            const cursor = editor.projectData.details.cursor;
+            const cursorDrawing = getDrawingById(this.flicksyEditor.projectData, cursor);
+            if (!cursorDrawing) return;
+            cursorDrawing.pivot.x = parseInt(this.cursorPivotXInput.value, 10);
+            cursorDrawing.pivot.y = parseInt(this.cursorPivotYInput.value, 10);
+        }
+        this.cursorPivotXInput.addEventListener("input", refreshCursorPivot);
+        this.cursorPivotYInput.addEventListener("input", refreshCursorPivot);
 
         setActionHandler("drawings/select/resize", () => {
             const width = parseInt(this.widthInput.value, 10);
@@ -69,6 +106,7 @@ class DrawingsTabEditor {
                 id: nanoid(),
                 name: original.name + " copy",
                 position: { x: x+8, y: y+8, z: z+1 },
+                pivot: { ...original.pivot },
                 data: "",
             };
             this.flicksyEditor.projectData.drawings.push(copy);
@@ -117,7 +155,7 @@ class DrawingsTabEditor {
             });
             await Promise.all(importedDrawings.map((drawing) => initDrawingInEditor(this, drawing)));
 
-            const palette = this.flicksyEditor.projectData.details.palette.slice(1);//.map(hexToRGB);
+            const palette = this.flicksyEditor.projectData.details.palette.slice(1);
 
             importedDrawings.forEach((drawing) => {
                 const rendering = this.drawingsManager.getRendering(drawing);
@@ -241,6 +279,7 @@ class DrawingsTabEditor {
     show() {
         this.scene.hidden = false;
         this.reframe();
+        this.refreshCursor();
     }
 
     hide() {
@@ -301,11 +340,25 @@ class DrawingsTabEditor {
         }
     }
 
+    refreshCursor() {
+        const cursor = editor.projectData.details.cursor;
+        elementByPath("drawings/cursor/pivot", "div").hidden = cursor === "";
+        const cursorDrawing = getDrawingById(this.flicksyEditor.projectData, cursor);
+        this.cursorDrawingLabel.value = cursorDrawing ? cursorDrawing.name : "[system]";
+        
+        if (cursorDrawing) {
+            this.cursorPivotXInput.value = cursorDrawing.pivot.x.toString();
+            this.cursorPivotYInput.value = cursorDrawing.pivot.y.toString();
+        }
+    }
+
     refresh() {
         ALL("#draw-color-palette div").forEach((element, i) => {
             if (i === 0) return;
             element.style.setProperty("background", editor.projectData.details.palette[i]);
         });
+
+        this.refreshCursor();
     }
 }
 
@@ -577,6 +630,7 @@ function drawingFromData(data) {
         id: nanoid(),
         name: "unnamed",
         position: { x: 0, y: 0, z: 0 },
+        pivot: { x: 0, y: 0},
         data
     };
 }

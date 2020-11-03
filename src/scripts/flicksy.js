@@ -10,6 +10,7 @@
  * @property {string} id
  * @property {string} name
  * @property {Vector3} position
+ * @property {Vector2} pivot
  * @property {string} data
  */
 
@@ -44,7 +45,7 @@
  * @property {string} name
  * @property {string[]} palette
  * @property {string} start
- * @property {Record<string, string>} cursors
+ * @property {string} cursor
  */
 
 /**
@@ -57,6 +58,7 @@
 /**
  * @typedef {Object} FlicksyPlayState
  * @property {string} currentScene
+ * @property {string} cursor
  * @property {Object} variables
  */
 
@@ -84,9 +86,17 @@ const EMPTY_PROJECT_DATA = {
             "#000000"
         ],
         start: "0",
-        cursors: {}
+        cursor: "1"
     },
-    drawings: [],
+    drawings: [
+        {
+            id: "1",
+            name: "default cursor",
+            position: { x: 0, y: 0, z: 0 },
+            pivot: { x: 6, y: 2 },
+            data: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAAXCAYAAADtNKTnAAAAmklEQVQ4T+2UURKAIAhE83CcmsPV4Aihkq5O/dVXo/BmF1fTEXzMfMoyEaVov13rigRARLmOmSHQD+lHPZ2JtoxOagrxJ/UEXIK0QFW3DRGg5ihpOjWhQdh88ML/DAlkDtNeFBiwgrioI1fmhpRGUwN3l0JRZYP1tlZA70N2bVVKdiCWk9b/ymy+haC2/NMZPsSIJQiCZEVv8QUbvb1oFvm1hQAAAABJRU5ErkJggg=="
+        }
+    ],
     scenes: [
         {
             id: "0",
@@ -95,6 +105,19 @@ const EMPTY_PROJECT_DATA = {
             objects: []
         }
     ]
+}
+
+/** 
+ * Add defaults for fields that are missing because the project is older.
+ * @param {FlicksyDataProject} project 
+ */
+function repairProjectData(project) {
+    function repairDrawingData(drawing) {
+        drawing.pivot ||= { x: 0, y: 0 };
+    }
+    project.details.cursor ||= "";
+    project.drawings.forEach(repairDrawingData);
+    return project;
 }
 
 /**

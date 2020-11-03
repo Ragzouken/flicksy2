@@ -172,6 +172,7 @@ textarea {
 }
 .button-row > * {
     flex: 1;
+    white-space: nowrap;
 }
 
 .sidebar-panel { 

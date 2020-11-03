@@ -9,7 +9,7 @@ class MapTabEditor {
 
         this.scene = new PanningScene(ONE("#map-scene"));
 
-        this.startSceneButton = elementByPath("map/start", "input");
+        this.startSceneLabel = elementByPath("map/start", "input");
         this.nameInput = elementByPath("map/selected/name", "input");
         this.nameInput.addEventListener("input", () => {
             if (!this.selectedScene) return;
@@ -85,7 +85,7 @@ class MapTabEditor {
                     onCancel: undefined, onPicked: undefined,
                 })
                 this.flicksyEditor.projectData.details.start = scene.id;
-                this.startSceneButton.value = scene.name;
+                this.startSceneLabel.value = scene.name;
             } catch(e) {}
         });
 
@@ -119,7 +119,7 @@ class MapTabEditor {
     async reloadFromProject(project) {
         const startId = project.details.start;
         const startScene = getSceneById(project, startId);
-        this.startSceneButton.value = startScene.name;
+        this.startSceneLabel.value = startScene.name;
 
         sceneToPreviewRendering.clear();
         removeAllChildren(this.scene.container);

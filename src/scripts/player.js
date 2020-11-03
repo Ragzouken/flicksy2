@@ -16,6 +16,8 @@ class FlicksyPlayer {
         this.drawingIdToRendering = new Map();
         /** @type {Map<string, FlicksyDataScene>} */
         this.sceneIdToScene = new Map();
+        /** @type {Map<string, Vector2>} */
+        this.drawingIdToPivot = new Map();
 
         // an awaitable that generates a new promise that resolves once no dialogue is active
         /** @type {PromiseLike<void>} */
@@ -53,10 +55,12 @@ class FlicksyPlayer {
     restart(startScene = undefined) {
         // make copies of drawings from editor
         this.drawingIdToRendering.clear();
+        this.drawingIdToPivot.clear();
         editor.projectData.drawings.forEach((drawing) => {
             const rendering = editor.drawingsManager.getRendering(drawing);
             const copy = copyRendering2D(rendering);
             this.drawingIdToRendering.set(drawing.id, copy);
+            this.drawingIdToPivot.set(drawing.id, { ...drawing.pivot });
         });
 
         // make copies of scenes from editor
@@ -69,6 +73,7 @@ class FlicksyPlayer {
         /** @type {FlicksyPlayState} */
         this.gameState = {
             currentScene: startScene || editor.projectData.details.start,
+            cursor: editor.projectData.details.cursor,
             variables: {},
         };
 
@@ -101,8 +106,12 @@ class FlicksyPlayer {
             this.sceneRendering.drawImage(canvas, x, y);
         });
 
-        if (this.mouse)
-            this.sceneRendering.drawImage(this.cursor, this.mouse.x/2-6, this.mouse.y/2-2);
+        if (this.mouse && this.gameState.cursor) {
+            const { x, y } = this.mouse;
+            const { x: px, y: py } = this.drawingIdToPivot.get(this.gameState.cursor);
+            const cursor = this.drawingIdToRendering.get(this.gameState.cursor);
+            this.sceneRendering.drawImage(cursor.canvas, x/2-px, y/2-py);
+        }
 
         // copy scene to view at 2x scale
         this.viewRendering.drawImage(this.sceneRendering.canvas, 0, 0, 160*2, 100*2);

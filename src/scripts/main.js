@@ -6,6 +6,7 @@ class FlicksyEditor {
 
     /** @param {FlicksyDataProject} data */
     async setProjectData(data) {
+        repairProjectData(data);
         this.projectData = data;
         this.refresh();
 

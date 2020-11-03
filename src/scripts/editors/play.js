@@ -23,6 +23,8 @@ class PlayTab {
             return [mouse.e, mouse.f];
         }
 
+        const viewport = ONE("#content");
+
         this.player.viewRendering.canvas.addEventListener("pointerdown", (event) => {
             event.stopPropagation();
         });
@@ -31,11 +33,16 @@ class PlayTab {
             const [x, y] = mouseEventToPixel(event);
             this.player.click(x, y);
         });
-        this.player.viewRendering.canvas.addEventListener("pointermove", (event) => {
-            killEvent(event);
+        viewport.addEventListener("pointermove", (event) => {
+            //killEvent(event);
             const [x, y] = mouseEventToPixel(event);
             const clickable = this.player.isInteractableHovered(x, y);
-            //this.player.viewRendering.canvas.style.setProperty("cursor", clickable ? "pointer" : "default");
+            
+            if (this.player.gameState.cursor) {
+                this.player.viewRendering.canvas.style.setProperty("cursor", "none");
+            } else {
+                this.player.viewRendering.canvas.style.setProperty("cursor", clickable ? "pointer" : "default");
+            }
         });
 
         window.addEventListener("resize", () => this.reframe());

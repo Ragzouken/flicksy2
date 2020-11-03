@@ -8,8 +8,18 @@
             li pick a brush size and colour to draw in
             li click and drag on a drawing to draw on it
     .section
-        h2 add drawing
-        .button-bag
+        h2 drawings
+        h3 cursor drawing
+        .button-row
+            input(type="text" data-path="drawings/cursor" disabled)
+            button(data-action="drawings/pick-cursor-drawing") change
+        div(data-path="drawings/cursor/pivot")
+            h3 cursor pivot
+            .button-row
+                input(type="text" data-path="drawings/cursor/pivot/x")
+                input(type="text" data-path="drawings/cursor/pivot/y")
+        h3 add drawing
+        .button-row
             button(data-action="drawings/add/blank") add blank
             button(data-action="drawings/add/import") import file
     .section(hidden data-path="drawings/selected")
@@ -26,6 +36,11 @@
             input(type="text" data-path="drawings/select/width")
             input(type="text" data-path="drawings/select/height")
             button(data-path="drawings/select/resize" data-action="drawings/select/resize") resize
+        .container(hidden)
+            h3 pivot
+            .button-row
+                input(type="text" data-path="drawings/select/pivot/x")
+                input(type="text" data-path="drawings/select/pivot/y")
         h3 other
         .button-row
             button(data-action="drawings/select/duplicate") duplicate

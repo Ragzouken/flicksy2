@@ -36,5 +36,7 @@ canvas, img {
 }
 
 /* default to ignoring margins that aren't between siblings */
-*:first-child { margin-top: 0; }
-*:last-child { margin-bottom: 0; }
+/* *:first-child { margin-top: 0; }
+*:last-child { margin-bottom: 0; } */
+
+h2:first-child { margin-top: 0; }

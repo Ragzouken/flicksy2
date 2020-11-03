@@ -135,6 +135,7 @@ class DrawingsTabEditor {
             await initDrawingInEditor(this, drawing);
 
             this.setSelectedDrawing(drawing);
+            switchTab("drawings/tool/move");
         });
 
         setActionHandler("drawings/add/import", async () => {
@@ -163,6 +164,7 @@ class DrawingsTabEditor {
             });
 
             this.setSelectedDrawing(importedDrawings[0]);
+            switchTab("drawings/tool/move");
         });
 
         this.colorReplacer = undefined;

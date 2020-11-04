@@ -47,12 +47,9 @@ class FlicksyPlayer {
     }
 
     restart(startScene = undefined) {
-        this.projectManager.copyFromManager(editor.projectManager);
-
-        // set initial play state
         /** @type {FlicksyPlayState} */
         this.playState = {
-            currentScene: startScene || editor.projectData.details.start,
+            currentScene: startScene || this.projectManager.projectData.details.start,
             variables: {},
         };
 

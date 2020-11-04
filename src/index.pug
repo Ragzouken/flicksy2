@@ -37,9 +37,11 @@ html
             include scripts/utility.js
         script(id="player.js")
             include scripts/player.js
+        script(id="editor.js")
+            include scripts/editor.js
         script(id="main.js")
             include scripts/main.js
-    body(onload="editor.start()")
+    body(onload="start()")
         #sidebar
             .container(hidden)
                 button(data-tab-toggle="modes/main" data-tab-default) main

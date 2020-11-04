@@ -103,6 +103,7 @@ class PlayTab {
 
     restart(startScene = undefined) {
         this.reframe();
+        this.player.projectManager.copyFromManager(this.flicksyEditor.projectManager);
         this.player.restart(startScene);
         this.player.render();
         this.refresh();

@@ -55,6 +55,8 @@ class ProjectTabEditor {
             ONE("#sidebar", clone).hidden = true;
             ONE("body", clone).setAttribute("data-play", "true");
 
+            //ALL("[data-editor-only]", clone).forEach((element) => element.remove());
+
             const blob = textToBlob(clone.outerHTML, "text/html");
             saveAs(blob, name);
         });

@@ -12,5 +12,9 @@ async function start() {
     if (play) {
         editor.playTab.player.events.on("log", console.log);
         switchTab("sidebar/play");
+
+        const player = new FlicksyPlayer();
+        await player.load();
+        player.projectManager.loadProjectData(data);
     }
 }

@@ -78,6 +78,15 @@ class PlayTab {
             this.logText.innerText += text + "\n";
             this.logText.scrollTo(0, this.logText.scrollHeight);
         });
+
+        let prev;
+        const timer = (next) => {
+            prev ||= Date.now();
+            this.player.update((next - prev) / 1000.);
+            prev = next;
+            window.requestAnimationFrame(timer);
+        }
+        timer();
     }
 
     show() {
@@ -105,6 +114,7 @@ class PlayTab {
         this.reframe();
         this.player.projectManager.copyFromManager(this.flicksyEditor.projectManager);
         this.player.restart(startScene);
+        this.player.log("[restarted]");
         this.player.render();
         this.refresh();
     }

@@ -21,15 +21,15 @@ html
             include scripts/text.js
         script(id="htmlui.js")
             include scripts/htmlui.js
-        script(id="editors/drawings.js")
+        script(id="editors/drawings.js" data-editor-only)
             include scripts/editors/drawings.js
-        script(id="editors/scene.js")
+        script(id="editors/scene.js" data-editor-only)
             include scripts/editors/scene.js
-        script(id="editors/map.js")
+        script(id="editors/map.js" data-editor-only)
             include scripts/editors/map.js
-        script(id="editors/project.js")
+        script(id="editors/project.js" data-editor-only)
             include scripts/editors/project.js
-        script(id="editors/play.js")
+        script(id="editors/play.js" data-editor-only)
             include scripts/editors/play.js
         script(id="flicksy.js")
             include scripts/flicksy.js
@@ -42,7 +42,7 @@ html
         script(id="main.js")
             include scripts/main.js
     body(onload="start()")
-        #sidebar
+        #sidebar(data-editor-only)
             .container(hidden)
                 button(data-tab-toggle="modes/main" data-tab-default) main
                 button(data-tab-toggle="modes/picker") picker

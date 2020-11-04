@@ -1,6 +1,5 @@
 const CONT_ICON_DATA = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAGCAYAAAD68A/GAAAAAXNSR0IArs4c6QAAADNJREFUCJmNzrENACAMA0E/++/8NAhRBEg6yyc5SePUoNqwDICnWP04ww1tWOHfUqqf1UwGcw4T9WFhtgAAAABJRU5ErkJggg==";
 const STOP_ICON_DATA = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAGCAYAAAD68A/GAAAAAXNSR0IArs4c6QAAACJJREFUCJljZICC/////2fAAhgZGRn////PwIRNEhsYCgoBIkQHCf7H+yAAAAAASUVORK5CYII="
-const CURSOR_DATA = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAAXCAYAAADtNKTnAAAAmklEQVQ4T+2UURKAIAhE83CcmsPV4Aihkq5O/dVXo/BmF1fTEXzMfMoyEaVov13rigRARLmOmSHQD+lHPZ2JtoxOagrxJ/UEXIK0QFW3DRGg5ihpOjWhQdh88ML/DAlkDtNeFBiwgrioI1fmhpRGUwN3l0JRZYP1tlZA70N2bVVKdiCWk9b/ymy+haC2/NMZPsSIJQiCZEVv8QUbvb1oFvm1hQAAAABJRU5ErkJggg==";
 
 class FlicksyPlayer {
     constructor() {
@@ -12,6 +11,8 @@ class FlicksyPlayer {
 
         this.projectManager = new FlicksyProjectManager();
         this.dialoguePlayer = new DialoguePlayer();
+        
+        this.mouse = { x: 0, y: 0 };
 
         // an awaitable that generates a new promise that resolves once no dialogue is active
         /** @type {PromiseLike<void>} */
@@ -28,18 +29,6 @@ class FlicksyPlayer {
 
     async load() {
         await this.dialoguePlayer.load();
-
-        this.cursor = await loadImage(CURSOR_DATA);
-        this.mouse = undefined;
-
-        let prev;
-        const timer = (next) => {
-            prev ||= Date.now();
-            this.update((next - prev) / 1000.);
-            prev = next;
-            window.requestAnimationFrame(timer);
-        }
-        timer();
     }
 
     stop() {
@@ -52,8 +41,6 @@ class FlicksyPlayer {
             currentScene: startScene || this.projectManager.projectData.details.start,
             variables: {},
         };
-
-        this.log("[restarted]");
     }
 
     log(text) {
@@ -120,6 +107,10 @@ class FlicksyPlayer {
             const object = this.pointcast(x, y);
             if (object) this.runObjectBehaviour(object);
         }
+    }
+
+    hover(x, y) {
+        this.mouse = { x, y };
     }
 
     /**

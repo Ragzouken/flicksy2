@@ -31,24 +31,12 @@ class FlicksyPlayer {
         await this.dialoguePlayer.load();
     }
 
-    stop() {
-        this.playState = undefined;
-    }
-
-    restart(startScene = undefined) {
-        /** @type {FlicksyPlayState} */
-        this.playState = {
-            currentScene: startScene || this.projectManager.projectData.details.start,
-            variables: {},
-        };
-    }
-
     log(text) {
         this.events.emit("log", text);
     }
 
     update(dt) {
-        if (!this.playState) return;
+        if (!this.projectManager.projectData) return;
 
         if (this.dialoguePlayer.active) {
             this.dialoguePlayer.update(dt);
@@ -59,10 +47,10 @@ class FlicksyPlayer {
     render() {
         // clear to black, then render objects in depth order
         fillRendering2D(this.sceneRendering, 'black');
-        const scene = getSceneById(this.projectManager.projectData, this.playState.currentScene);
+        const scene = getSceneById(this.projectManager.projectData, this.projectManager.projectData.state.scene);
         this.sceneRendering.drawImage(renderScene(this.projectManager, scene, 1).canvas, 0, 0);
 
-        const cursorId = this.projectManager.projectData.details.cursor;
+        const cursorId = this.projectManager.projectData.state.cursor;
         if (this.mouse && cursorId) {
             const drawing = getDrawingById(this.projectManager.projectData, cursorId);
             const rendering = this.projectManager.drawingIdToRendering.get(cursorId);
@@ -119,21 +107,21 @@ class FlicksyPlayer {
      */
     pointcast(x, y) {
         x /= 2; y /= 2;
-        const scene = getSceneById(this.projectManager.projectData, this.playState.currentScene);
+        const scene = getSceneById(this.projectManager.projectData, this.projectManager.projectData.state.scene);
         return pointcastScene(this.projectManager, scene, { x, y }, true);
     }
 
     /** @param {string} sceneId */
     changeScene(sceneId) {
-        this.playState.currentScene = sceneId;
+        this.projectManager.projectData.state.scene = sceneId;
         this.events.emit("next-scene", sceneId);
     }
 
     /** @param {FlicksyDataObject} object */
     async runObjectBehaviour(object) { 
         if (object.behaviour.script) {
-            const scene = getSceneById(this.projectManager.projectData, this.playState.currentScene);
-            const defines = generateScriptingDefines(this, this.playState, scene, object);
+            const scene = getSceneById(this.projectManager.projectData, this.projectManager.projectData.state.scene);
+            const defines = generateScriptingDefines(this, scene, object);
             const names = Object.keys(defines).join(", ");
             const preamble = `const { ${names} } = COMMANDS;\n`;
 
@@ -373,16 +361,17 @@ function pointcastScene(projectManager, scene, point, onlyVisible = false) {
 
 /**
  * @param {FlicksyPlayer} player 
- * @param {FlicksyPlayState} state 
  * @param {FlicksyDataScene} scene 
  * @param {FlicksyDataObject} object 
  */
-function generateScriptingDefines(player, state, scene, object) {
+function generateScriptingDefines(player, scene, object) {
     const objectFromId = (id) => {
         const object = getObjectById(player.projectManager.projectData, id);
         if (object === undefined) throw new Error(`NO OBJECT ${id}`);
         return object;
     }
+
+    const state = player.projectManager.projectData.state;
 
     // edit here to add new scripting functions
     const defines = {};

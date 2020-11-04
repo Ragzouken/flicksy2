@@ -44,8 +44,13 @@
  * @property {string} id
  * @property {string} name
  * @property {string[]} palette
- * @property {string} start
+ */
+
+/**
+ * @typedef {Object} FlicksyPlayState
+ * @property {string} scene
  * @property {string} cursor
+ * @property {Object} variables
  */
 
 /**
@@ -53,12 +58,7 @@
  * @property {FlicksyDataProjectDetails} details
  * @property {FlicksyDataDrawing[]} drawings
  * @property {FlicksyDataScene[]} scenes
- */
-
-/**
- * @typedef {Object} FlicksyPlayState
- * @property {string} currentScene
- * @property {Object} variables
+ * @property {FlicksyPlayState} state
  */
 
 /** @type {FlicksyDataProject} */
@@ -83,9 +83,7 @@ const EMPTY_PROJECT_DATA = {
             "#888888",
             "#444444",
             "#000000"
-        ],
-        start: "0",
-        cursor: "1"
+        ]
     },
     drawings: [
         {
@@ -103,7 +101,12 @@ const EMPTY_PROJECT_DATA = {
             position: { x: 0, y: 0, z: 0 },
             objects: []
         }
-    ]
+    ],
+    state: {
+        scene: "0",
+        cursor: "1",
+        variables: {}
+    }
 }
 
 /** 
@@ -114,7 +117,13 @@ function repairProjectData(project) {
     function repairDrawingData(drawing) {
         drawing.pivot ||= { x: 0, y: 0 };
     }
-    project.details.cursor ||= "";
+
+    project.state ||= {
+        scene: project.details["start"],
+        cursor: project.details["cursor"] || "",
+        variables: {},
+    };
+
     project.drawings.forEach(repairDrawingData);
     return project;
 }

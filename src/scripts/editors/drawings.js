@@ -41,7 +41,7 @@ class DrawingsTabEditor {
                     prompt: "pick the drawing to use as a cursor",
                     allowNone: true,
                 });
-                this.flicksyEditor.projectData.details.cursor = drawing ? drawing.id : "";
+                this.flicksyEditor.projectData.state.cursor = drawing ? drawing.id : "";
                 this.refreshCursor();
             } catch(e) {}
         });
@@ -70,7 +70,7 @@ class DrawingsTabEditor {
         this.pivotYInput.addEventListener("input", refreshPivot);
 
         const refreshCursorPivot = () => {
-            const cursor = editor.projectData.details.cursor;
+            const cursor = editor.projectData.state.cursor;
             const cursorDrawing = getDrawingById(this.flicksyEditor.projectData, cursor);
             if (!cursorDrawing) return;
             cursorDrawing.pivot.x = parseInt(this.cursorPivotXInput.value, 10);
@@ -335,7 +335,7 @@ class DrawingsTabEditor {
     }
 
     refreshCursor() {
-        const cursor = editor.projectData.details.cursor;
+        const cursor = editor.projectData.state.cursor;
         elementByPath("drawings/cursor/pivot", "div").hidden = cursor === "";
         const cursorDrawing = getDrawingById(this.flicksyEditor.projectData, cursor);
         this.cursorDrawingLabel.value = cursorDrawing ? cursorDrawing.name : "[system]";

@@ -87,7 +87,7 @@ class MapTabEditor {
                     allowNone: false,
                     onCancel: undefined, onPicked: undefined,
                 })
-                this.flicksyEditor.projectData.details.start = scene.id;
+                this.flicksyEditor.projectData.state.scene = scene.id;
                 this.startSceneLabel.value = scene.name;
             } catch(e) {}
         });
@@ -120,7 +120,7 @@ class MapTabEditor {
 
     /** @param {FlicksyDataProject} project */
     async reloadFromProject(project) {
-        const startId = project.details.start;
+        const startId = project.state.scene;
         const startScene = getSceneById(project, startId);
         this.startSceneLabel.value = startScene.name;
 

@@ -39,7 +39,7 @@ class PlayTab {
             const [x, y] = mouseEventToPixel(event);
             const clickable = this.player.isInteractableHovered(x, y);
             
-            if (this.player.projectManager.projectData.details.cursor) {
+            if (this.player.projectManager.projectData.state.cursor) {
                 this.player.viewRendering.canvas.style.setProperty("cursor", "none");
             } else {
                 this.player.viewRendering.canvas.style.setProperty("cursor", clickable ? "pointer" : "default");
@@ -56,7 +56,7 @@ class PlayTab {
                     allowNone: false, 
                 });
                 switchTab("sidebar/play");
-                this.player.playState.currentScene = scene.id;
+                this.player.projectManager.projectData.state.scene = scene.id;
                 this.player.render();
                 this.refresh();
             } catch (e) {
@@ -65,7 +65,7 @@ class PlayTab {
         });
 
         setActionHandler("play/edit-scene", () => {
-            const scene = getSceneById(this.flicksyEditor.projectData, this.player.playState.currentScene);
+            const scene = getSceneById(this.flicksyEditor.projectData, this.player.projectManager.projectData.state.scene);
             this.flicksyEditor.sceneTabEditor.setActiveScene(this.flicksyEditor.projectData, scene);
             switchTab("sidebar/scene");
         });
@@ -96,7 +96,7 @@ class PlayTab {
 
     hide() {
         this.scene.hidden = true;
-        this.player.stop();
+        this.player.projectManager.projectData = undefined;
     }
     
     reframe() {
@@ -106,14 +106,14 @@ class PlayTab {
     }
 
     refresh() {
-        const scene = getSceneById(this.player.projectManager.projectData, this.player.playState.currentScene);
+        const scene = getSceneById(this.player.projectManager.projectData, this.player.projectManager.projectData.state.scene);
         elementByPath("play/scene", "input").value = scene.name;
     }
 
     restart(startScene = undefined) {
         this.reframe();
         this.player.projectManager.copyFromManager(this.flicksyEditor.projectManager);
-        this.player.restart(startScene);
+        if (startScene) this.player.projectManager.projectData.state.scene = startScene;
         this.player.log("[restarted]");
         this.player.render();
         this.refresh();

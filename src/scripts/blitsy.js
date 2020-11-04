@@ -263,6 +263,30 @@ function HSVToCone(hsv) {
     return { x, y, z: hsv.v };
 }
 
+
+function uint32ToRGB(uint32) {
+    return {
+        r: uint32 >>>  0 & 0xFF,
+        g: uint32 >>>  8 & 0xFF,
+        b: uint32 >>> 16 & 0xFF,
+        uint32,
+    };
+}
+
+function hexToRGB(hex) {
+    if (hex.charAt(0) === '#') hex = hex.substring(1);
+    return {
+        b: parseInt(hex.substr(4, 2), 16),
+        g: parseInt(hex.substr(2, 2), 16),
+        r: parseInt(hex.substr(0, 2), 16),
+        uint32: hexToNumber(hex),
+    };
+}
+
+function RGBToUint32(rgb) {
+    return rgb.r | rgb.g << 8 | rgb.b << 16 | 0xFF << 24;
+}
+
 /**
  * @param {CanvasRenderingContext2D} rendering 
  * @param {string[]} palette 

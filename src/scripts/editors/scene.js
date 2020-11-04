@@ -313,10 +313,10 @@ async function initObjectInEditor(sceneEditor, object) {
         const grabbing = grab !== undefined;
         const picking = sceneEditor.isPicking;
 
-        if (grabbing) document.body.style.setProperty("cursor", "grabbed");
+        if (grabbing) document.body.style.setProperty("cursor", "grabbing");
         else document.body.style.removeProperty("cursor");
 
-        rendering.canvas.style.setProperty("cursor", grabbing ? "grabbed" : picking ? "pointer" : "grab");
+        rendering.canvas.style.setProperty("cursor", grabbing ? "grabbing" : picking ? "pointer" : "grab");
     }
 
     function pointerdownDrag(event) {

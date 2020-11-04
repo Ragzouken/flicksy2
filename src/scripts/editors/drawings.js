@@ -421,11 +421,11 @@ async function initDrawingInEditor(drawingsEditor, drawing) {
         const drawing = draw || line;
         const picking = drawingsEditor.isPicking;
 
-        if (grabbing) document.body.style.setProperty("cursor", "grabbed");
+        if (grabbing) document.body.style.setProperty("cursor", "grabbing");
         else if (drawing) document.body.style.setProperty("cursor", "crosshair")
         else document.body.style.removeProperty("cursor");
 
-        const objectCursor = grabbing ? "grabbed" 
+        const objectCursor = grabbing ? "grabbing" 
                            : picking ? "pointer" 
                            : drawable ? "crosshair" 
                            : "grab";
@@ -629,29 +629,6 @@ async function setDrawingBoardDrawings(drawings) {
     await Promise.all(drawings.map((drawing) => initDrawingInEditor(editor.drawingsTabEditor, drawing)));
 }
 
-function uint32ToRGB(uint32) {
-    return {
-        r: uint32 >>>  0 & 0xFF,
-        g: uint32 >>>  8 & 0xFF,
-        b: uint32 >>> 16 & 0xFF,
-        uint32,
-    };
-}
-
-function hexToRGB(hex) {
-    if (hex.charAt(0) === '#') hex = hex.substring(1);
-    return {
-        b: parseInt(hex.substr(4, 2), 16),
-        g: parseInt(hex.substr(2, 2), 16),
-        r: parseInt(hex.substr(0, 2), 16),
-        uint32: hexToNumber(hex),
-    };
-}
-
-function RGBToNumber(rgb) {
-    return rgb.r | rgb.g << 8 | rgb.b << 16 | 0xFF << 24;
-}
-
 /** 
  * @param {CanvasRenderingContext2D} context 
  * @param {number} color
@@ -677,36 +654,17 @@ function makeColorReplacer(context, color) {
     };
 }
 
-function hsToUint32(h, s) {
-    let r, g, b;
-    const i = Math.floor(h * 6);
-    const f = h * 6 - i;
-    const p = (1 - s);
-    const q = (1 - f * s);
-    const t = (1 - (1 - f) * s);
-    switch (i % 6) {
-        case 0: r = 1, g = t, b = p; break;
-        case 1: r = q, g = 1, b = p; break;
-        case 2: r = p, g = 1, b = t; break;
-        case 3: r = p, g = q, b = 1; break;
-        case 4: r = t, g = p, b = 1; break;
-        case 5: r = 1, g = p, b = q; break;
-    }
-
-    return ((0xFF << 24) | (b*255 << 16) | (g*255 << 8) | (r*255 << 0)) >>> 0;
-}
-
 const hswheel = createRendering2D(239, 239);
 withPixels(hswheel, (pixels) => {
     const [w, h] = [hswheel.canvas.width, hswheel.canvas.height];
     for (let y = 0; y < h; ++y) {
         for (let x = 0; x < w; ++x) {
             const [dx, dy] = [x-w/2, y-h/2];
-            const sat = Math.sqrt(dx*dx + dy*dy)*2/w;
+            const s = Math.sqrt(dx*dx + dy*dy)*2/w;
             
-            if (sat <= 1) {
-                const hue = (10 + Math.atan2(dy, dx) / Math.PI / 2) % 1;
-                pixels[y * w + x] = hsToUint32(hue, sat);
+            if (s <= 1) {
+                const h = (10 + Math.atan2(dy, dx) / Math.PI / 2) % 1;
+                pixels[y * w + x] = RGBToUint32(HSVToRGB({ h, s, v: 1 }));
             } else {
                 pixels[y * w + x] = 0;
             }

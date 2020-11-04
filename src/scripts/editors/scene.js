@@ -79,7 +79,7 @@ class SceneTabEditor {
                 })
                 this.selectedObject.drawing = drawing.id;
                 copyRendering2D(
-                    this.flicksyEditor.drawingsManager.getRendering(drawing),
+                    this.flicksyEditor.projectManager.drawingIdToRendering.get(drawing.id),
                     objectToRendering.get(this.selectedObject),
                 )
             } catch(e) {}
@@ -256,7 +256,7 @@ class SceneTabEditor {
         if (!this.scene.hidden) {
             this.scene.hidden = true;
             copyRendering2D(
-                renderScenePreview(this.activeScene),
+                renderScenePreview(this.flicksyEditor.projectManager, this.activeScene),
                 sceneToPreviewRendering.get(this.activeScene),
             );
         }
@@ -269,7 +269,7 @@ class SceneTabEditor {
     refreshDrawings() {
         this.activeScene.objects.forEach((object) => {
             const drawing = getDrawingById(this.flicksyEditor.projectData, object.drawing);
-            const rendering = this.flicksyEditor.drawingsManager.getRendering(drawing);
+            const rendering = this.flicksyEditor.projectManager.drawingIdToRendering.get(drawing.id);
             copyRendering2D(rendering, objectToRendering.get(object));
         });
     }
@@ -293,7 +293,7 @@ const objectToRendering = new Map();
  */
 async function initObjectInEditor(sceneEditor, object) {
     const drawing = getDrawingById(sceneEditor.flicksyEditor.projectData, object.drawing);
-    const rendering = copyRendering2D(editor.drawingsManager.getRendering(drawing));
+    const rendering = copyRendering2D(editor.projectManager.drawingIdToRendering.get(drawing.id));
     objectToRendering.set(object, rendering);
 
     rendering.canvas.classList.toggle("object", true);

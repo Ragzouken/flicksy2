@@ -6,16 +6,14 @@ class FlicksyPlayer {
     constructor() {
         this.events = new EventEmitter();
 
+        this.projectManager = new FlicksyProjectManager();
+
         // view is twice scene resolution, for text rendering
         this.viewRendering = createRendering2D(160*2, 100*2);
         this.sceneRendering = createRendering2D(160, 100);
 
         this.dialoguePlayer = new DialoguePlayer();
 
-        /** @type {Map<string, CanvasRenderingContext2D>} */
-        this.drawingIdToRendering = new Map();
-        /** @type {Map<string, FlicksyDataScene>} */
-        this.sceneIdToScene = new Map();
         /** @type {Map<string, Vector2>} */
         this.drawingIdToPivot = new Map();
 
@@ -53,20 +51,12 @@ class FlicksyPlayer {
     }
 
     restart(startScene = undefined) {
+        this.projectManager.copyFromManager(editor.projectManager);
+
         // make copies of drawings from editor
-        this.drawingIdToRendering.clear();
         this.drawingIdToPivot.clear();
         editor.projectData.drawings.forEach((drawing) => {
-            const rendering = editor.drawingsManager.getRendering(drawing);
-            const copy = copyRendering2D(rendering);
-            this.drawingIdToRendering.set(drawing.id, copy);
             this.drawingIdToPivot.set(drawing.id, { ...drawing.pivot });
-        });
-
-        // make copies of scenes from editor
-        this.sceneIdToScene.clear();
-        editor.projectData.scenes.forEach((scene) => {
-            this.sceneIdToScene.set(scene.id, JSON.parse(JSON.stringify(scene)));
         });
 
         // set initial game state
@@ -96,12 +86,12 @@ class FlicksyPlayer {
     render() {
         // clear to black, then render objects in depth order
         fillRendering2D(this.sceneRendering, 'black');
-        const scene = this.sceneIdToScene.get(this.gameState.currentScene);
+        const scene = getSceneById(this.projectManager.projectData, this.gameState.currentScene);
         const objects = scene.objects.slice().sort((a, b) => a.position.z - b.position.z);
         objects.forEach((object) => {
             if (object.hidden) return;
 
-            const canvas = this.drawingIdToRendering.get(object.drawing).canvas;
+            const canvas = this.projectManager.drawingIdToRendering.get(object.drawing).canvas;
             const { x, y } = object.position;
             this.sceneRendering.drawImage(canvas, x, y);
         });
@@ -109,7 +99,7 @@ class FlicksyPlayer {
         if (this.mouse && this.gameState.cursor) {
             const { x, y } = this.mouse;
             const { x: px, y: py } = this.drawingIdToPivot.get(this.gameState.cursor);
-            const cursor = this.drawingIdToRendering.get(this.gameState.cursor);
+            const cursor = this.projectManager.drawingIdToRendering.get(this.gameState.cursor);
             this.sceneRendering.drawImage(cursor.canvas, x/2-px, y/2-py);
         }
 
@@ -157,8 +147,8 @@ class FlicksyPlayer {
      */
     pointcast(x, y) {
         x /= 2; y /= 2;
-        const scene = this.sceneIdToScene.get(this.gameState.currentScene);
-        return pointcastScene(scene, { x, y }, true);
+        const scene = getSceneById(this.projectManager.projectData, this.gameState.currentScene);
+        return pointcastScene(this.projectManager, scene, { x, y }, true);
     }
 
     /** @param {string} sceneId */
@@ -170,7 +160,7 @@ class FlicksyPlayer {
     /** @param {FlicksyDataObject} object */
     async runObjectBehaviour(object) { 
         if (object.behaviour.script) {
-            const scene = this.sceneIdToScene.get(this.gameState.currentScene);
+            const scene = getSceneById(this.projectManager.projectData, this.gameState.currentScene);
             const defines = generateScriptingDefines(this, this.gameState, scene, object);
             const names = Object.keys(defines).join(", ");
             const preamble = `const { ${names} } = COMMANDS;\n`;
@@ -356,18 +346,18 @@ class DialoguePlayer {
 }
 
 /** 
+ * @param {FlicksyProjectManager} projectManager
  * @param {FlicksyDataScene} scene
  * @param {number} scale
  */
-function renderScene(scene, scale = 2) {
+function renderScene(projectManager, scene, scale = 2) {
     const sceneRendering = createRendering2D(160 * scale, 100 * scale);
     fillRendering2D(sceneRendering, 'black');
     const objects = scene.objects.slice().sort((a, b) => a.position.z - b.position.z);
     objects.forEach((object) => {
         if (object.hidden) return;
 
-        const drawing = getDrawingById(editor.projectData, object.drawing);
-        const canvas = editor.drawingsManager.getRendering(drawing).canvas;
+        const canvas = projectManager.drawingIdToRendering.get(object.drawing).canvas;
 
         sceneRendering.drawImage(
             canvas,
@@ -382,11 +372,12 @@ function renderScene(scene, scale = 2) {
 }
 
 /** 
+ * @param {FlicksyProjectManager} projectManager
  * @param {FlicksyDataScene} scene
  * @param {number} scale
  */
-function renderScenePreview(scene, scale = 2) {
-    const sceneRendering = renderScene(scene, scale);
+function renderScenePreview(projectManager, scene, scale = 2) {
+    const sceneRendering = renderScene(projectManager, scene, scale);
 
     const font = editor.playTab.player.dialoguePlayer.font;
     const page = scriptToPages(scene.name, { font, lineCount: 1, lineWidth: 160*scale-4 })[0];
@@ -399,19 +390,20 @@ function renderScenePreview(scene, scale = 2) {
 }
 
 /**
+ * @param {FlicksyProjectManager} projectManager
  * @param {FlicksyDataScene} scene
  * @param {Vector2} point
  * @returns {FlicksyDataObject}
  */
-function pointcastScene(scene, point, onlyVisible = false) {
+function pointcastScene(projectManager, scene, point, onlyVisible = false) {
     const { x: sx, y: sy } = point;
 
     const objects = scene.objects.slice().sort((a, b) => a.position.z - b.position.z).reverse();
     for (let object of objects) {
         if (object.hidden && onlyVisible) continue;
 
-        const drawing = getDrawingById(editor.projectData, object.drawing);
-        const rendering = editor.drawingsManager.getRendering(drawing);
+        const drawing = getDrawingById(projectManager.projectData, object.drawing);
+        const rendering = projectManager.drawingIdToRendering.get(drawing.id);
 
         const { x, y } = object.position;
         const { width, height } = rendering.canvas;
@@ -433,8 +425,7 @@ function pointcastScene(scene, point, onlyVisible = false) {
  */
 function generateScriptingDefines(player, state, scene, object) {
     const objectFromId = (id) => {
-        const objects = Array.from(player.sceneIdToScene.values()).flatMap((scene) => scene.objects);
-        const object = objects.find((object) => object.id === id);
+        const object = getObjectById(player.projectManager.projectData, id);
         if (object === undefined) throw new Error(`NO OBJECT ${id}`);
         return object;
     }

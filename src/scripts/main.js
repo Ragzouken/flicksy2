@@ -1,13 +1,14 @@
 class FlicksyEditor {
+    get projectData() { return this.projectManager.projectData; }
+
     constructor() {
-        this.projectData = EMPTY_PROJECT_DATA;
-        this.drawingsManager = new DrawingsManager();
+        this.projectManager = new FlicksyProjectManager();
     }
 
     /** @param {FlicksyDataProject} data */
     async setProjectData(data) {
         repairProjectData(data);
-        this.projectData = data;
+        await this.projectManager.loadProjectData(data);
         this.refresh();
 
         // reset tabs
@@ -66,7 +67,7 @@ class FlicksyEditor {
     }
 
     async prepareSave() {
-        this.drawingsManager.flushChanges();
+        await this.projectManager.saveProjectData();
     }
 
     /** 

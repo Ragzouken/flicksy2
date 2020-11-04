@@ -34,6 +34,7 @@ class PlayTab {
             this.player.click(x, y);
         });
         viewport.addEventListener("pointermove", (event) => {
+            if (this.scene.hidden) return;
             //killEvent(event);
             const [x, y] = mouseEventToPixel(event);
             const clickable = this.player.isInteractableHovered(x, y);
@@ -96,7 +97,7 @@ class PlayTab {
     }
 
     refresh() {
-        const scene = this.player.sceneIdToScene.get(this.player.gameState.currentScene);
+        const scene = getSceneById(this.player.projectManager.projectData, this.player.gameState.currentScene);
         elementByPath("play/scene", "input").value = scene.name;
     }
 

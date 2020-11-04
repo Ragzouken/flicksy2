@@ -7,7 +7,8 @@ const brushes = [
 ];
 
 class DrawingsTabEditor {
-    get drawingsManager() { return this.flicksyEditor.drawingsManager; }
+    get projectManager() { return this.flicksyEditor.projectManager; }
+    get selectedRendering() { return this.projectManager.drawingIdToRendering.get(this.selectedDrawing.id); }
     get isPicking() { return this.onDrawingPicked !== undefined; }
 
     /** @param {FlicksyEditor} flicksyEditor */
@@ -52,7 +53,7 @@ class DrawingsTabEditor {
 
         const refreshResize = () => {
             if (!this.selectedDrawing) return;
-            const canvas = this.drawingsManager.getRendering(this.selectedDrawing).canvas;
+            const canvas = this.selectedRendering.canvas;
             const width = parseInt(this.widthInput.value, 10);
             const height = parseInt(this.heightInput.value, 10);
             this.resizeButton.disabled = width === canvas.width && height === canvas.height;
@@ -81,26 +82,26 @@ class DrawingsTabEditor {
         setActionHandler("drawings/select/resize", () => {
             const width = parseInt(this.widthInput.value, 10);
             const height = parseInt(this.heightInput.value, 10);
-            resizeRendering2D(this.drawingsManager.getRendering(this.selectedDrawing), width, height);
+            resizeRendering2D(this.selectedRendering, width, height);
         });
 
         setActionHandler("drawings/select/raise", () => {
             if (!this.selectedDrawing) return;
-            const canvas = this.drawingsManager.getRendering(this.selectedDrawing).canvas;
+            const canvas = this.selectedRendering.canvas;
             this.selectedDrawing.position.z += 1;
             canvas.style.setProperty("z-index", this.selectedDrawing.position.z.toString());
         });
 
         setActionHandler("drawings/select/lower", () => {
             if (!this.selectedDrawing) return;
-            const canvas = this.drawingsManager.getRendering(this.selectedDrawing).canvas;
+            const canvas = this.selectedRendering.canvas;
             this.selectedDrawing.position.z -= 1;
             canvas.style.setProperty("z-index", this.selectedDrawing.position.z.toString());
         });
 
         setActionHandler("drawings/select/duplicate", async () => {
             const original = this.selectedDrawing;
-            const originalRendering = this.drawingsManager.getRendering(original);
+            const originalRendering = this.selectedRendering;
             const { x, y, z } = original.position;
             const copy = {
                 id: nanoid(),
@@ -109,29 +110,27 @@ class DrawingsTabEditor {
                 pivot: { ...original.pivot },
                 data: "",
             };
-            this.flicksyEditor.projectData.drawings.push(copy);
-            this.drawingsManager.insertDrawing(copy, copyRendering2D(originalRendering));
+            this.projectManager.insertDrawing(copy, copyRendering2D(originalRendering));
             await initDrawingInEditor(this, copy);
 
             this.setSelectedDrawing(copy);
         });
 
         setActionHandler("drawings/select/export", () => {
-            const canvas = this.drawingsManager.getRendering(this.selectedDrawing).canvas;
+            const canvas = this.selectedRendering.canvas;
             canvas.toBlob((blob) => saveAs(blob, this.selectedDrawing.name + ".png"));
         });
 
         setActionHandler("drawings/select/delete", () => {
             const drawing = this.selectedDrawing;
             this.setSelectedDrawing(undefined);
-            removeItemFromArray(drawing, this.flicksyEditor.projectData.drawings);
-            this.drawingsManager.removeDrawing(drawing);
+            this.projectManager.removeDrawing(drawing);
         });
 
         setActionHandler("drawings/add/blank", async () => {
             const drawing = drawingFromData("");
             this.flicksyEditor.projectData.drawings.push(drawing);
-            this.drawingsManager.insertDrawing(drawing, createRendering2D(64, 64));
+            this.projectManager.insertDrawing(drawing, createRendering2D(64, 64));
             await initDrawingInEditor(this, drawing);
 
             this.setSelectedDrawing(drawing);
@@ -159,7 +158,7 @@ class DrawingsTabEditor {
             const palette = this.flicksyEditor.projectData.details.palette.slice(1);
 
             importedDrawings.forEach((drawing) => {
-                const rendering = this.drawingsManager.getRendering(drawing);
+                const rendering = this.projectManager.drawingIdToRendering.get(drawing.id);
                 recolorToPalette(rendering, palette);
             });
 
@@ -178,7 +177,7 @@ class DrawingsTabEditor {
             updateColorWheel();
 
             const uint32 = hexToNumber(hex);
-            const contexts = Array.from(this.drawingsManager.drawingToRendering.values());
+            const contexts = Array.from(this.projectManager.drawingIdToRendering.values());
             const replacers = contexts.map((rendering) => makeColorReplacer(rendering, uint32));
 
             this.colorReplacer = (hex) => {
@@ -290,21 +289,14 @@ class DrawingsTabEditor {
 
     reframe(drawing = undefined) {
         if (drawing !== undefined) {
-            const rendering = this.drawingsManager.drawingToRendering.get(drawing);
-            const { x, y } = drawing.position;
-            const { width, height } = rendering.canvas;
-            const bounds = new DOMRect(x, y, width, height);
+            const bounds = this.projectManager.getDrawingRect(drawing);
             padRect(bounds, 8);
             this.scene.frameRect(bounds);
             return;
         }
 
-        const pairs = Array.from(this.drawingsManager.drawingToRendering.entries());
-        const rects = pairs.map(([drawing, rendering]) => {
-            const { x, y } = drawing.position;
-            const { width, height } = rendering.canvas;
-            return new DOMRect(x, y, width, height);
-        });
+        const rects = this.projectManager.projectData.drawings
+            .map((drawing) => this.projectManager.getDrawingRect(drawing));
         const bounds = boundRects(rects, new DOMRect(0, 0, 160, 100));
         padRect(bounds, 8);
         this.scene.frameRect(bounds);
@@ -313,14 +305,14 @@ class DrawingsTabEditor {
     /** @param {FlicksyDataDrawing} drawing */
     setSelectedDrawing(drawing) {
         if (this.selectedDrawing)
-            this.flicksyEditor.drawingsManager.getRendering(this.selectedDrawing).canvas.classList.toggle("selected", false);
+            this.selectedRendering.canvas.classList.toggle("selected", false);
 
         this.selectedDrawing = drawing;
 
         elementByPath("drawings/selected", "div").hidden = drawing === undefined;
 
         if (this.selectedDrawing) {
-            const rendering = this.flicksyEditor.drawingsManager.getRendering(this.selectedDrawing);
+            const rendering = this.selectedRendering;
             rendering.canvas.classList.toggle("selected", true);
             this.nameInput.value = this.selectedDrawing.name;
             this.widthInput.value = rendering.canvas.width.toString();
@@ -377,8 +369,7 @@ function snap(transform) {
  * @param {FlicksyDataDrawing} drawing
  */
 async function initDrawingInEditor(drawingsEditor, drawing) {
-    let rendering = editor.drawingsManager.drawingToRendering.get(drawing)
-                 || await editor.drawingsManager.loadDrawing(drawing);
+    const rendering = drawingsEditor.projectManager.drawingIdToRendering.get(drawing.id);
 
     rendering.canvas.classList.toggle("object", true);
     editor.drawingsTabEditor.scene.container.appendChild(rendering.canvas);
@@ -639,7 +630,6 @@ function drawingFromData(data) {
 
 /** @param {FlicksyDataDrawing[]} drawings */
 async function setDrawingBoardDrawings(drawings) {
-    editor.drawingsManager.clear();
     removeAllChildren(editor.drawingsTabEditor.scene.container);
     editor.drawingsTabEditor.scene.container.appendChild(editor.drawingsTabEditor.cursor.canvas);
     await Promise.all(drawings.map((drawing) => initDrawingInEditor(editor.drawingsTabEditor, drawing)));

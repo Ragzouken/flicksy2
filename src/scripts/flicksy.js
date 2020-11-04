@@ -149,3 +149,80 @@ function getObjectById(project, objectId) {
 function isObjectInteractable(object) {
     return 0 < (object.behaviour.script.length + object.behaviour.dialogue.length + object.behaviour.destination.length);
 }
+
+class FlicksyProjectManager {
+    constructor() {
+        /** @type {FlicksyDataProject} */
+        this.projectData = undefined;
+
+        /** @type {Map<string, CanvasRenderingContext2D>} */
+        this.drawingIdToRendering = new Map();
+    }
+
+    /** @param {FlicksyDataProject} projectData */
+    async loadProjectData(projectData) {
+        this.projectData = projectData;
+
+        // reload drawings from scratch
+        this.drawingIdToRendering.clear();
+        const loads = this.projectData.drawings.map((drawing) => this.reloadDrawingData(drawing));
+        await Promise.all(loads);
+    }
+
+    /** @param {FlicksyProjectManager} manager */
+    async copyFromManager(manager) {
+        this.projectData = JSON.parse(JSON.stringify(manager.projectData));
+
+        manager.drawingIdToRendering.forEach((rendering, drawingId) => {
+            this.drawingIdToRendering.set(drawingId, copyRendering2D(rendering));
+        });
+    }
+
+    async saveProjectData() {
+        const saves = this.projectData.drawings.map((drawing) => this.saveDrawingData(drawing));
+        await Promise.all(saves);
+    }
+    
+    /** @param {FlicksyDataDrawing} drawing */
+    async reloadDrawingData(drawing) {
+        const image = await loadImage(drawing.data);
+        const rendering = imageToRendering2D(image);
+        this.drawingIdToRendering.set(drawing.id, rendering);
+    }
+
+    /** @param {FlicksyDataDrawing} drawing */
+    async saveDrawingData(drawing) {
+        const rendering = this.drawingIdToRendering.get(drawing.id);
+        drawing.data = rendering.canvas.toDataURL();
+    }
+
+    /** 
+     * @param {FlicksyDataDrawing} drawing
+     * @param {CanvasRenderingContext2D} rendering
+     */
+    async insertDrawing(drawing, rendering=undefined) {
+        this.projectData.drawings.push(drawing);
+        if (rendering) {
+            this.drawingIdToRendering.set(drawing.id, rendering);
+        } else {
+            await this.reloadDrawingData(drawing);
+        }
+    }
+
+    /** @param {FlicksyDataDrawing} drawing */
+    removeDrawing(drawing) {
+        removeItemFromArray(drawing, this.projectData.drawings);
+        this.drawingIdToRendering.delete(drawing.id);
+    }
+
+    /** 
+     * @param {FlicksyDataDrawing} drawing 
+     * @returns {Rect}
+     */
+    getDrawingRect(drawing) {
+        const rendering = this.drawingIdToRendering.get(drawing.id);
+        const { x, y } = drawing.position;
+        const { width, height } = rendering.canvas;
+        return { x, y, width, height };
+    }
+}

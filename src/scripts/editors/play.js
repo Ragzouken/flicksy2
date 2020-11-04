@@ -39,7 +39,7 @@ class PlayTab {
             const [x, y] = mouseEventToPixel(event);
             const clickable = this.player.isInteractableHovered(x, y);
             
-            if (this.player.gameState.cursor) {
+            if (this.player.playState.cursor) {
                 this.player.viewRendering.canvas.style.setProperty("cursor", "none");
             } else {
                 this.player.viewRendering.canvas.style.setProperty("cursor", clickable ? "pointer" : "default");
@@ -56,7 +56,7 @@ class PlayTab {
                     allowNone: false, 
                 });
                 switchTab("sidebar/play");
-                this.player.gameState.currentScene = scene.id;
+                this.player.playState.currentScene = scene.id;
                 this.player.render();
                 this.refresh();
             } catch (e) {
@@ -65,7 +65,7 @@ class PlayTab {
         });
 
         setActionHandler("play/edit-scene", () => {
-            const scene = getSceneById(this.flicksyEditor.projectData, this.player.gameState.currentScene);
+            const scene = getSceneById(this.flicksyEditor.projectData, this.player.playState.currentScene);
             this.flicksyEditor.sceneTabEditor.setActiveScene(this.flicksyEditor.projectData, scene);
             switchTab("sidebar/scene");
         });
@@ -97,7 +97,7 @@ class PlayTab {
     }
 
     refresh() {
-        const scene = getSceneById(this.player.projectManager.projectData, this.player.gameState.currentScene);
+        const scene = getSceneById(this.player.projectManager.projectData, this.player.playState.currentScene);
         elementByPath("play/scene", "input").value = scene.name;
     }
 

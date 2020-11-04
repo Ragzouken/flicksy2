@@ -6,16 +6,12 @@ class FlicksyPlayer {
     constructor() {
         this.events = new EventEmitter();
 
-        this.projectManager = new FlicksyProjectManager();
-
         // view is twice scene resolution, for text rendering
         this.viewRendering = createRendering2D(160*2, 100*2);
         this.sceneRendering = createRendering2D(160, 100);
 
+        this.projectManager = new FlicksyProjectManager();
         this.dialoguePlayer = new DialoguePlayer();
-
-        /** @type {Map<string, Vector2>} */
-        this.drawingIdToPivot = new Map();
 
         // an awaitable that generates a new promise that resolves once no dialogue is active
         /** @type {PromiseLike<void>} */
@@ -47,23 +43,16 @@ class FlicksyPlayer {
     }
 
     stop() {
-        this.gameState = undefined;
+        this.playState = undefined;
     }
 
     restart(startScene = undefined) {
         this.projectManager.copyFromManager(editor.projectManager);
 
-        // make copies of drawings from editor
-        this.drawingIdToPivot.clear();
-        editor.projectData.drawings.forEach((drawing) => {
-            this.drawingIdToPivot.set(drawing.id, { ...drawing.pivot });
-        });
-
-        // set initial game state
+        // set initial play state
         /** @type {FlicksyPlayState} */
-        this.gameState = {
+        this.playState = {
             currentScene: startScene || editor.projectData.details.start,
-            cursor: editor.projectData.details.cursor,
             variables: {},
         };
 
@@ -75,7 +64,7 @@ class FlicksyPlayer {
     }
 
     update(dt) {
-        if (!this.gameState) return;
+        if (!this.playState) return;
 
         if (this.dialoguePlayer.active) {
             this.dialoguePlayer.update(dt);
@@ -86,21 +75,16 @@ class FlicksyPlayer {
     render() {
         // clear to black, then render objects in depth order
         fillRendering2D(this.sceneRendering, 'black');
-        const scene = getSceneById(this.projectManager.projectData, this.gameState.currentScene);
-        const objects = scene.objects.slice().sort((a, b) => a.position.z - b.position.z);
-        objects.forEach((object) => {
-            if (object.hidden) return;
+        const scene = getSceneById(this.projectManager.projectData, this.playState.currentScene);
+        this.sceneRendering.drawImage(renderScene(this.projectManager, scene, 1).canvas, 0, 0);
 
-            const canvas = this.projectManager.drawingIdToRendering.get(object.drawing).canvas;
-            const { x, y } = object.position;
-            this.sceneRendering.drawImage(canvas, x, y);
-        });
-
-        if (this.mouse && this.gameState.cursor) {
+        const cursorId = this.projectManager.projectData.details.cursor;
+        if (this.mouse && cursorId) {
+            const drawing = getDrawingById(this.projectManager.projectData, cursorId);
+            const rendering = this.projectManager.drawingIdToRendering.get(cursorId);
             const { x, y } = this.mouse;
-            const { x: px, y: py } = this.drawingIdToPivot.get(this.gameState.cursor);
-            const cursor = this.projectManager.drawingIdToRendering.get(this.gameState.cursor);
-            this.sceneRendering.drawImage(cursor.canvas, x/2-px, y/2-py);
+            const { x: px, y: py } = drawing.pivot;
+            this.sceneRendering.drawImage(rendering.canvas, x/2-px, y/2-py);
         }
 
         // copy scene to view at 2x scale
@@ -147,21 +131,21 @@ class FlicksyPlayer {
      */
     pointcast(x, y) {
         x /= 2; y /= 2;
-        const scene = getSceneById(this.projectManager.projectData, this.gameState.currentScene);
+        const scene = getSceneById(this.projectManager.projectData, this.playState.currentScene);
         return pointcastScene(this.projectManager, scene, { x, y }, true);
     }
 
     /** @param {string} sceneId */
     changeScene(sceneId) {
-        this.gameState.currentScene = sceneId;
+        this.playState.currentScene = sceneId;
         this.events.emit("next-scene", sceneId);
     }
 
     /** @param {FlicksyDataObject} object */
     async runObjectBehaviour(object) { 
         if (object.behaviour.script) {
-            const scene = getSceneById(this.projectManager.projectData, this.gameState.currentScene);
-            const defines = generateScriptingDefines(this, this.gameState, scene, object);
+            const scene = getSceneById(this.projectManager.projectData, this.playState.currentScene);
+            const defines = generateScriptingDefines(this, this.playState, scene, object);
             const names = Object.keys(defines).join(", ");
             const preamble = `const { ${names} } = COMMANDS;\n`;
 

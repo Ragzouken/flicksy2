@@ -58,7 +58,6 @@
 /**
  * @typedef {Object} FlicksyPlayState
  * @property {string} currentScene
- * @property {string} cursor
  * @property {Object} variables
  */
 

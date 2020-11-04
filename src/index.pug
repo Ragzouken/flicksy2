@@ -37,8 +37,8 @@ html
             include scripts/utility.js
         script(id="player.js")
             include scripts/player.js
-        script(id="editor.js")
-            include scripts/editor.js
+        script(id="editors/editor.js" data-editor-only)
+            include scripts/editors/editor.js
         script(id="main.js")
             include scripts/main.js
     body(onload="start()")

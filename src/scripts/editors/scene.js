@@ -309,12 +309,6 @@ async function initObjectInEditor(sceneEditor, object) {
     let grab = undefined;
     let hovered = undefined;
     
-    function mouseEventToSceneTransform(event) {
-        const mouse = draggable.scene.mouseEventToViewportTransform(event);
-        mouse.preMultiplySelf(draggable.scene.transform.inverse());
-        return mouse;
-    }
-    
     function refreshCursors(event) {
         const grabbing = grab !== undefined;
         const picking = sceneEditor.isPicking;
@@ -331,7 +325,7 @@ async function initObjectInEditor(sceneEditor, object) {
         
         // determine and save the relationship between mouse and element
         // G = M1^ . E (element relative to mouse)
-        const mouse = mouseEventToSceneTransform(event);
+        const mouse = this.scene.mouseEventToSceneTransform(event);
         grab = mouse.invertSelf().multiplySelf(draggable.transform);
     }
 
@@ -341,7 +335,7 @@ async function initObjectInEditor(sceneEditor, object) {
 
         // preserve the relationship between mouse and element
         // D2 = M2 . G (drawing relative to scene)
-        const mouse = mouseEventToSceneTransform(event);
+        const mouse = this.scene.mouseEventToSceneTransform(event);
         draggable.transform = mouse.multiply(grab);
         snap(draggable.transform);
         draggable.refresh();

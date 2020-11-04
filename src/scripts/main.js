@@ -91,36 +91,29 @@ class PanningScene {
         this.transform = new DOMMatrix();
         this.locked = false;
 
-        let grab = undefined;
-    
-        const viewport = this.container.parentElement;
-        viewport.addEventListener("pointerdown", (event) => {
+        this.viewport.addEventListener("pointerdown", (event) => {
             if (this.hidden || this.locked) return;
             killEvent(event);
     
             // determine and save the relationship between mouse and scene
             // G = M1^ . S (scene relative to mouse)
             const mouse = this.mouseEventToViewportTransform(event);
-            grab = mouse.invertSelf().multiplySelf(this.transform);
+            const grab = mouse.invertSelf().multiplySelf(this.transform);
             document.body.style.setProperty("cursor", "grabbing");
             this.viewport.style.setProperty("cursor", "grabbing");
-        });
-        
-        document.addEventListener("pointermove", (event) => {
-            if (!grab) return;
-    
-            // preserve the relationship between mouse and scene
-            // D2 = M2 . G (drawing relative to scene)
-            const mouse = this.mouseEventToViewportTransform(event);
-            this.transform = mouse.multiply(grab);
-            this.refresh();
-        });
-        
-        document.addEventListener("pointerup", (event) => {
-            if (!grab) return;
-            grab = undefined;
-            document.body.style.removeProperty("cursor");
-            this.viewport.style.setProperty("cursor", "grab");
+
+            const gesture = trackGesture(event);
+            gesture.on("pointermove", (event) => {
+                // preserve the relationship between mouse and scene
+                // D2 = M2 . G (drawing relative to scene)
+                const mouse = this.mouseEventToViewportTransform(event);
+                this.transform = mouse.multiply(grab);
+                this.refresh();
+            });
+            gesture.on("pointerup", (event) => {
+                document.body.style.removeProperty("cursor");
+                this.viewport.style.removeProperty("cursor");
+            });
         });
         
         this.viewport.addEventListener('wheel', (event) => {

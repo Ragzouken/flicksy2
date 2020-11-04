@@ -39,7 +39,7 @@ class PlayTab {
             const [x, y] = mouseEventToPixel(event);
             const clickable = this.player.isInteractableHovered(x, y);
             
-            if (this.player.playState.cursor) {
+            if (this.player.projectManager.projectData.details.cursor) {
                 this.player.viewRendering.canvas.style.setProperty("cursor", "none");
             } else {
                 this.player.viewRendering.canvas.style.setProperty("cursor", clickable ? "pointer" : "default");

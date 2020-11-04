@@ -54,7 +54,7 @@ class ProjectTabEditor {
             ALL("[data-empty]", clone).forEach(removeAllChildren);
             ONE("#sidebar", clone).hidden = true;
             ONE("body", clone).setAttribute("data-play", "true");
-
+            ONE("title", clone).innerHTML = this.flicksyEditor.projectData.details.name;
             ALL("[data-editor-only]", clone).forEach((element) => element.remove());
 
             const blob = textToBlob(clone.outerHTML, "text/html");

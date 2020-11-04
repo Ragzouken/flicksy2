@@ -64,10 +64,9 @@ class FlicksyPlayer {
 
         // render dialogue box if necessary
         if (this.dialoguePlayer.active) {
-            const dw = this.dialoguePlayer.dialogueRendering.canvas.width;
-            const dh = this.dialoguePlayer.dialogueRendering.canvas.height;
-            const x = (160*2-dw)/2;
-            const y = (100+(100-dh)/2);
+            const { width, height } = this.dialoguePlayer.dialogueRendering.canvas;
+            const x = (160*2-width)/2;
+            const y = (100+(100-height)/2);
 
             this.dialoguePlayer.render();
             this.viewRendering.drawImage(this.dialoguePlayer.dialogueRendering.canvas, x, y);

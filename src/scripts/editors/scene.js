@@ -325,7 +325,7 @@ async function initObjectInEditor(sceneEditor, object) {
         
         // determine and save the relationship between mouse and element
         // G = M1^ . E (element relative to mouse)
-        const mouse = this.scene.mouseEventToSceneTransform(event);
+        const mouse = sceneEditor.scene.mouseEventToSceneTransform(event);
         grab = mouse.invertSelf().multiplySelf(draggable.transform);
     }
 
@@ -335,7 +335,7 @@ async function initObjectInEditor(sceneEditor, object) {
 
         // preserve the relationship between mouse and element
         // D2 = M2 . G (drawing relative to scene)
-        const mouse = this.scene.mouseEventToSceneTransform(event);
+        const mouse = sceneEditor.scene.mouseEventToSceneTransform(event);
         draggable.transform = mouse.multiply(grab);
         snap(draggable.transform);
         draggable.refresh();

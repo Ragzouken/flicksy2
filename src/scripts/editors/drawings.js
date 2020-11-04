@@ -389,7 +389,7 @@ async function initDrawingInEditor(drawingsEditor, drawing) {
     const cursor = editor.drawingsTabEditor.cursor
 
     function mouseEventToPixel(event) {
-        const mouse = this.scene.mouseEventToSceneTransform(event);
+        const mouse = drawingsEditor.scene.mouseEventToSceneTransform(event);
         const pixel = object.transform.inverse().multiply(mouse);
         return [pixel.e, pixel.f];
     }
@@ -508,7 +508,7 @@ async function initDrawingInEditor(drawingsEditor, drawing) {
         killEvent(event);
         // determine and save the relationship between mouse and element
         // G = M1^ . E (element relative to mouse)
-        const mouse = this.scene.mouseEventToSceneTransform(event);
+        const mouse = drawingsEditor.scene.mouseEventToSceneTransform(event);
         grab = mouse.invertSelf().multiplySelf(object.transform);
     }
 
@@ -518,7 +518,7 @@ async function initDrawingInEditor(drawingsEditor, drawing) {
 
         // preserve the relationship between mouse and element
         // D2 = M2 . G (drawing relative to scene)
-        const mouse = this.scene.mouseEventToSceneTransform(event);
+        const mouse = drawingsEditor.scene.mouseEventToSceneTransform(event);
         object.transform = mouse.multiply(grab);
         snap(object.transform);
         object.refresh();

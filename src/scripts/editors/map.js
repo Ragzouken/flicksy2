@@ -231,14 +231,14 @@ async function initSceneInEditor(mapEditor, scene) {
 
         // determine and save the relationship between mouse and element
         // G = M1^ . E (element relative to mouse)
-        const mouse = this.scene.mouseEventToSceneTransform(event);
+        const mouse = mapEditor.scene.mouseEventToSceneTransform(event);
         const grab = mouse.invertSelf().multiplySelf(object.transform);
 
         const drag = trackGesture(event);
         drag.on("pointermove", (event) => {
             // preserve the relationship between mouse and element
             // D2 = M2 . G (drawing relative to scene)
-            const mouse = this.scene.mouseEventToSceneTransform(event);
+            const mouse = mapEditor.scene.mouseEventToSceneTransform(event);
             object.transform = mouse.multiply(grab);
             snap(object.transform);
             object.refresh();

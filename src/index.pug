@@ -12,7 +12,7 @@ html
         style#player-style
             include styles/player-style.css
         // third party libraries
-        script
+        script(data-editor-only)
             include library/FileSaver.min.js
         // scripts
         script(id="blitsy.js")
@@ -70,7 +70,7 @@ html
             #map-scene.scene(hidden data-empty)
             #scene-scene.scene(hidden data-empty)
             #play-scene.scene(hidden data-empty)
-            #manual
+            #manual(data-editor-only)
                 //include manual/main.pug
         script#project-data(type="text/json")
             include project.json

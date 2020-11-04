@@ -2,51 +2,12 @@ class PlayTab {
     /** @param {FlicksyEditor} flicksyEditor */
     constructor(flicksyEditor) {
         this.flicksyEditor = flicksyEditor;
-        this.player = new FlicksyPlayer();
 
-        this.scene = new PanningScene(ONE("#play-scene"));
-        this.scene.locked = true;
-        this.player.viewRendering.canvas.classList.add('.object');
-        this.scene.container.appendChild(this.player.viewRendering.canvas);
+        this.player = playerSetup.player;
+        this.scene = playerSetup.scene;
 
         this.logText = elementByPath("play/log", "div");
         setActionHandler("play/restart", () => this.restart());
-
-        const mouseEventToSceneTransform = (event) => {
-            const mouse = this.scene.mouseEventToViewportTransform(event);
-            mouse.preMultiplySelf(this.scene.transform.inverse());
-            return mouse;
-        }
-
-        const mouseEventToPixel = (event) => {
-            const mouse = mouseEventToSceneTransform(event);
-            return [mouse.e, mouse.f];
-        }
-
-        const viewport = ONE("#content");
-
-        this.player.viewRendering.canvas.addEventListener("pointerdown", (event) => {
-            event.stopPropagation();
-        });
-        this.player.viewRendering.canvas.addEventListener("click", (event) => {
-            killEvent(event);
-            const [x, y] = mouseEventToPixel(event);
-            this.player.click(x, y);
-        });
-        viewport.addEventListener("pointermove", (event) => {
-            if (this.scene.hidden) return;
-            //killEvent(event);
-            const [x, y] = mouseEventToPixel(event);
-            const clickable = this.player.isInteractableHovered(x, y);
-            
-            if (this.player.projectManager.projectData.state.cursor) {
-                this.player.viewRendering.canvas.style.setProperty("cursor", "none");
-            } else {
-                this.player.viewRendering.canvas.style.setProperty("cursor", clickable ? "pointer" : "default");
-            }
-        });
-
-        window.addEventListener("resize", () => this.reframe());
 
         setActionHandler("play/pick-scene", async () => {
             try {
@@ -78,15 +39,6 @@ class PlayTab {
             this.logText.innerText += text + "\n";
             this.logText.scrollTo(0, this.logText.scrollHeight);
         });
-
-        let prev;
-        const timer = (next) => {
-            prev ||= Date.now();
-            this.player.update((next - prev) / 1000.);
-            prev = next;
-            window.requestAnimationFrame(timer);
-        }
-        timer();
     }
 
     show() {
@@ -99,19 +51,12 @@ class PlayTab {
         this.player.projectManager.projectData = undefined;
     }
     
-    reframe() {
-        const width = this.player.viewRendering.canvas.width;
-        const height = this.player.viewRendering.canvas.height;
-        this.scene.frameRect(padRect(new DOMRect(0, 0, width, height), 8));
-    }
-
     refresh() {
         const scene = getSceneById(this.player.projectManager.projectData, this.player.projectManager.projectData.state.scene);
         elementByPath("play/scene", "input").value = scene.name;
     }
 
     restart(startScene = undefined) {
-        this.reframe();
         this.player.projectManager.copyFromManager(this.flicksyEditor.projectManager);
         if (startScene) this.player.projectManager.projectData.state.scene = startScene;
         this.player.log("[restarted]");

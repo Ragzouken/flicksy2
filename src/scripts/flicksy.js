@@ -169,12 +169,12 @@ class FlicksyProjectManager {
 
     /** @param {FlicksyDataProject} projectData */
     async loadProjectData(projectData) {
-        this.projectData = projectData;
-
         // reload drawings from scratch
         this.drawingIdToRendering.clear();
-        const loads = this.projectData.drawings.map((drawing) => this.reloadDrawingData(drawing));
+        const loads = projectData.drawings.map((drawing) => this.reloadDrawingData(drawing));
         await Promise.all(loads);
+
+        this.projectData = projectData;
     }
 
     /** @param {FlicksyProjectManager} manager */

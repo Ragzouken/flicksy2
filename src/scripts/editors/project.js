@@ -43,7 +43,7 @@ class ProjectTabEditor {
             saveAs(blob, name);
         });
 
-        setActionHandler("project/export/html", async () => {
+        const projectToHTML = async () => {
             await this.flicksyEditor.prepareSave();
             const name = this.flicksyEditor.projectData.details.name + ".html";
             const json = JSON.stringify(this.flicksyEditor.projectData);
@@ -56,9 +56,53 @@ class ProjectTabEditor {
             ONE("body", clone).setAttribute("data-play", "true");
             ONE("title", clone).innerHTML = this.flicksyEditor.projectData.details.name;
             ALL("[data-editor-only]", clone).forEach((element) => element.remove());
+            
+            return clone.outerHTML;
+        }
 
-            const blob = textToBlob(clone.outerHTML, "text/html");
+        setActionHandler("project/export/html", async () => {
+            const blob = textToBlob(await projectToHTML(), "text/html");
             saveAs(blob, name);
+        });
+
+        setActionHandler("project/publish/neocities/start", async () => {
+            const openButton = elementByPath("project/publish/neocities/open", "button");
+            openButton.disabled = true;
+
+            const ready = new Promise((resolve, reject) => {
+                const remove = listen(window, "message", (event) => {
+                    if (event.origin !== "https://kool.tools") return;
+                    remove();
+                    resolve();
+                });
+            });
+
+            const success = new Promise((resolve, reject) => {
+                const remove = listen(window, "message", (event) => {
+                    if (event.origin !== "https://kool.tools") return;
+
+                    if (event.data.error) {
+                        remove();
+                        reject(event.data.error);
+                    } else if (event.data.url) {
+                        remove();
+                        resolve(event.data.url);
+                    }
+                });
+            });
+
+            const popup = window.open(
+                "https://kool.tools/neocities-publisher/index.html", 
+                "neocities publisher",
+                "left=10,top=10,width=320,height=320");
+            const name = this.flicksyEditor.projectData.details.name;
+            const html = await projectToHTML();
+            await ready;
+            popup.postMessage({ name, html }, "https://kool.tools");
+            const url = await success;
+            popup.close();
+            openButton.disabled = false;
+            setActionHandler("project/publish/neocities/open", () => window.open(url));
         });
     }
 

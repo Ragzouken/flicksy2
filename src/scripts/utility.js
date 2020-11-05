@@ -308,10 +308,10 @@ class EventEmitter {
 };
 
 /**
- * @template {keyof GlobalEventHandlersEventMap} K
- * @param {Document | HTMLElement} element 
+ * @template {keyof WindowEventMap} K
+ * @param {Window | Document | HTMLElement} element 
  * @param {K} type 
- * @param {(event: GlobalEventHandlersEventMap[K]) => any} listener
+ * @param {(event: WindowEventMap[K]) => any} listener
  */
 function listen(element, type, listener) {
     element.addEventListener(type, listener);

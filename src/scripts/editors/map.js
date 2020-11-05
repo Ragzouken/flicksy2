@@ -208,13 +208,9 @@ async function initSceneInEditor(mapEditor, scene) {
     object.transform.scaleSelf(.5);
     object.refresh();
 
-    let hovered = undefined;
-    
     function refreshCursors(event) {
-        const cursor = mapEditor.grabbing
-                     ? "grabbing"
-                     : mapEditor.mode === "move"
-                     ? "grab"
+        const cursor = mapEditor.grabbing ? "grabbing"
+                     : mapEditor.mode === "move" ? "grab"
                      : "pointer";
         rendering.canvas.style.setProperty("cursor", cursor);
     }
@@ -255,18 +251,7 @@ async function initSceneInEditor(mapEditor, scene) {
         else startDrag(event);
         refreshCursors(event);
     });
-
-    object.element.addEventListener("pointerenter", (event) => {
-        killEvent(event);
-        hovered = true;
-        refreshCursors(event);
-    });
-
-    object.element.addEventListener("pointerout", (event) => {
-        killEvent(event);
-        refreshCursors(event);
-    });
-
+    
     document.addEventListener("pointermove", (event) => {
         if (mapEditor.scene.hidden) return;
         refreshCursors(event);

@@ -7,10 +7,10 @@ html
         // styles
         style#base-style
             include styles/base-style.css
-        style#editor-style
-            include styles/editor-style.css
         style#player-style
             include styles/player-style.css
+        style#editor-style(data-editor-only)
+            include styles/editor-style.css
         // third party libraries
         script(data-editor-only)
             include library/FileSaver.min.js
@@ -19,8 +19,8 @@ html
             include scripts/blitsy.js
         script(id="text.js")
             include scripts/text.js
-        script(id="htmlui.js" data-editor-only)
-            include scripts/htmlui.js
+        script(id="editors/htmlui.js" data-editor-only)
+            include scripts/editors/htmlui.js
         script(id="editors/drawings.js" data-editor-only)
             include scripts/editors/drawings.js
         script(id="editors/scene.js" data-editor-only)
@@ -66,9 +66,9 @@ html
             div(data-tab-body="modes/color")
                 include sidebars/color.pug
         #content
-            #drawings-scene.scene(hidden data-empty)
-            #map-scene.scene(hidden data-empty)
-            #scene-scene.scene(hidden data-empty)
+            #drawings-scene.scene(hidden data-empty data-editor-only)
+            #map-scene.scene(hidden data-empty data-editor-only)
+            #scene-scene.scene(hidden data-empty data-editor-only)
             #play-scene.scene(hidden data-empty)
             #manual(data-editor-only)
                 //include manual/main.pug

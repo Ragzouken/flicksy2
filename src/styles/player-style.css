@@ -1,8 +1,27 @@
-[data-play] #content {
+html, body {
+    width: 100vw; height: 100vh;
+    margin: 0; padding: 0;
+}
+
+body {
+    display: flex;
+    flex-direction: row;
+}
+
+#content {
+    position: relative; overflow: hidden; /* clip things */
+    flex: 1;
     background: black;
 }
 
-[data-play] #play-scene {
+.scene {
+    position: absolute; transform-origin: 0 0;
+    width: 160px; height: 100px;
+    outline: 1px dotted rgb(255 255 255 / 5%);
+}
+
+#play-scene > canvas {
+    cursor: none;
     width: 320px; height: 200px;
     outline: 1px solid #222222;
 }

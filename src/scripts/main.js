@@ -28,7 +28,6 @@ async function setup() {
     const player = new FlicksyPlayer(font);
 
     scene.locked = true;
-    player.viewRendering.canvas.classList.add('.object');
     scene.container.appendChild(player.viewRendering.canvas);
 
     let prev;

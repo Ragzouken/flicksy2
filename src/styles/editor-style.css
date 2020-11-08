@@ -41,28 +41,9 @@
     background: #FFD800; 
 }
 
-html, body {
-    width: 100vw; height: 100vh;
-    margin: 0; padding: 0;
-}
-
-body {
-    display: flex;
-    flex-direction: row;
-}
-
 #content {
-    position: relative; overflow: hidden; /* clip things */
-    flex: 1;
-
     cursor: grab;
     background: var(--trans-gradient);
-}
-
-.scene {
-    position: absolute; transform-origin: 0 0;
-    width: 160px; height: 100px;
-    outline: 1px dotted rgb(255 255 255 / 5%);
 }
 
 .scene .object {
@@ -323,8 +304,4 @@ span.code {
 #manual .section {
     border-radius: 1.5em;
     padding: 1.5em;
-}
-
-#play-scene > canvas {
-    cursor: none;
 }

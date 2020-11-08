@@ -186,35 +186,26 @@ function tokeniseScript(script) {
     return tokens;
 }
 
+function textBufferToCommands(buffer) {
+    const chars = Array.from(buffer);
+    return chars.map((char) => ({ type: "glyph", char, breakable: char === " " }));
+}
+
+function markupBufferToCommands(buffer) {
+    if (buffer === "ep") return [{ type: "break", target: "page" }];
+    if (buffer === "el") return [{ type: "break", target: "line" }];
+    else                 return [{ type: "style", style: buffer }];
+}
+
+/** @param {any[]} tokens */
 function tokensToCommands(tokens) {
-    const commands = [];
+    const handlers = {
+        "text": textBufferToCommands,
+        "markup": markupBufferToCommands,
+    };
 
-    function handleToken([type, buffer]) {
-        if (type === "text")
-            handleText(buffer)
-        else if (type === "markup")
-            handleMarkup(buffer)
-    }
-
-    function handleText(buffer) {
-        for (const char of buffer)
-        {
-            const breakable = char === " ";
-            commands.push({ type: "glyph", char, breakable });
-        }
-    }
-
-    function handleMarkup(buffer) {
-        if (buffer === "ep")
-            commands.push({ type: "break", target: "page" });
-        else if (buffer === "el")
-            commands.push({ type: "break", target: "line" });
-        else
-            commands.push({ type: "style", style: buffer });
-    }
-
-    tokens.forEach(handleToken);
-
+    const tokenToCommands = ([type, buffer]) => handlers[type](buffer); 
+    const commands = tokens.flatMap(tokenToCommands);
     return commands;
 }
 

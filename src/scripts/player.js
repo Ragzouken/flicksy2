@@ -14,17 +14,12 @@ class FlicksyPlayer {
         this.projectManager = new FlicksyProjectManager();
         this.dialoguePlayer = new DialoguePlayer(font);
         
-        this.mouse = { x: 0, y: 0 };
-
         // an awaitable that generates a new promise that resolves once no dialogue is active
         /** @type {PromiseLike<void>} */
         this.dialogueWaiter = {
             then: (resolve, reject) => {
-                if (this.dialoguePlayer.active) {
-                    return this.dialoguePlayer.events.wait("done").then(resolve, reject);
-                } else {
-                    resolve();
-                }
+                if (!this.dialoguePlayer.active) resolve();
+                else return this.dialoguePlayer.events.wait("done").then(resolve, reject);
             },
         };
     }
@@ -40,9 +35,7 @@ class FlicksyPlayer {
     update(dt) {
         if (!this.projectManager.projectData) return;
 
-        if (this.dialoguePlayer.active) {
-            this.dialoguePlayer.update(dt);
-        }
+        this.dialoguePlayer.update(dt);
         this.render();
     }
 
@@ -192,8 +185,7 @@ class DialoguePlayer {
 
     /** @param {number} dt */
     update(dt) {
-        if (!this.currentPage)
-            return;
+        if (!this.active) return;
 
         this.pageTime += dt;
         this.showGlyphElapsed += dt;

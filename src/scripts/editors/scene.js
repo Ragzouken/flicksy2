@@ -33,6 +33,7 @@ class SceneTabEditor {
             if (!this.selectedObject) return;
             this.selectedObject.behaviour.script = this.objectScriptInput.value;
         });
+        this.objectHiddenButton = elementByPath("scene/selected/hidden", "button");
 
         setActionHandler("scene/add/pick-drawing", async () => {
             try {
@@ -112,6 +113,13 @@ class SceneTabEditor {
             const canvas = objectToRendering.get(this.selectedObject).canvas;
             this.selectedObject.position.z -= 1;
             canvas.style.setProperty("z-index", this.selectedObject.position.z.toString());
+        });
+
+        setActionHandler("scene/selected/toggle-hidden", () => {
+            this.selectedObject.hidden = !this.selectedObject.hidden;
+            const canvas = objectToRendering.get(this.selectedObject).canvas;
+            canvas.style.setProperty("opacity", this.selectedObject.hidden ? "50%" : "100%");
+            this.objectHiddenButton.classList.toggle("active", this.selectedObject.hidden);
         });
 
         setActionHandler("scene/selected/duplicate", async () => {
@@ -227,6 +235,8 @@ class SceneTabEditor {
 
             const drawing = getDrawingById(this.flicksyEditor.projectData, this.selectedObject.drawing);
             this.objectDrawingInput.value = drawing.name;
+
+            this.objectHiddenButton.classList.toggle("active", object.hidden === true);
         }
     }
 
@@ -301,6 +311,7 @@ async function initObjectInEditor(sceneEditor, object) {
     const draggable = new DragObjectTest(sceneEditor.scene, rendering.canvas);
 
     rendering.canvas.style.setProperty("z-index", object.position.z.toString());
+    rendering.canvas.style.setProperty("opacity", object.hidden ? "50%" : "100%");
 
     draggable.transform.e = object.position.x;
     draggable.transform.f = object.position.y;

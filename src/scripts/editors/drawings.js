@@ -176,7 +176,7 @@ class DrawingsTabEditor {
             hsv = RGBToHSV(rgb);
             updateColorWheel();
 
-            const uint32 = hexToNumber(hex);
+            const uint32 = hexToUint32(hex);
             const contexts = Array.from(this.projectManager.drawingIdToRendering.values());
             const replacers = contexts.map((rendering) => makeColorReplacer(rendering, uint32));
 
@@ -475,7 +475,7 @@ async function initDrawingInEditor(drawingsEditor, drawing) {
     function pointerdownFill(event) {
         killEvent(event);
         const [x, y] = mouseEventToPixel(event);
-        floodfill(rendering, x|0, y|0, isErasing() ? 0 : hexToNumber(getColor()));
+        floodfill(rendering, x|0, y|0, isErasing() ? 0 : hexToUint32(getColor()));
     }
 
     function pointerdownLine(event) {

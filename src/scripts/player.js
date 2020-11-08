@@ -2,15 +2,17 @@ const CONT_ICON_DATA = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAGCA
 const STOP_ICON_DATA = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAGCAYAAAD68A/GAAAAAXNSR0IArs4c6QAAACJJREFUCJljZICC/////2fAAhgZGRn////PwIRNEhsYCgoBIkQHCf7H+yAAAAAASUVORK5CYII="
 
 class FlicksyPlayer {
-    constructor() {
+    /** @param {BlitsyFont} font */
+    constructor(font) {
         this.events = new EventEmitter();
+        this.font = font;
 
         // view is twice scene resolution, for text rendering
         this.viewRendering = createRendering2D(160*2, 100*2);
         this.sceneRendering = createRendering2D(160, 100);
 
         this.projectManager = new FlicksyProjectManager();
-        this.dialoguePlayer = new DialoguePlayer();
+        this.dialoguePlayer = new DialoguePlayer(font);
         
         this.mouse = { x: 0, y: 0 };
 
@@ -153,14 +155,14 @@ class DialoguePlayer {
         return this.currentPage ? this.currentPage[this.showGlyphCount] : undefined;
     } 
 
-    constructor() {
+    constructor(font) {
         this.events = new EventEmitter();
+        this.font = font;
         this.dialogueRendering = createRendering2D(8, 8);
         this.restart();
     }
 
     async load() {
-        this.font = await loadBasicFont(/** @type {HTMLScriptElement} */ (ONE("#font-data")));
         this.contIcon = await loadImage(CONT_ICON_DATA);
         this.stopIcon = await loadImage(STOP_ICON_DATA);
     }

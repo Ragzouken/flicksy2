@@ -160,7 +160,7 @@ function rgbToHex(rgb) {
  * @param {string} hex 
  * @param {number} alpha
  */
-function hexToNumber(hex, alpha = undefined) {
+function hexToUint32(hex, alpha = undefined) {
     if (hex.charAt(0) === '#') hex = hex.substring(1);
     if (alpha === undefined && hex.length === 8) alpha = parseInt(hex.substr(6, 2), 16);
     if (alpha === undefined) alpha = 255;
@@ -180,8 +180,8 @@ function numberToHex(number, prefix = '#') {
 }
 
 const MASK_PALETTE = {
-    '_': hexToNumber('#000000', 0),
-    default: hexToNumber('#FFFFFF', 255),
+    '_': hexToUint32('#000000', 0),
+    default: hexToUint32('#FFFFFF', 255),
 };
 
 /**
@@ -279,7 +279,7 @@ function hexToRGB(hex) {
         b: parseInt(hex.substr(4, 2), 16),
         g: parseInt(hex.substr(2, 2), 16),
         r: parseInt(hex.substr(0, 2), 16),
-        uint32: hexToNumber(hex),
+        uint32: hexToUint32(hex),
     };
 }
 
@@ -294,7 +294,7 @@ function RGBToUint32(rgb) {
 function recolorToPalette(rendering, palette) {
     const paletteConverted = palette.map((hex) => { 
         const cone = HSVToCone(RGBToHSV(hexToRGB(hex)));
-        const uint32 = hexToNumber(hex);
+        const uint32 = hexToUint32(hex);
         return { ...cone, uint32 };
     });
     const mapping = new Map();

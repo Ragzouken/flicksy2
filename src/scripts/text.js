@@ -83,6 +83,15 @@ function copyImageRect(source, rect) {
     return rendering;
 }
 
+/**
+ * @param {BlitsyFont} font 
+ * @param {string} char 
+ */
+function getFontChar(font, char) {
+    const codepoint = char.codePointAt(0);
+    return font.characters.get(codepoint);
+}
+
 /** 
  * @param {BlitsyPage} page 
  * @param {number} width
@@ -205,8 +214,7 @@ function tokensToCommands(tokens) {
     };
 
     const tokenToCommands = ([type, buffer]) => handlers[type](buffer); 
-    const commands = tokens.flatMap(tokenToCommands);
-    return commands;
+    return tokens.flatMap(tokenToCommands);
 }
 
 /**
@@ -260,12 +268,11 @@ function commandsToPages(commands, options, styleHandler) {
     }
 
     function addGlyph(command, offset) {
-        const codepoint = command.char.codePointAt(0);
-        const char = options.font.characters.get(codepoint);
+        const char = getFontChar(options.font, command.char);
         const position = { x: offset, y: currLine * (options.font.lineHeight + 4) };
         const glyph = { 
             image: char.image,
-            position: position,
+            position,
             offset: { x: 0, y: 0 },
             hidden: true,
             fillStyle: "white",
@@ -339,23 +346,16 @@ function commandsBreakLongSpans(commands, options) {
  * @param {string} line 
  */
 function computeLineWidth(font, line) {
-    let width = 0;
-    for (const char of line) {
-        const code = char.codePointAt(0);
-        const fontchar = font.characters.get(code);
-        if (fontchar) {
-            width += fontchar.spacing;
-        } 
-    }
-    return width;
+    const chars = Array.from(line).map((char) => getFontChar(font, char));
+    const widths = chars.map((char) => char ? char.spacing : 0);
+    return widths.reduce((a, b) => a + b);
 }
 
 /**
  * Segment the given array into contiguous runs of elements that are not 
  * considered breakable.
  */
-function filterToSpans(array, breakable)
-{
+function filterToSpans(array, breakable) {
     const spans = [];
     let buffer = [];
 

@@ -6,7 +6,7 @@ async function start() {
     const json = (play || !save) ? dataElement.innerHTML : save;
     const data = JSON.parse(json);
 
-    playerSetup = setup();
+    playerSetup = await setup();
 
     if (play) {
         const player = playerSetup.player;
@@ -22,9 +22,10 @@ async function start() {
 
 let playerSetup;
 
-function setup() {
+async function setup() {
+    const font = await loadBasicFont(/** @type {HTMLScriptElement} */ (ONE("#font-data")));
     const scene = new PanningScene(ONE("#play-scene"));
-    const player = new FlicksyPlayer();
+    const player = new FlicksyPlayer(font);
 
     scene.locked = true;
     player.viewRendering.canvas.classList.add('.object');

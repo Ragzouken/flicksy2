@@ -47,9 +47,7 @@ function eventToElementPixel(event, element) {
     return [event.clientX - rect.x, event.clientY - rect.y];
 }
 
-/**
- * @param {Event} event
- */
+/** @param {Event} event */
 function killEvent(event) {
     event.stopPropagation();
     event.preventDefault();
@@ -67,10 +65,7 @@ async function loadImage(src) {
     });
 }
 
-/**
- * 
- * @param {HTMLImageElement} image 
- */
+/** @param {HTMLImageElement} image */
 function imageToRendering2D(image) {
     const rendering = createRendering2D(image.naturalWidth, image.naturalHeight);
     rendering.drawImage(image, 0, 0);

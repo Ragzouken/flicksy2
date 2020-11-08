@@ -150,6 +150,13 @@ async function pickFiles(accept = "*", multiple = false) {
     });
 }
 
+function translationMatrix(translation) {
+    const matrix = new DOMMatrix();
+    matrix.e = translation.x;
+    matrix.f = translation.y;
+    return matrix;
+}
+
 /** @param {DOMMatrix} matrix */
 function getMatrixTranslation(matrix) {
     return { x: matrix.e, y: matrix.f };

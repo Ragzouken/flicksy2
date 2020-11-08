@@ -10,6 +10,7 @@ class SceneTabEditor {
         this.selectedObject = undefined;
 
         this.onObjectPicked = undefined;
+        this.grabbing = false;
 
         this.scene = new PanningScene(ONE("#scene-scene"));
         this.scene.refresh();
@@ -105,20 +106,20 @@ class SceneTabEditor {
             if (!this.selectedObject) return;
             const canvas = objectToRendering.get(this.selectedObject).canvas;
             this.selectedObject.position.z += 1;
-            canvas.style.setProperty("z-index", this.selectedObject.position.z.toString());
+            refreshObjectStyle(this.selectedObject, canvas);
         });
 
         setActionHandler("scene/selected/lower", () => {
             if (!this.selectedObject) return;
             const canvas = objectToRendering.get(this.selectedObject).canvas;
             this.selectedObject.position.z -= 1;
-            canvas.style.setProperty("z-index", this.selectedObject.position.z.toString());
+            refreshObjectStyle(this.selectedObject, canvas);
         });
 
         setActionHandler("scene/selected/toggle-hidden", () => {
             this.selectedObject.hidden = !this.selectedObject.hidden;
             const canvas = objectToRendering.get(this.selectedObject).canvas;
-            canvas.style.setProperty("opacity", this.selectedObject.hidden ? "50%" : "100%");
+            refreshObjectStyle(this.selectedObject, canvas);
             this.objectHiddenButton.classList.toggle("active", this.selectedObject.hidden);
         });
 
@@ -294,6 +295,16 @@ class SceneTabEditor {
     }
 }
 
+/**
+ * @param {FlicksyDataObject} object 
+ * @param {HTMLCanvasElement} canvas 
+ */
+function refreshObjectStyle(object, canvas) {
+    canvas.style.setProperty("z-index", object.position.z.toString());
+    canvas.style.setProperty("opacity", object.hidden ? "50%" : "100%");
+    canvas.style.setProperty("transform", translationMatrix(object.position).toString());
+}
+
 /** @type {Map<FlicksyDataObject, CanvasRenderingContext2D>} */
 const objectToRendering = new Map();
 
@@ -306,86 +317,59 @@ async function initObjectInEditor(sceneEditor, object) {
     const rendering = copyRendering2D(editor.projectManager.drawingIdToRendering.get(drawing.id));
     objectToRendering.set(object, rendering);
 
+    refreshObjectStyle(object, rendering.canvas);
     rendering.canvas.classList.toggle("object", true);
     sceneEditor.scene.container.appendChild(rendering.canvas);
-    const draggable = new DragObjectTest(sceneEditor.scene, rendering.canvas);
 
-    rendering.canvas.style.setProperty("z-index", object.position.z.toString());
-    rendering.canvas.style.setProperty("opacity", object.hidden ? "50%" : "100%");
+    function refreshCursors() {
+        if (sceneEditor.scene.hidden) return;
 
-    draggable.transform.e = object.position.x;
-    draggable.transform.f = object.position.y;
-    draggable.refresh();
-
-    let grab = undefined;
-    let hovered = undefined;
-    
-    function refreshCursors(event) {
-        const grabbing = grab !== undefined;
-        const picking = sceneEditor.isPicking;
-
-        if (grabbing) document.body.style.setProperty("cursor", "grabbing");
+        if (sceneEditor.grabbing) document.body.style.setProperty("cursor", "grabbing");
         else document.body.style.removeProperty("cursor");
 
-        rendering.canvas.style.setProperty("cursor", grabbing ? "grabbing" : picking ? "pointer" : "grab");
+        rendering.canvas.style.setProperty(
+            "cursor",
+              sceneEditor.grabbing ? "grabbing" 
+            : sceneEditor.isPicking ? "pointer" 
+            : "grab",
+        );
     }
 
-    function pointerdownDrag(event) {
+    function startDragGesture(event) {
         killEvent(event);
         sceneEditor.setSelectedObject(object);
+        sceneEditor.grabbing = true;
         
         // determine and save the relationship between mouse and element
         // G = M1^ . E (element relative to mouse)
         const mouse = sceneEditor.scene.mouseEventToSceneTransform(event);
-        grab = mouse.invertSelf().multiplySelf(draggable.transform);
+        const grab = mouse.invertSelf().multiplySelf(translationMatrix(object.position));
+    
+        const drag = trackGesture(event);
+        drag.on("pointermove", (event) => {
+            // preserve the relationship between mouse and element
+            // D2 = M2 . G (drawing relative to scene)
+            const mouse = sceneEditor.scene.mouseEventToSceneTransform(event);
+            const matrix = mouse.multiply(grab);
+            snap(matrix);
+            const { x, y } = getMatrixTranslation(matrix);
+            object.position.x = x;
+            object.position.y = y;
+            refreshObjectStyle(object, rendering.canvas);
+        });
+        drag.on("pointerup", (event) => sceneEditor.grabbing = false);
     }
 
-    function pointermoveDrag(event) {
-        if (!grab) return;
-        killEvent(event);
-
-        // preserve the relationship between mouse and element
-        // D2 = M2 . G (drawing relative to scene)
-        const mouse = sceneEditor.scene.mouseEventToSceneTransform(event);
-        draggable.transform = mouse.multiply(grab);
-        snap(draggable.transform);
-        draggable.refresh();
-
-        object.position.x = draggable.transform.e;
-        object.position.y = draggable.transform.f;
-    }
-
-    draggable.element.addEventListener("pointerdown", (event) => {
+    rendering.canvas.addEventListener("pointerdown", (event) => {
         if (sceneEditor.isPicking) {
-            killEvent(event);
             sceneEditor.pickObject(object);
-            return;
+        } else {
+            startDragGesture(event);
         }
 
-        pointerdownDrag(event);
-        refreshCursors(event);
+        killEvent(event);
+        refreshCursors();
     });
 
-    draggable.element.addEventListener("pointerenter", (event) => {
-        killEvent(event);
-        hovered = true;
-        refreshCursors(event);
-    });
-
-    draggable.element.addEventListener("pointerout", (event) => {
-        killEvent(event);
-        refreshCursors(event);
-    });
-
-    document.addEventListener("pointermove", (event) => {
-        if (grab) pointermoveDrag(event);
-        refreshCursors(event);
-    });
-    
-    document.addEventListener("pointerup", (event) => {
-        if (sceneEditor.scene.hidden) return;
-        killEvent(event);
-        grab = undefined;
-        refreshCursors(event);
-    });
+    document.addEventListener("pointermove", refreshCursors);
 }

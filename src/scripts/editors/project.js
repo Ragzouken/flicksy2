@@ -45,7 +45,6 @@ class ProjectTabEditor {
 
         const projectToHTML = async () => {
             await this.flicksyEditor.prepareSave();
-            const name = this.flicksyEditor.projectData.details.name + ".html";
             const json = JSON.stringify(this.flicksyEditor.projectData);
             const dataElement = ONE("#project-data");
             dataElement.innerHTML = json;
@@ -61,6 +60,7 @@ class ProjectTabEditor {
         }
 
         setActionHandler("project/export/html", async () => {
+            const name = this.flicksyEditor.projectData.details.name + ".html";
             const blob = textToBlob(await projectToHTML(), "text/html");
             saveAs(blob, name);
         });

@@ -35,14 +35,14 @@ class MapTabEditor {
             if (!this.selectedScene) return;
             const canvas = sceneToPreviewRendering.get(this.selectedScene).canvas;
             this.selectedScene.position.z += 1;
-            canvas.style.setProperty("z-index", this.selectedScene.position.z.toString());
+            refreshSceneStyle(this.selectedScene, canvas);
         });
 
         setActionHandler("map/selected/lower", () => {
             if (!this.selectedScene) return;
             const canvas = sceneToPreviewRendering.get(this.selectedScene).canvas;
             this.selectedScene.position.z -= 1;
-            canvas.style.setProperty("z-index", this.selectedScene.position.z.toString());
+            refreshSceneStyle(this.selectedScene, canvas);
         });
 
         setActionHandler("map/selected/edit", () => {
@@ -186,6 +186,14 @@ function trackGesture(event) {
     return emitter;
 }
 
+/**
+ * @param {FlicksyDataScene} scene
+ * @param {HTMLCanvasElement} canvas 
+ */
+function refreshSceneStyle(scene, canvas) {
+    canvas.style.setProperty("z-index", scene.position.z.toString());
+}
+
 /** @type {Map<FlicksyDataScene, CanvasRenderingContext2D>} */
 const sceneToPreviewRendering = new Map();
 
@@ -200,8 +208,7 @@ async function initSceneInEditor(mapEditor, scene) {
     rendering.canvas.classList.toggle("object", true);
     mapEditor.scene.container.appendChild(rendering.canvas);
     const object = new DragObjectTest(mapEditor.scene, rendering.canvas);
-
-    rendering.canvas.style.setProperty("z-index", scene.position.z.toString());
+    refreshSceneStyle(scene, rendering.canvas);
 
     object.transform.e = scene.position.x;
     object.transform.f = scene.position.y;

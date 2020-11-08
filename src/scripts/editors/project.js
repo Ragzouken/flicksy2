@@ -51,10 +51,9 @@ class ProjectTabEditor {
             
             const clone = /** @type {HTMLElement} */ (document.documentElement.cloneNode(true));
             ALL("[data-empty]", clone).forEach(removeAllChildren);
-            ONE("#sidebar", clone).hidden = true;
+            ALL("[data-editor-only]", clone).forEach((element) => element.remove());
             ONE("body", clone).setAttribute("data-play", "true");
             ONE("title", clone).innerHTML = this.flicksyEditor.projectData.details.name;
-            ALL("[data-editor-only]", clone).forEach((element) => element.remove());
             
             return clone.outerHTML;
         }

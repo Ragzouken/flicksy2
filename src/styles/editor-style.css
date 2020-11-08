@@ -158,6 +158,9 @@ textarea {
 }
 .button-row > * {
     flex: 1;
+}
+
+button {
     white-space: nowrap;
 }
 

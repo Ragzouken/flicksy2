@@ -109,6 +109,10 @@ button:active {
     filter: invert();
 }
 
+.palette-grid button.active {
+    filter: none;
+}
+
 button.active[data-toggle] {
     pointer-events: none;
     color: var(--emphasis-color-a);

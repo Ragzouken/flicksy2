@@ -417,6 +417,8 @@ async function initDrawingInEditor(drawingsEditor, drawing) {
     }
     
     function refreshCursors(event) {
+        if (drawingsEditor.scene.hidden) return;
+
         const tool = toggleStates.get("drawings/tool");
         
         const drawable = tool !== "move";
@@ -457,42 +459,44 @@ async function initDrawingInEditor(drawingsEditor, drawing) {
         }
     }
 
-    function pointerdownDraw(event) {
-        killEvent(event);
+    function startDraw(event) {
         const [x, y] = mouseEventToPixel(event);
 
-        plot = makePlot();
+        draw = true;
+        const plot = makePlot();
         plot(x|0, y|0);
-        draw = [x, y];
+        let prev = [x, y];
+
+        const drag = trackGesture(event);
+        drag.on("pointermove", (event) => {
+            const [x1, y1] = mouseEventToPixel(event);
+            const [x0, y0] = prev;
+    
+            lineplot(x0, y0, x1, y1, makePlot());
+            prev = [x1, y1];
+        });
+        drag.on("pointerup", (event) => draw = false);
     }
 
-    function pointermoveDraw(event) {
-        killEvent(event);
-        const [x1, y1] = mouseEventToPixel(event);
-        const [x0, y0] = draw;
+    function startLine(event) {
+        line = mouseEventToPixel(event);
 
-        lineplot(x0, y0, x1, y1, makePlot());
-        draw = [x1, y1];
+        const drag = trackGesture(event);
+        drag.on("pointerup", (event) => {
+            const [x0, y0] = line;
+            const [x1, y1] = mouseEventToPixel(event);
+            lineplot(x0, y0, x1, y1, makePlot());
+            line = undefined;
+        });
     }
 
-    function pointerdownFill(event) {
+    function doFill(event) {
         killEvent(event);
         const [x, y] = mouseEventToPixel(event);
         floodfill(rendering, x|0, y|0, isErasing() ? 0 : hexToUint32(getColor()));
     }
 
-    function pointerdownLine(event) {
-        killEvent(event);
-        line = mouseEventToPixel(event);
-    }
-
-    function pointerupLine(event) {
-        const [x0, y0] = line;
-        const [x1, y1] = mouseEventToPixel(event);
-        lineplot(x0, y0, x1, y1, makePlot());
-    }
-
-    function pointerdownPick(event) {
+    function doPick(event) {
         killEvent(event);
         const [x, y] = mouseEventToPixel(event);
         const [r, g, b, a] = rendering.getImageData(x, y, 1, 1).data;
@@ -507,28 +511,26 @@ async function initDrawingInEditor(drawingsEditor, drawing) {
         editor.drawingsTabEditor.setSelectedColorIndex(index);
     }
 
-    function pointerdownDrag(event) {
-        killEvent(event);
+    function startMove(event) {
         // determine and save the relationship between mouse and element
         // G = M1^ . E (element relative to mouse)
         const mouse = drawingsEditor.scene.mouseEventToSceneTransform(event);
         grab = mouse.invertSelf().multiplySelf(translationMatrix(drawing.position));
-    }
 
-    function pointermoveDrag(event) {
-        if (!grab) return;
-        killEvent(event);
+        const drag = trackGesture(event);
+        drag.on("pointermove", (event) => {
+            // preserve the relationship between mouse and element
+            // D2 = M2 . G (drawing relative to scene)
+            const mouse = drawingsEditor.scene.mouseEventToSceneTransform(event);
+            const transform = mouse.multiply(grab);
+            snap(transform);
 
-        // preserve the relationship between mouse and element
-        // D2 = M2 . G (drawing relative to scene)
-        const mouse = drawingsEditor.scene.mouseEventToSceneTransform(event);
-        const transform = mouse.multiply(grab);
-        snap(transform);
-
-        const { x, y } = getMatrixTranslation(transform);
-        drawing.position.x = x;
-        drawing.position.y = y;
-        refreshDrawingStyle(drawing, rendering.canvas);
+            const { x, y } = getMatrixTranslation(transform);
+            drawing.position.x = x;
+            drawing.position.y = y;
+            refreshDrawingStyle(drawing, rendering.canvas);
+        });
+        drag.on("pointerup", (event) => grab = undefined);
     }
 
     rendering.canvas.addEventListener("dblclick", (event) => {
@@ -536,8 +538,9 @@ async function initDrawingInEditor(drawingsEditor, drawing) {
     })
 
     rendering.canvas.addEventListener("pointerdown", (event) => {
+        killEvent(event);
+
         if (drawingsEditor.isPicking) {
-            killEvent(event);
             drawingsEditor.pickDrawing(drawing);
             return;
         }
@@ -546,11 +549,11 @@ async function initDrawingInEditor(drawingsEditor, drawing) {
 
         const tool = toggleStates.get("drawings/tool");
 
-        if (tool === "move") pointerdownDrag(event);
-        if (tool === "free") pointerdownDraw(event);
-        if (tool === "fill") pointerdownFill(event);
-        if (tool === "line") pointerdownLine(event);
-        if (tool === "pick") pointerdownPick(event);
+        if (tool === "move") startMove(event);
+        if (tool === "free") startDraw(event);
+        if (tool === "line") startLine(event);
+        if (tool === "fill") doFill(event);
+        if (tool === "pick") doPick(event);
         
         refreshCursors(event);
     });
@@ -571,26 +574,7 @@ async function initDrawingInEditor(drawingsEditor, drawing) {
         refreshCursors(event);
     });
 
-    document.addEventListener("pointermove", (event) => {
-        if (grab) pointermoveDrag(event);
-        if (draw) pointermoveDraw(event);
-
-        refreshCursors(event);
-    });
-    
-    document.addEventListener("pointerup", (event) => {
-        if (editor.drawingsTabEditor.scene.hidden) return;
-
-        killEvent(event);
-
-        if (line) pointerupLine(event);
-
-        draw = undefined;
-        grab = undefined;
-        line = undefined;
-        
-        refreshCursors(event);
-    });
+    document.addEventListener("pointermove", refreshCursors);
 }
 
 function setPaletteColors(colors) {

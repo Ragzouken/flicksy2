@@ -111,7 +111,7 @@ class MapTabEditor {
         const rects = pairs.map(([scene, rendering]) => {
             const { x, y } = scene.position;
             const { width, height } = rendering.canvas;
-            return new DOMRect(x, y, width/2, height/2);
+            return new DOMRect(x, y, width, height);
         });
         const bounds = boundRects(rects, new DOMRect(0, 0, 160, 100));
         padRect(bounds, 8);
@@ -192,6 +192,7 @@ function trackGesture(event) {
  */
 function refreshSceneStyle(scene, canvas) {
     canvas.style.setProperty("z-index", scene.position.z.toString());
+    canvas.style.setProperty("transform", translationMatrix(scene.position).toString());
 }
 
 /** @type {Map<FlicksyDataScene, CanvasRenderingContext2D>} */
@@ -207,13 +208,7 @@ async function initSceneInEditor(mapEditor, scene) {
 
     rendering.canvas.classList.toggle("object", true);
     mapEditor.scene.container.appendChild(rendering.canvas);
-    const object = new DragObjectTest(mapEditor.scene, rendering.canvas);
     refreshSceneStyle(scene, rendering.canvas);
-
-    object.transform.e = scene.position.x;
-    object.transform.f = scene.position.y;
-    object.transform.scaleSelf(.5);
-    object.refresh();
 
     function refreshCursors(event) {
         const cursor = mapEditor.grabbing ? "grabbing"
@@ -222,7 +217,7 @@ async function initSceneInEditor(mapEditor, scene) {
         rendering.canvas.style.setProperty("cursor", cursor);
     }
 
-    object.element.addEventListener("dblclick", (event) => {
+    rendering.canvas.addEventListener("dblclick", (event) => {
         killEvent(event);
         editor.sceneTabEditor.setActiveScene(editor.projectData, scene);
         switchTab("sidebar/scene");
@@ -235,24 +230,25 @@ async function initSceneInEditor(mapEditor, scene) {
         // determine and save the relationship between mouse and element
         // G = M1^ . E (element relative to mouse)
         const mouse = mapEditor.scene.mouseEventToSceneTransform(event);
-        const grab = mouse.invertSelf().multiplySelf(object.transform);
+        const grab = mouse.invertSelf().multiplySelf(translationMatrix(scene.position));
 
         const drag = trackGesture(event);
         drag.on("pointermove", (event) => {
             // preserve the relationship between mouse and element
             // D2 = M2 . G (drawing relative to scene)
             const mouse = mapEditor.scene.mouseEventToSceneTransform(event);
-            object.transform = mouse.multiply(grab);
-            snap(object.transform);
-            object.refresh();
+            const transform = mouse.multiply(grab);
+            snap(transform);
 
-            scene.position.x = object.transform.e;
-            scene.position.y = object.transform.f;
+            const { x, y } = getMatrixTranslation(transform);
+            scene.position.x = x;
+            scene.position.y = y;
+            refreshSceneStyle(scene, rendering.canvas);
         });
         drag.on("pointerup", (event) => mapEditor.grabbing = false);
     }
 
-    object.element.addEventListener("pointerdown", (event) => {
+    rendering.canvas.addEventListener("pointerdown", (event) => {
         killEvent(event);
         if (mapEditor.mode === "pick") mapEditor.pickScene(scene);
         else startDrag(event);

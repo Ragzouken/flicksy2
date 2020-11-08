@@ -89,14 +89,14 @@ class DrawingsTabEditor {
             if (!this.selectedDrawing) return;
             const canvas = this.selectedRendering.canvas;
             this.selectedDrawing.position.z += 1;
-            canvas.style.setProperty("z-index", this.selectedDrawing.position.z.toString());
+            refreshDrawingStyle(this.selectedDrawing, canvas);
         });
 
         setActionHandler("drawings/select/lower", () => {
             if (!this.selectedDrawing) return;
             const canvas = this.selectedRendering.canvas;
             this.selectedDrawing.position.z -= 1;
-            canvas.style.setProperty("z-index", this.selectedDrawing.position.z.toString());
+            refreshDrawingStyle(this.selectedDrawing, canvas);
         });
 
         setActionHandler("drawings/select/duplicate", async () => {
@@ -357,6 +357,15 @@ class DrawingsTabEditor {
 }
 
 /**
+ * @param {FlicksyDataDrawing} drawing 
+ * @param {HTMLCanvasElement} canvas 
+ */
+function refreshDrawingStyle(drawing, canvas) {
+    canvas.style.setProperty("z-index", drawing.position.z.toString());
+    canvas.style.setProperty("transform", translationMatrix(drawing.position).toString());
+}
+
+/**
  * @param {DOMMatrix} transform 
  */
 function snap(transform) {
@@ -373,13 +382,7 @@ async function initDrawingInEditor(drawingsEditor, drawing) {
 
     rendering.canvas.classList.toggle("object", true);
     editor.drawingsTabEditor.scene.container.appendChild(rendering.canvas);
-    const object = new DragObjectTest(editor.drawingsTabEditor.scene, rendering.canvas);
-
-    rendering.canvas.style.setProperty("z-index", drawing.position.z.toString());
-
-    object.transform.e = drawing.position.x;
-    object.transform.f = drawing.position.y;
-    object.refresh();
+    refreshDrawingStyle(drawing, rendering.canvas);
 
     let grab = undefined;
     let draw = undefined;
@@ -390,7 +393,7 @@ async function initDrawingInEditor(drawingsEditor, drawing) {
 
     function mouseEventToPixel(event) {
         const mouse = drawingsEditor.scene.mouseEventToSceneTransform(event);
-        const pixel = object.transform.inverse().multiply(mouse);
+        const pixel = translationMatrix(drawing.position).inverse().multiply(mouse);
         return [pixel.e, pixel.f];
     }
 
@@ -435,7 +438,7 @@ async function initDrawingInEditor(drawingsEditor, drawing) {
         if ((hovered && !picking) || drawing) {
             if (drawable) {
                 cursor.canvas.hidden = false;
-                cursor.canvas.style.setProperty("transform", object.element.style.getPropertyValue("transform"));
+                cursor.canvas.style.setProperty("transform", rendering.canvas.style.getPropertyValue("transform"));
                 cursor.canvas.width = rendering.canvas.width;
                 cursor.canvas.height = rendering.canvas.height;
 
@@ -509,7 +512,7 @@ async function initDrawingInEditor(drawingsEditor, drawing) {
         // determine and save the relationship between mouse and element
         // G = M1^ . E (element relative to mouse)
         const mouse = drawingsEditor.scene.mouseEventToSceneTransform(event);
-        grab = mouse.invertSelf().multiplySelf(object.transform);
+        grab = mouse.invertSelf().multiplySelf(translationMatrix(drawing.position));
     }
 
     function pointermoveDrag(event) {
@@ -519,19 +522,20 @@ async function initDrawingInEditor(drawingsEditor, drawing) {
         // preserve the relationship between mouse and element
         // D2 = M2 . G (drawing relative to scene)
         const mouse = drawingsEditor.scene.mouseEventToSceneTransform(event);
-        object.transform = mouse.multiply(grab);
-        snap(object.transform);
-        object.refresh();
+        const transform = mouse.multiply(grab);
+        snap(transform);
 
-        drawing.position.x = object.transform.e;
-        drawing.position.y = object.transform.f;
+        const { x, y } = getMatrixTranslation(transform);
+        drawing.position.x = x;
+        drawing.position.y = y;
+        refreshDrawingStyle(drawing, rendering.canvas);
     }
 
-    object.element.addEventListener("dblclick", (event) => {
+    rendering.canvas.addEventListener("dblclick", (event) => {
         drawingsEditor.reframe(drawing);
     })
 
-    object.element.addEventListener("pointerdown", (event) => {
+    rendering.canvas.addEventListener("pointerdown", (event) => {
         if (drawingsEditor.isPicking) {
             killEvent(event);
             drawingsEditor.pickDrawing(drawing);
@@ -551,13 +555,13 @@ async function initDrawingInEditor(drawingsEditor, drawing) {
         refreshCursors(event);
     });
 
-    object.element.addEventListener("pointerenter", (event) => {
+    rendering.canvas.addEventListener("pointerenter", (event) => {
         killEvent(event);
         hovered = true;
         refreshCursors(event);
     });
 
-    object.element.addEventListener("pointerout", (event) => {
+    rendering.canvas.addEventListener("pointerout", (event) => {
         killEvent(event);
         // TODO: track single hovered thing
         if (hovered) {
@@ -587,22 +591,6 @@ async function initDrawingInEditor(drawingsEditor, drawing) {
         
         refreshCursors(event);
     });
-}
-
-class DragObjectTest {
-    /**
-     * @param {PanningScene} scene
-     * @param {HTMLElement} element 
-     */
-    constructor(scene, element) {
-        this.scene = scene;
-        this.element = element;
-        this.transform = new DOMMatrix();
-    }
-
-    refresh() {
-        this.element.style.setProperty("transform", this.transform.toString());
-    }
 }
 
 function setPaletteColors(colors) {

@@ -117,7 +117,7 @@ class PanningScene {
         });
         
         this.viewport.addEventListener('wheel', (event) => {
-            if (this.hidden) return;
+            if (this.hidden || this.locked) return;
             const mouse = this.mouseEventToViewportTransform(event);
             const origin = (this.transform.inverse().multiply(mouse)).transformPoint();
 

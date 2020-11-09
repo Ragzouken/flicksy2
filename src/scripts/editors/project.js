@@ -45,16 +45,7 @@ class ProjectTabEditor {
 
         const projectToHTML = async () => {
             await this.flicksyEditor.prepareSave();
-            const json = JSON.stringify(this.flicksyEditor.projectData);
-            const dataElement = ONE("#project-data");
-            dataElement.innerHTML = json;
-            
-            const clone = /** @type {HTMLElement} */ (document.documentElement.cloneNode(true));
-            ALL("[data-empty]", clone).forEach(removeAllChildren);
-            ALL("[data-editor-only]", clone).forEach((element) => element.remove());
-            ONE("body", clone).setAttribute("data-play", "true");
-            ONE("title", clone).innerHTML = this.flicksyEditor.projectData.details.name;
-            
+            const clone = createStandalonePlayer(this.flicksyEditor.projectData);
             return clone.outerHTML;
         }
 
@@ -68,38 +59,10 @@ class ProjectTabEditor {
             const openButton = elementByPath("project/publish/neocities/open", "button");
             openButton.disabled = true;
 
-            const ready = new Promise((resolve, reject) => {
-                const remove = listen(window, "message", (event) => {
-                    if (event.origin !== "https://kool.tools") return;
-                    remove();
-                    resolve();
-                });
-            });
-
-            const success = new Promise((resolve, reject) => {
-                const remove = listen(window, "message", (event) => {
-                    if (event.origin !== "https://kool.tools") return;
-
-                    if (event.data.error) {
-                        remove();
-                        reject(event.data.error);
-                    } else if (event.data.url) {
-                        remove();
-                        resolve(event.data.url);
-                    }
-                });
-            });
-
-            const popup = window.open(
-                "https://kool.tools/neocities-publisher/index.html", 
-                "neocities publisher",
-                "left=10,top=10,width=320,height=320");
             const name = this.flicksyEditor.projectData.details.name;
             const html = await projectToHTML();
-            await ready;
-            popup.postMessage({ name, html }, "https://kool.tools");
-            const url = await success;
-            popup.close();
+            const url = await runNeocitiesPublish({ name, html });
+            
             openButton.disabled = false;
             setActionHandler("project/publish/neocities/open", () => window.open(url));
         });
@@ -116,4 +79,15 @@ class ProjectTabEditor {
     hide() {
         this.scene.hidden = true;
     }
+}
+
+/** @param {FlicksyDataProject} projectData */
+function createStandalonePlayer(projectData) {
+    const clone = /** @type {HTMLElement} */ (document.documentElement.cloneNode(true));
+    ALL("[data-empty]", clone).forEach(removeAllChildren);
+    ALL("[data-editor-only]", clone).forEach((element) => element.remove());
+    ONE("body", clone).setAttribute("data-play", "true");
+    ONE("title", clone).innerHTML = projectData.details.name;
+    ONE("#project-data", clone).innerHTML = JSON.stringify(projectData);
+    return clone;
 }

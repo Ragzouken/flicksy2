@@ -1,6 +1,6 @@
 .sidebar-panel(data-tab-body="sidebar/scene")
-    .section
-        h2 scene tab
+    details.section
+        summary scene tab
         h3 getting started
         ol
             li create an object using the <em>pick drawing</em> button in the <em>scene</em> section below
@@ -52,8 +52,8 @@
                 .button-row
                     input(type="text" data-path="scene/selected/destination" disabled)
                     button(data-action="scene/selected/pick-destination") change
-            .section
-                h2 simple behaviour
+            details.section
+                summary behaviour help
                 h3 clicking on an object
                 ol
                     li text is presented in a series of dialogue boxes
@@ -74,8 +74,8 @@
                     button(data-action="scene/selected/script/reference/drawing") drawing
                     button(data-action="scene/selected/script/reference/scene") scene
                     button(data-action="scene/selected/script/reference/object") object
-            .section
-                h2 scripting
+            details.section
+                summary scripting help
                 h3 intro
                 p in flicksy2 you can script objects using javascript. it's easiest to use the provided commands but you can do anything
                 h3 values

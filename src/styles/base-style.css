@@ -23,7 +23,7 @@
 button { font-family: inherit; font-size: inherit; }
 
 /* clickable things should use this cursor imo */
-button, a { cursor: pointer; }
+button, a, summary { cursor: pointer; }
 /* but disabled buttons aren't clickable */
 button[disabled] { cursor: not-allowed; }
 

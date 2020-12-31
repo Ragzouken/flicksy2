@@ -105,7 +105,7 @@ button:active {
     filter: invert();
 }
 
-#menu-buttons button.active, .section button.active {
+button.active {
     filter: invert();
 }
 
@@ -115,8 +115,6 @@ button:active {
 
 button.active[data-toggle] {
     pointer-events: none;
-    color: var(--emphasis-color-a);
-    background: var(--background-color-b);
 }
 
 button.delete {

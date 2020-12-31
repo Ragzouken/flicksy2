@@ -148,12 +148,14 @@ class DrawingsTabEditor {
             }
 
             const importedDrawings = await Promise.all(files.map(drawingFromFile));
-            this.flicksyEditor.projectData.drawings.push(...importedDrawings);
             importedDrawings.forEach((drawing, i) => {
                 drawing.position.x = i * 8;
                 drawing.position.y = i * 8;
             });
-            await Promise.all(importedDrawings.map((drawing) => initDrawingInEditor(this, drawing)));
+            await Promise.all(importedDrawings.map(async (drawing) => {
+                await this.projectManager.insertDrawing(drawing);
+                await initDrawingInEditor(this, drawing);
+            }));
 
             const palette = this.flicksyEditor.projectData.details.palette.slice(1);
 

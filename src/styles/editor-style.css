@@ -207,6 +207,12 @@ a {
     color: var(--emphasis-color-a);
 }
 
+details.section > summary {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: var(--emphasis-color-a);
+}
+
 .section h3 {
     color: var(--emphasis-color-b);
 }

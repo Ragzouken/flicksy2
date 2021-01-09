@@ -123,6 +123,7 @@ class DrawingsTabEditor {
 
         setActionHandler("drawings/select/delete", () => {
             const drawing = this.selectedDrawing;
+            this.selectedRendering.canvas.remove();
             this.setSelectedDrawing(undefined);
             this.projectManager.removeDrawing(drawing);
         });

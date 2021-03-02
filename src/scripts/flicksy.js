@@ -44,6 +44,7 @@
  * @property {string} id
  * @property {string} name
  * @property {string[]} palette
+ * @property {boolean} doubleResolution
  */
 
 /**
@@ -66,6 +67,7 @@ const EMPTY_PROJECT_DATA = {
     details: {
         id: "EMPTY.PROJECT",
         name: "empty project",
+        doubleResolution: false,
         palette: [
             "#00000000",
             "#FFFF00",

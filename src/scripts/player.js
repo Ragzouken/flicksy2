@@ -40,6 +40,13 @@ class FlicksyPlayer {
     }
 
     render() {
+        const double = this.projectManager.projectData.details.doubleResolution;
+
+        if (double) {
+            this.sceneRendering.canvas.width = 320;
+            this.sceneRendering.canvas.height = 200;
+        }
+
         // clear to black, then render objects in depth order
         fillRendering2D(this.sceneRendering, 'black');
         const scene = getSceneById(this.projectManager.projectData, this.projectManager.projectData.state.scene);
@@ -51,7 +58,11 @@ class FlicksyPlayer {
             const rendering = this.projectManager.drawingIdToRendering.get(cursorId);
             const { x, y } = this.mouse;
             const { x: px, y: py } = drawing.pivot;
-            this.sceneRendering.drawImage(rendering.canvas, x/2-px, y/2-py);
+
+            const factor = double ? 1 : .5;
+            const [dx, dy] = [Math.floor(x * factor - px), Math.floor(y * factor - py)];
+
+            this.sceneRendering.drawImage(rendering.canvas, dx, dy);
         }
 
         // copy scene to view at 2x scale
@@ -100,7 +111,10 @@ class FlicksyPlayer {
      * @param {number} y 
      */
     pointcast(x, y) {
-        x /= 2; y /= 2;
+        const double = this.projectManager.projectData.details.doubleResolution;
+        const factor = double ? 1 : .5;
+
+        x *= factor; y *= factor;
         const scene = getSceneById(this.projectManager.projectData, this.projectManager.projectData.state.scene);
         return pointcastScene(this.projectManager, scene, { x, y }, true);
     }
@@ -304,7 +318,11 @@ class DialoguePlayer {
  * @param {number} scale
  */
 function renderScene(projectManager, scene, scale = 2) {
-    const sceneRendering = createRendering2D(160 * scale, 100 * scale);
+    const double = projectManager.projectData.details.doubleResolution;
+    const width = double ? 320 : 160;
+    const height = double ? 200 : 100;
+
+    const sceneRendering = createRendering2D(width * scale, height * scale);
     fillRendering2D(sceneRendering, 'black');
     const objects = scene.objects.slice().sort((a, b) => a.position.z - b.position.z);
     objects.forEach((object) => {

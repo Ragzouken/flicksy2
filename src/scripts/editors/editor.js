@@ -20,6 +20,7 @@ class FlicksyEditor {
     async start() {
         initui();
 
+        this.contentElement = document.getElementById("content");
         this.sidebarTabs = document.getElementById("menu-buttons");
         this.pickerTab = new PickerTab(this);
         this.projectTabEditor = new ProjectTabEditor(this);

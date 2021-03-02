@@ -20,6 +20,10 @@ body {
     outline: 1px dotted rgb(255 255 255 / 5%);
 }
 
+.double-resolution .scene {
+    width: 320px; height: 200px;
+}
+
 #play-scene > canvas {
     cursor: none;
     width: 320px; height: 200px;

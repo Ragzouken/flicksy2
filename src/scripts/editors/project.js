@@ -4,6 +4,16 @@ class ProjectTabEditor {
         this.flicksyEditor = flicksyEditor;
         this.scene = ONE("#manual");
 
+        this.doubleResolutionButton = elementByPath("project/double-resolution", "button");
+        setActionHandler("project/toggle-double-resolution", () => {
+            const details = this.flicksyEditor.projectData.details;
+            details.doubleResolution = !details.doubleResolution;
+            this.doubleResolutionButton.classList.toggle("active", details.doubleResolution);
+            document.getElementById("content").classList.toggle("double-resolution", details.doubleResolution);
+
+            invokeAction("map/regenerate-previews");
+        });
+
         this.projectNameInput = elementByPath("project/name", "input");
         this.projectNameInput.addEventListener("input", () => {
             this.flicksyEditor.projectData.details.name = this.projectNameInput.value;
@@ -69,7 +79,12 @@ class ProjectTabEditor {
     }
 
     refresh() {
-        this.projectNameInput.value = this.flicksyEditor.projectData.details.name;
+        const details = this.flicksyEditor.projectData.details;
+        this.projectNameInput.value = details.name;
+
+        const double = !!details.doubleResolution;
+        this.doubleResolutionButton.classList.toggle("active", double);
+        document.getElementById("content").classList.toggle("double-resolution", double);
     }
 
     show() {

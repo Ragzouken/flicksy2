@@ -274,7 +274,10 @@ class SceneTabEditor {
     }
 
     reframe() {
-        this.scene.frameRect(padRect(new DOMRect(0, 0, 160, 100), 8));
+        const double = !!this.flicksyEditor.projectData.details.doubleResolution;
+        const scale = double ? 2 : 1;
+
+        this.scene.frameRect(padRect(new DOMRect(0, 0, 160 * scale, 100 * scale), 8));
     }
 
     refreshDrawings() {

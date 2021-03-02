@@ -264,13 +264,13 @@ async function initSceneInEditor(mapEditor, scene) {
 /** 
  * @param {FlicksyProjectManager} projectManager
  * @param {FlicksyDataScene} scene
- * @param {number} scale
  */
-function renderScenePreview(projectManager, scene, scale = 2) {
-    const sceneRendering = renderScene(projectManager, scene, scale);
+function renderScenePreview(projectManager, scene) {
+    const double = !!projectManager.projectData.details.doubleResolution;
+    const sceneRendering = renderScene(projectManager, scene, double ? 1 : 2);
 
     const font = editor.playTab.player.dialoguePlayer.font;
-    const page = scriptToPages(scene.name, { font, lineCount: 1, lineWidth: 160*scale-4 })[0];
+    const page = scriptToPages(scene.name, { font, lineCount: 1, lineWidth: 160*2-4 })[0];
     page.forEach((glyph) => glyph.hidden = false);
     const render = renderPage(page, 160, 20, 2, 2);
     sceneRendering.fillRect(0, 0, 4+8*scene.name.length, 4+13);

@@ -10,6 +10,8 @@ class ProjectTabEditor {
             details.doubleResolution = !details.doubleResolution;
             this.doubleResolutionButton.classList.toggle("active", details.doubleResolution);
             document.getElementById("content").classList.toggle("double-resolution", details.doubleResolution);
+
+            invokeAction("map/regenerate-previews");
         });
 
         this.projectNameInput = elementByPath("project/name", "input");

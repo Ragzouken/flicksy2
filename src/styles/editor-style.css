@@ -316,3 +316,14 @@ span.code {
     border-radius: 1.5em;
     padding: 1.5em;
 }
+
+.pivot-indicator {
+    position: absolute;
+    pointer-events: none;
+    opacity: 25%;
+}
+
+.pivot-indicator line {
+    stroke: red;
+    stroke-width: .5px;
+}

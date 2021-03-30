@@ -31,7 +31,7 @@ const ALL = (query, element = undefined) => Array.from((element || document).que
 const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor
 
 /**
- * @param {HTMLElement} element 
+ * @param {Element} element 
  */
 function removeAllChildren(element) {
     while (element.children.length) 
@@ -82,6 +82,20 @@ function imageToRendering2D(image) {
 function html(tagName, attributes = {}, ...children) {
     const element = /** @type {HTMLElementTagNameMap[K]} */ (document.createElement(tagName)); 
     Object.entries(attributes).forEach(([name, value]) => element.setAttribute(name, value));
+    children.forEach((child) => element.append(child));
+    return element;
+}
+
+/**
+ * @template {keyof SVGElementTagNameMap} K
+ * @param {K} tagName 
+ * @param {*} attributes 
+ * @param  {...SVGElement} children 
+ * @returns {SVGElementTagNameMap[K]}
+ */
+ function svg(tagName, attributes = {}, ...children) {
+    const element = document.createElementNS("http://www.w3.org/2000/svg", tagName);
+    Object.entries(attributes).forEach(([name, value]) => element.setAttributeNS(null, name, value));
     children.forEach((child) => element.append(child));
     return element;
 }

@@ -27,6 +27,7 @@ class DrawingsTabEditor {
 
         this.pivotXInput = elementByPath("drawings/select/pivot/x", "input");
         this.pivotYInput = elementByPath("drawings/select/pivot/y", "input");
+        this.pivotIndicator = svg("svg", { class: "pivot-indicator" });
 
         this.scene = new PanningScene(ONE("#drawings-scene"));
         this.scene.transform.translateSelf(100, 50);
@@ -73,8 +74,11 @@ class DrawingsTabEditor {
             const cursor = editor.projectData.state.cursor;
             const cursorDrawing = getDrawingById(this.flicksyEditor.projectData, cursor);
             if (!cursorDrawing) return;
+
             cursorDrawing.pivot.x = parseInt(this.cursorPivotXInput.value, 10);
             cursorDrawing.pivot.y = parseInt(this.cursorPivotYInput.value, 10);
+
+            this.refreshCursor();
         }
         this.cursorPivotXInput.addEventListener("input", refreshCursorPivot);
         this.cursorPivotYInput.addEventListener("input", refreshCursorPivot);
@@ -343,9 +347,26 @@ class DrawingsTabEditor {
         const cursorDrawing = getDrawingById(this.flicksyEditor.projectData, cursor);
         this.cursorDrawingLabel.value = cursorDrawing ? cursorDrawing.name : "[system]";
         
+        this.pivotIndicator.remove();
         if (cursorDrawing) {
             this.cursorPivotXInput.value = cursorDrawing.pivot.x.toString();
             this.cursorPivotYInput.value = cursorDrawing.pivot.y.toString();
+
+            const rendering = this.projectManager.drawingIdToRendering.get(cursor);
+            const { width, height } = rendering.canvas;
+
+            removeAllChildren(this.pivotIndicator);
+            this.pivotIndicator.setAttribute("width", `${width}px`);
+            this.pivotIndicator.setAttribute("height", `${height}px`);
+
+            let { x, y } = cursorDrawing.pivot;
+            x += .5;
+            y += .5;
+
+            this.pivotIndicator.appendChild(svg("line", { x1: 0, x2: width, y1: y, y2: y }));
+            this.pivotIndicator.appendChild(svg("line", { y1: 0, y2: height, x1: x, x2: x }));
+            this.scene.container.appendChild(this.pivotIndicator);
+            refreshDrawingStyle(cursorDrawing, this.pivotIndicator);
         }
     }
 
@@ -532,6 +553,8 @@ async function initDrawingInEditor(drawingsEditor, drawing) {
             drawing.position.x = x;
             drawing.position.y = y;
             refreshDrawingStyle(drawing, rendering.canvas);
+
+            drawingsEditor.refreshCursor();
         });
         drag.on("pointerup", (event) => grab = undefined);
     }

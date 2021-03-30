@@ -8,7 +8,7 @@ class FlicksyPlayer {
         this.font = font;
 
         // view is twice scene resolution, for text rendering
-        this.viewRendering = createRendering2D(160*2, 100*2);
+        this.viewRendering = createRendering2D(160*4, 100*4);
         this.sceneRendering = createRendering2D(160, 100);
 
         this.projectManager = new FlicksyProjectManager();
@@ -22,6 +22,8 @@ class FlicksyPlayer {
                 else return this.dialoguePlayer.events.wait("done").then(resolve, reject);
             },
         };
+
+        this.dialoguePlayer.queueScript("hello");
     }
 
     async load() {
@@ -41,6 +43,7 @@ class FlicksyPlayer {
 
     render() {
         const double = this.projectManager.projectData.details.doubleResolution;
+        const doubleDialogue = this.projectManager.projectData.details.doubleDialogue;
 
         if (double) {
             this.sceneRendering.canvas.width = 320;
@@ -59,23 +62,32 @@ class FlicksyPlayer {
             const { x, y } = this.mouse;
             const { x: px, y: py } = drawing.pivot;
 
-            const factor = double ? 1 : .5;
+            const factor = double ? .5 : .25;
             const [dx, dy] = [Math.floor(x * factor - px), Math.floor(y * factor - py)];
 
             this.sceneRendering.drawImage(rendering.canvas, dx, dy);
         }
 
-        // copy scene to view at 2x scale
-        this.viewRendering.drawImage(this.sceneRendering.canvas, 0, 0, 160*2, 100*2);
+        // copy scene to view at 4x scale
+        this.viewRendering.drawImage(this.sceneRendering.canvas, 0, 0, 160*4, 100*4);
 
         // render dialogue box if necessary
         if (this.dialoguePlayer.active) {
-            const { width, height } = this.dialoguePlayer.dialogueRendering.canvas;
-            const x = (160*2-width)/2;
-            const y = (100+(100-height)/2);
+            const h = 320 / 2 * 2;
+            const v = 200 / 2 * 2;
+
+            let { width, height } = this.dialoguePlayer.dialogueRendering.canvas;
+            
+            if (!doubleDialogue) {
+                width *= 2;
+                height *= 2;
+            }
+
+            const x = (h*2-width)/2;
+            const y = (v+(v-height)/2);
 
             this.dialoguePlayer.render();
-            this.viewRendering.drawImage(this.dialoguePlayer.dialogueRendering.canvas, x, y);
+            this.viewRendering.drawImage(this.dialoguePlayer.dialogueRendering.canvas, x, y, width, height);
         }
     }
 
@@ -319,8 +331,9 @@ class DialoguePlayer {
  */
 function renderScene(projectManager, scene, scale = 2) {
     const double = projectManager.projectData.details.doubleResolution;
-    const width = double ? 320 : 160;
-    const height = double ? 200 : 100;
+    const rescale = double ? 4 : 2;
+    const width = 160 * rescale;
+    const height = 100 * rescale;
 
     const sceneRendering = createRendering2D(width * scale, height * scale);
     fillRendering2D(sceneRendering, 'black');

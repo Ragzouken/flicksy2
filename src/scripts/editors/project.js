@@ -14,6 +14,14 @@ class ProjectTabEditor {
             invokeAction("map/regenerate-previews");
         });
 
+        this.doubleDialogueButton = elementByPath("project/double-dialogue", "button");
+        setActionHandler("project/toggle-double-dialogue", () => {
+            const details = this.flicksyEditor.projectData.details;
+            details.doubleDialogue = !details.doubleDialogue;
+            this.doubleDialogueButton.classList.toggle("active", details.doubleDialogue);
+            document.getElementById("content").classList.toggle("double-dialogue", details.doubleDialogue);
+        });
+
         this.projectNameInput = elementByPath("project/name", "input");
         this.projectNameInput.addEventListener("input", () => {
             this.flicksyEditor.projectData.details.name = this.projectNameInput.value;

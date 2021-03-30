@@ -26,6 +26,6 @@ body {
 
 #play-scene > canvas {
     cursor: none;
-    width: 320px; height: 200px;
+    width: 640px; height: 400px;
     outline: 1px solid #222222;
 }

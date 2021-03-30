@@ -12,8 +12,10 @@
         h3 name
         .button-row
             input(type="text" data-path="project/name")
-        h3 scene resolution
-        button(data-action="project/toggle-double-resolution" data-path="project/double-resolution") double
+        h3 double resolution
+        .button-row
+            button(data-action="project/toggle-double-resolution" data-path="project/double-resolution") scenes
+            button(data-action="project/toggle-double-dialogue" data-path="project/double-dialogue") dialogue
         h3 export
         .button-row
             button(data-action="project/export/data") project data

@@ -45,6 +45,7 @@
  * @property {string} name
  * @property {string[]} palette
  * @property {boolean} doubleResolution
+ * @property {boolean} doubleDialogue
  */
 
 /**

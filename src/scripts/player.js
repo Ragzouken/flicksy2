@@ -7,7 +7,7 @@ class FlicksyPlayer {
         this.events = new EventEmitter();
         this.font = font;
 
-        // view is twice scene resolution, for text rendering
+        // view is 4x scene resolution, for double-res text rendering
         this.viewRendering = createRendering2D(160*4, 100*4);
         this.sceneRendering = createRendering2D(160, 100);
 
@@ -22,8 +22,6 @@ class FlicksyPlayer {
                 else return this.dialoguePlayer.events.wait("done").then(resolve, reject);
             },
         };
-
-        this.dialoguePlayer.queueScript("hello");
     }
 
     async load() {
@@ -48,12 +46,16 @@ class FlicksyPlayer {
         if (double) {
             this.sceneRendering.canvas.width = 320;
             this.sceneRendering.canvas.height = 200;
+        } else {
+            this.sceneRendering.canvas.width = 160;
+            this.sceneRendering.canvas.height = 100;
         }
 
         // clear to black, then render objects in depth order
         fillRendering2D(this.sceneRendering, 'black');
         const scene = getSceneById(this.projectManager.projectData, this.projectManager.projectData.state.scene);
-        this.sceneRendering.drawImage(renderScene(this.projectManager, scene, 1).canvas, 0, 0);
+        const render = renderScene(this.projectManager, scene, 1);
+        this.sceneRendering.drawImage(render.canvas, 0, 0);
 
         const cursorId = this.projectManager.projectData.state.cursor;
         if (this.mouse && cursorId) {
@@ -68,8 +70,10 @@ class FlicksyPlayer {
             this.sceneRendering.drawImage(rendering.canvas, dx, dy);
         }
 
-        // copy scene to view at 4x scale
-        this.viewRendering.drawImage(this.sceneRendering.canvas, 0, 0, 160*4, 100*4);
+        const { width: viewWidth, height: viewHeight } = this.viewRendering.canvas;
+
+        // copy scene at view scale (typically 2x or 4x)
+        this.viewRendering.drawImage(this.sceneRendering.canvas, 0, 0, viewWidth, viewHeight);
 
         // render dialogue box if necessary
         if (this.dialoguePlayer.active) {
@@ -124,7 +128,7 @@ class FlicksyPlayer {
      */
     pointcast(x, y) {
         const double = this.projectManager.projectData.details.doubleResolution;
-        const factor = double ? 1 : .5;
+        const factor = double ? .5 : .25;
 
         x *= factor; y *= factor;
         const scene = getSceneById(this.projectManager.projectData, this.projectManager.projectData.state.scene);
@@ -331,7 +335,7 @@ class DialoguePlayer {
  */
 function renderScene(projectManager, scene, scale = 2) {
     const double = projectManager.projectData.details.doubleResolution;
-    const rescale = double ? 4 : 2;
+    const rescale = double ? 2 : 1;
     const width = 160 * rescale;
     const height = 100 * rescale;
 

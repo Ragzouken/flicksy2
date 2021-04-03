@@ -27,6 +27,7 @@ class SceneTabEditor {
         this.objectDialogueInput.addEventListener("input", () => {
             if (!this.selectedObject) return;
             this.selectedObject.behaviour.dialogue = this.objectDialogueInput.value;
+            this.refreshDialoguePreview();
         });
         this.objectDestinationInput = elementByPath("scene/selected/destination", "input");
         this.objectScriptInput = elementByPath("scene/selected/script", "textarea");
@@ -213,6 +214,14 @@ class SceneTabEditor {
             switchTab("sidebar/play");
             this.flicksyEditor.playTab.restart(this.activeScene.id);
         });
+
+        this.previewDialogue = false;
+        this.dialoguePreviewButton = elementByPath("scene/selected/dialogue/preview", "button");
+        setActionHandler("scene/selected/dialogue/toggle-preview", () => {
+            this.previewDialogue = !this.previewDialogue;
+            this.dialoguePreviewButton.classList.toggle("active", this.previewDialogue);
+            this.refreshDialoguePreview();
+        });
     }
 
     /** @param {FlicksyDataObject} object */
@@ -239,6 +248,8 @@ class SceneTabEditor {
 
             this.objectHiddenButton.classList.toggle("active", object.hidden === true);
         }
+
+        this.refreshDialoguePreview();
     }
 
     /** 
@@ -286,6 +297,30 @@ class SceneTabEditor {
             const rendering = this.flicksyEditor.projectManager.drawingIdToRendering.get(drawing.id);
             copyRendering2D(rendering, objectToRendering.get(object));
         });
+    }
+
+    refreshDialoguePreview() {
+        const player = this.flicksyEditor.playTab.player;
+        const canvas = player.dialoguePlayer.dialogueRendering.canvas;
+
+        if (this.previewDialogue && this.selectedObject && this.selectedObject.behaviour.dialogue.length > 0) {
+            player.projectManager.copyFromManager(this.flicksyEditor.projectManager);
+            player.dialoguePlayer.restart();
+            player.dialoguePlayer.queueScript(this.selectedObject.behaviour.dialogue);
+            this.scene.container.appendChild(canvas);
+            canvas.style.setProperty("z-index", "99999");
+            canvas.style.setProperty("position", "absolute");
+            canvas.onclick = (event) => {
+                player.dialoguePlayer.skip()
+                
+                if (!player.dialoguePlayer.active) {
+                    player.dialoguePlayer.restart();
+                    player.dialoguePlayer.queueScript(this.selectedObject.behaviour.dialogue);
+                }
+            };
+        } else {
+            canvas.remove();
+        }
     }
 
     /** @param {FlicksyDataObject} object */

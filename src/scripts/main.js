@@ -20,6 +20,7 @@ async function start() {
     }
 }
 
+/** @type {{ player: FlicksyPlayer, scene: PanningScene }} */
 let playerSetup;
 
 async function setup() {

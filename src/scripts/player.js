@@ -10,6 +10,7 @@ class FlicksyPlayer {
         // view is 4x scene resolution, for double-res text rendering
         this.viewRendering = createRendering2D(160*4, 100*4);
         this.sceneRendering = createRendering2D(160, 100);
+        this.viewRendering.canvas.classList.toggle("player-canvas", true);
 
         this.projectManager = new FlicksyProjectManager();
         this.dialoguePlayer = new DialoguePlayer(font);
@@ -52,10 +53,16 @@ class FlicksyPlayer {
         }
 
         // clear to black, then render objects in depth order
-        fillRendering2D(this.sceneRendering, 'black');
-        const scene = getSceneById(this.projectManager.projectData, this.projectManager.projectData.state.scene);
-        const render = renderScene(this.projectManager, scene, 1);
-        this.sceneRendering.drawImage(render.canvas, 0, 0);
+        const currentSceneId = this.projectManager.projectData.state.scene;
+
+        if (currentSceneId) {
+            fillRendering2D(this.sceneRendering, 'black');
+            const scene = getSceneById(this.projectManager.projectData, currentSceneId);
+            const render = renderScene(this.projectManager, scene, 1);
+            this.sceneRendering.drawImage(render.canvas, 0, 0);
+        } else {
+            fillRendering2D(this.sceneRendering);
+        }
 
         const cursorId = this.projectManager.projectData.state.cursor;
         if (this.mouse && cursorId) {

@@ -11,12 +11,20 @@ async function start() {
     if (play) {
         const player = playerSetup.player;
         player.events.on("log", console.log);
-        await player.load();
         await player.projectManager.loadProjectData(data);
         playerSetup.scene.hidden = false;
     } else {
         await editor.start();
         await editor.setProjectData(data);
+
+        let prev;
+        const timer = (next) => {
+            prev ||= Date.now();
+            editor.sceneTabEditor.previewPlayer.update((next - prev) / 1000.);
+            prev = next;
+            window.requestAnimationFrame(timer);
+        }
+        timer();
     }
 }
 
@@ -75,6 +83,8 @@ async function setup() {
             player.viewRendering.canvas.style.setProperty("cursor", clickable ? "pointer" : "default");
         }
     });
+
+    await player.load();
 
     return { scene, player };
 }

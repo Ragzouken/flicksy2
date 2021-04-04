@@ -58,7 +58,8 @@ class PlayTab {
 
     restart(startScene = undefined) {
         this.player.projectManager.copyFromManager(this.flicksyEditor.projectManager);
-        if (startScene) this.player.projectManager.projectData.state.scene = startScene;
+        this.player.dialoguePlayer.restart();
+        if (startScene) this.player.changeScene(startScene);
         this.player.log("[restarted]");
         this.player.render();
         this.refresh();

@@ -69,6 +69,7 @@ const EMPTY_PROJECT_DATA = {
         id: "EMPTY.PROJECT",
         name: "empty project",
         doubleResolution: false,
+        doubleDialogue: false,
         palette: [
             "#00000000",
             "#FFFF00",

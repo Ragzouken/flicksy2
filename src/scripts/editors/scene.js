@@ -15,6 +15,9 @@ class SceneTabEditor {
         this.scene = new PanningScene(ONE("#scene-scene"));
         this.scene.refresh();
 
+        this.previewPlayer = new FlicksyPlayer(this.flicksyEditor.playTab.player.font);
+        this.previewPlayer.load();
+
         this.sceneNameInput = elementByPath("scene/active/name", "input");
 
         this.objectNameInput = elementByPath("scene/selected/name", "input");
@@ -275,6 +278,10 @@ class SceneTabEditor {
     }
 
     hide() {
+        if (this.previewDialogue) {
+            invokeAction("scene/selected/dialogue/toggle-preview");
+        }
+
         if (!this.scene.hidden) {
             this.scene.hidden = true;
             copyRendering2D(
@@ -300,11 +307,12 @@ class SceneTabEditor {
     }
 
     refreshDialoguePreview() {
-        const player = this.flicksyEditor.playTab.player;
-        const canvas = player.dialoguePlayer.dialogueRendering.canvas;
+        const player = this.previewPlayer;
+        const canvas = player.viewRendering.canvas;
 
         if (this.previewDialogue && this.selectedObject && this.selectedObject.behaviour.dialogue.length > 0) {
             player.projectManager.copyFromManager(this.flicksyEditor.projectManager);
+            player.changeScene(undefined);
             player.dialoguePlayer.restart();
             player.dialoguePlayer.queueScript(this.selectedObject.behaviour.dialogue);
             this.scene.container.appendChild(canvas);

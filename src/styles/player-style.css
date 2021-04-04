@@ -24,7 +24,7 @@ body {
     width: 320px; height: 200px;
 }
 
-#play-scene > canvas {
+.player-canvas {
     cursor: none;
     width: 640px; height: 400px;
     outline: 1px solid #222222;

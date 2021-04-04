@@ -327,3 +327,9 @@ span.code {
     stroke: red;
     stroke-width: .5px;
 }
+
+#scene-scene > .player-canvas {
+    transform-origin: 0 0;
+    transform: scale(.5, .5);
+    cursor: pointer;
+}

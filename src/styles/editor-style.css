@@ -330,6 +330,12 @@ span.code {
 
 #scene-scene > .player-canvas {
     transform-origin: 0 0;
+    transform: scale(.25, .25);
+    cursor: pointer;
+}
+
+.double-resolution #scene-scene > .player-canvas {
+    transform-origin: 0 0;
     transform: scale(.5, .5);
     cursor: pointer;
 }

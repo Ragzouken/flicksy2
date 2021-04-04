@@ -93,8 +93,11 @@
                 h3 waiting
                 p #[span.code await DIALOGUE] wait until there is no dialogue on screen
                 p #[span.code await DELAY(.5)] wait for some number of seconds
-                h3 example
+                h3 examples
                 p the default behaviour of an object is as follows:
                 p.code await SAY("text from the dialogue editor")<br>TRAVEL("scene reference of destination scene")
+                h3 advanced
+                p you can do things conditionally depending on the value of variables, using javascript's if statements:
+                p.code if (GET("coins") == 3) {<br>&nbsp;&nbsp;SAY("three coins")<br>} else if (GET("coins") &gt; 3) {<br>&nbsp;&nbsp;SAY("so many coins..")<br>} else {<br>&nbsp;&nbsp;SAY("get more coins")<br>}
 
 

@@ -29,12 +29,49 @@ class FlicksyPlayer {
         await this.dialoguePlayer.load();
     }
 
+    /** @param {FlicksyDataProject} projectData */
+    async loadFromProjectData(projectData) {
+        this.initialProjectData = JSON.parse(JSON.stringify(projectData));
+        await this.projectManager.loadProjectData(projectData);
+    }
+
+    /** @param {FlicksyProjectManager} projectManager */
+    async loadFromProjectManager(projectManager) {
+        this.initialProjectData = JSON.parse(JSON.stringify(projectManager.projectData));
+        await this.projectManager.copyFromManager(projectManager);
+    }
+
+    async reset() {
+        await this.loadFromProjectData(this.initialProjectData);
+        this.dialoguePlayer.restart();
+        this.changeScene(this.projectManager.projectData.state.scene);
+        this.render();
+    }
+
+    async resetObject(objectId) {
+        const live = getObjectById(this.projectManager.projectData, objectId);
+        const original = getObjectById(this.initialProjectData, objectId);
+        const copy = JSON.parse(JSON.stringify(original));
+
+        for (const key in live) delete live[key];
+        for (const key in copy) live[key] = copy[key];
+    }
+
+    async resetScene(sceneId) {
+        const live = getSceneById(this.projectManager.projectData, sceneId);
+        const original = getSceneById(this.initialProjectData, sceneId);
+        const copy = JSON.parse(JSON.stringify(original));
+
+        for (const key in live) delete live[key];
+        for (const key in copy) live[key] = copy[key];
+    }
+
     log(text) {
         this.events.emit("log", text);
     }
 
     update(dt) {
-        if (!this.projectManager.projectData) return;
+        if (!this.projectManager.ready) return;
 
         this.dialoguePlayer.update(dt);
         this.render();
@@ -429,6 +466,10 @@ function generateScriptingDefines(player, scene, object) {
     defines.DELAY = async (seconds) => sleep(seconds * 1000);
     defines.DIALOGUE = player.dialogueWaiter;
     defines.DIALOG = defines.DIALOGUE;
+
+    defines.RESET_GAME = async () => player.reset();
+    defines.RESET_OBJECT = async (object) => player.resetObject(object);
+    defines.RESET_SCENE = async (scene) => player.resetScene(scene);
 
     return defines;
 }

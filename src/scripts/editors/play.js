@@ -9,6 +9,8 @@ class PlayTab {
         this.logText = elementByPath("play/log", "div");
         setActionHandler("play/restart", () => this.restart());
 
+        this.jumping = false;
+
         setActionHandler("play/pick-scene", async () => {
             try {
                 const scene = await this.flicksyEditor.pickScene({ 
@@ -16,7 +18,9 @@ class PlayTab {
                     prompt: "pick a scene to jump to during playback. the game will not be reset",
                     allowNone: false, 
                 });
+                this.jumping = true;
                 switchTab("sidebar/play");
+                this.jumping = false;
                 this.player.projectManager.projectData.state.scene = scene.id;
                 this.player.render();
                 this.refresh();
@@ -42,13 +46,12 @@ class PlayTab {
     }
 
     show() {
-        this.restart();
+        if (!this.jumping) this.restart();
         this.scene.hidden = false;
     }
 
     hide() {
         this.scene.hidden = true;
-        this.player.projectManager.projectData = undefined;
     }
     
     refresh() {
@@ -56,12 +59,11 @@ class PlayTab {
         elementByPath("play/scene", "input").value = scene.name;
     }
 
-    restart(startScene = undefined) {
-        this.player.projectManager.copyFromManager(this.flicksyEditor.projectManager);
-        this.player.dialoguePlayer.restart();
+    async restart(startScene = undefined) {
+        await this.player.loadFromProjectManager(this.flicksyEditor.projectManager);
+        await this.player.reset();
         if (startScene) this.player.changeScene(startScene);
         this.player.log("[restarted]");
-        this.player.render();
         this.refresh();
     }
 }

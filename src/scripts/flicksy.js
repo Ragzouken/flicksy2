@@ -169,25 +169,39 @@ class FlicksyProjectManager {
 
         /** @type {Map<string, CanvasRenderingContext2D>} */
         this.drawingIdToRendering = new Map();
+
+        this.ready = false;
     }
 
     /** @param {FlicksyDataProject} projectData */
     async loadProjectData(projectData) {
+        this.ready = false;
         // reload drawings from scratch
         this.drawingIdToRendering.clear();
         const loads = projectData.drawings.map((drawing) => this.reloadDrawingData(drawing));
         await Promise.all(loads);
 
         this.projectData = projectData;
+        this.ready = true;
     }
 
     /** @param {FlicksyProjectManager} manager */
     async copyFromManager(manager) {
-        this.projectData = JSON.parse(JSON.stringify(manager.projectData));
+        this.ready = false;
 
         manager.drawingIdToRendering.forEach((rendering, drawingId) => {
             this.drawingIdToRendering.set(drawingId, copyRendering2D(rendering));
         });
+
+        this.projectData = JSON.parse(JSON.stringify(manager.projectData));
+
+        this.ready = true;
+    }
+
+    clear() {
+        this.ready = false;
+        this.projectData = undefined;
+        this.drawingIdToRendering.clear();
     }
 
     async saveProjectData() {

@@ -11,7 +11,7 @@ async function start() {
     if (play) {
         const player = playerSetup.player;
         player.events.on("log", console.log);
-        await player.projectManager.loadProjectData(data);
+        await player.loadFromProjectData(data);
         playerSetup.scene.hidden = false;
     } else {
         await editor.start();

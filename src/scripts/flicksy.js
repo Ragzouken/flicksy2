@@ -239,6 +239,9 @@ class FlicksyProjectManager {
     removeDrawing(drawing) {
         removeItemFromArray(drawing, this.projectData.drawings);
         this.drawingIdToRendering.delete(drawing.id);
+        if (this.projectData.state.cursor === drawing.id) {
+            this.projectData.state.cursor = undefined;
+        }
     }
 
     /** 

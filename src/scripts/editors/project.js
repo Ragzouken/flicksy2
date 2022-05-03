@@ -39,19 +39,22 @@ class ProjectTabEditor {
             this.flicksyEditor.setProjectData(data);
         });
 
-        setActionHandler("project/open", async () => {
-            const [file] = await pickFiles(".flicksy2.json,.html");
+        setActionHandler("project/import/data", async () => {
+            const [file] = await pickFiles(".flicksy2.json");
             const text = await textFromFile(file);
 
-            if (file.name.endsWith(".flicksy2.json")) {
-                const data = /** @type {FlicksyDataProject} */ (JSON.parse(text));
-                await this.flicksyEditor.setProjectData(data);
-            } else if (file.name.endsWith(".html")) {
-                const html = await htmlFromText(text);
-                const json = ONE("#project-data", html).innerHTML;
-                const data = /** @type {FlicksyDataProject} */ (JSON.parse(json));
-                await this.flicksyEditor.setProjectData(data);
-            }
+            const data = /** @type {FlicksyDataProject} */ (JSON.parse(text));
+            await this.flicksyEditor.setProjectData(data);
+        });
+
+        setActionHandler("project/import/html", async () => {
+            const [file] = await pickFiles(".html");
+            const text = await textFromFile(file);
+
+            const html = await htmlFromText(text);
+            const json = ONE("#project-data", html).innerHTML;
+            const data = /** @type {FlicksyDataProject} */ (JSON.parse(json));
+            await this.flicksyEditor.setProjectData(data);
         });
 
         setActionHandler("project/export/data", async () => {

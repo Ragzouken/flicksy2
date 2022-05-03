@@ -53,6 +53,7 @@
  * @property {string} scene
  * @property {string} cursor
  * @property {Object} variables
+ * @property {boolean} locked
  */
 
 /**
@@ -109,7 +110,8 @@ const EMPTY_PROJECT_DATA = {
     state: {
         scene: "0",
         cursor: "1",
-        variables: {}
+        variables: {},
+        locked: false,
     }
 }
 
@@ -119,16 +121,25 @@ const EMPTY_PROJECT_DATA = {
  */
 function repairProjectData(project) {
     function repairDrawingData(drawing) {
-        drawing.pivot ||= { x: 0, y: 0 };
+        drawing.pivot = drawing.pivot ?? { x: 0, y: 0 };
     }
 
-    project.state ||= {
+    /** @param {FlicksyDataObject} object */
+    function repairObjectData(object) {
+        const drawing = getDrawingById(project, object.drawing);
+        if (drawing === undefined) object.drawing = project.drawings[0].id;
+    }
+
+    project.state = project.state ?? {
         scene: project.details["start"],
         cursor: project.details["cursor"] || "",
         variables: {},
+        locked: false,
     };
+    project.state.locked = false;
 
     project.drawings.forEach(repairDrawingData);
+    project.scenes.flatMap((scene) => scene.objects).forEach(repairObjectData);
     return project;
 }
 

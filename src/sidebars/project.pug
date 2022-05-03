@@ -19,7 +19,7 @@
         h3 export
         .button-row
             button(data-action="project/export/data") project data
-            button(data-action="project/export/html") html file
+            button(data-action="project/export/html") playable html
         h3 publish
         .button-row
             button(data-action="project/publish/neocities/start") neocities
@@ -31,4 +31,6 @@
             button.delete(data-action="project/new") blank project
             button.delete(data-action="project/demo") demo project
         h3 load project from file
-        button(data-action="project/open") choose file
+        .button-row
+            button(data-action="project/import/data") project data
+            button(data-action="project/import/html") playable html

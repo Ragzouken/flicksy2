@@ -25,6 +25,10 @@ class FlicksyPlayer {
         };
     }
 
+    get state() {
+        return this.projectManager.projectData.state;
+    }
+
     async load() {
         await this.dialoguePlayer.load();
     }
@@ -156,7 +160,7 @@ class FlicksyPlayer {
     click(x, y) {
         if (this.dialoguePlayer.active) {
             this.dialoguePlayer.skip();
-        } else {
+        } else if (!this.state.locked) {
             const object = this.pointcast(x, y);
             if (object) this.runObjectBehaviour(object);
         }
@@ -338,13 +342,18 @@ class DialoguePlayer {
             this.moveToNextPage();
     
         const last = pages[pages.length - 1];
+        const queued = this.queuedPages;
         return new Promise((resolve) => {
-            const remove = this.events.on("next-page", (page) => {
-                if (page !== last && !this.queuedPages.includes(last)) {
-                    remove();
+            const remove1 = this.events.on("next-page", onShown);
+            const remove2 = this.events.on("done", onShown);
+
+            function onShown(page) {
+                if (page !== last && !queued.includes(last)) {
+                    remove1();
+                    remove2();
                     resolve();
                 }
-            });
+            }
         });
     }
 
@@ -461,6 +470,9 @@ function generateScriptingDefines(player, scene, object) {
     
     defines.HIDE = (object) => objectFromId(object).hidden = true;
     defines.SHOW = (object) => objectFromId(object).hidden = false;
+
+    defines.LOCK = () => state.locked = true;
+    defines.UNLOCK = () => state.locked = false;
 
     defines.SAY = async (dialogue) => player.dialoguePlayer.queueScript(dialogue);
     defines.DELAY = async (seconds) => sleep(seconds * 1000);

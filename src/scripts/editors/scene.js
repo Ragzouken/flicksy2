@@ -265,6 +265,8 @@ class SceneTabEditor {
         
         this.sceneNameInput.value = scene.name;
 
+        this.selectedObject = undefined;
+
         objectToRendering.clear();
         removeAllChildren(this.scene.container);
         await Promise.all(scene.objects.map((object) => initObjectInEditor(this, object)));

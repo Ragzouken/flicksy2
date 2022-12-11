@@ -124,6 +124,8 @@ class MapTabEditor {
         const startScene = getSceneById(project, startId);
         this.startSceneLabel.value = startScene.name;
 
+        this.selectedScene = undefined;
+
         sceneToPreviewRendering.clear();
         removeAllChildren(this.scene.container);
         await Promise.all(project.scenes.map((scene) => initSceneInEditor(this, scene)));

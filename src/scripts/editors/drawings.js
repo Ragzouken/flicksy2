@@ -8,7 +8,7 @@ const brushes = [
 
 class DrawingsTabEditor {
     get projectManager() { return this.flicksyEditor.projectManager; }
-    get selectedRendering() { return this.projectManager.drawingIdToRendering.get(this.selectedDrawing.id); }
+    get selectedRendering() { return this.projectManager.drawingIdToRendering.get(this.selectedDrawing?.id); }
     get isPicking() { return this.onDrawingPicked !== undefined; }
 
     /** @param {FlicksyEditor} flicksyEditor */
@@ -311,9 +311,7 @@ class DrawingsTabEditor {
 
     /** @param {FlicksyDataDrawing} drawing */
     setSelectedDrawing(drawing) {
-        if (this.selectedDrawing)
-            this.selectedRendering.canvas.classList.toggle("selected", false);
-
+        this.selectedRendering?.canvas.classList.toggle("selected", false);
         this.selectedDrawing = drawing;
 
         elementByPath("drawings/selected", "div").hidden = drawing === undefined;
@@ -631,6 +629,7 @@ function drawingFromData(data) {
 
 /** @param {FlicksyDataDrawing[]} drawings */
 async function setDrawingBoardDrawings(drawings) {
+    editor.drawingsTabEditor.selectedDrawing = undefined;
     removeAllChildren(editor.drawingsTabEditor.scene.container);
     editor.drawingsTabEditor.scene.container.appendChild(editor.drawingsTabEditor.cursor.canvas);
     await Promise.all(drawings.map((drawing) => initDrawingInEditor(editor.drawingsTabEditor, drawing)));
